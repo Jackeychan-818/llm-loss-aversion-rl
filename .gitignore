@@ -23,3 +23,14 @@ venv/
 
 # Results (large, regenerable)
 results/grpo_checkpoints/
+checkpoints/
+logs/
+models/
+
+# Broken pip install artifacts (e.g. pip install pkg=version instead of pkg>=version)
+=*/
+=*
+
+# Misc
+.Rhistory
+*.docx

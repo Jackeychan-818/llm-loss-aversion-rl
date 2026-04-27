@@ -1,0 +1,44 @@
+#!/bin/bash
+# ============================================================
+# PBS Job Script — Full GRPO training on remaining_goods.json (g1 queue)
+# Main training run: ~24 hours, 1x A100 40GB
+# ============================================================
+#PBS -N lz-grpo
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=24:00:00
+#PBS -o /home/users/jackeyc0/scratch/lambda-zero/logs/train_${PBS_JOBID}.out
+#PBS -e /home/users/jackeyc0/scratch/lambda-zero/logs/train_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+# ---------- Environment ----------
+cd $PBS_O_WORKDIR
+module purge
+module load pytorch/2.10.0-py3-cu12.6
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+source "$PROJECT_DIR/venv/bin/activate"
+
+# ---------- Verify GPU ----------
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA devices: {torch.cuda.device_count()}, Device: {torch.cuda.get_device_name(0)}')"
+
+# ---------- Run full training ----------
+echo "=== Starting GRPO training ==="
+echo "Start time: $(date)"
+cd "$PROJECT_DIR"
+
+python train/grpo_train.py \
+    --config train/configs/qwen25_7b.yaml \
+    --mode train \
+    --data_file data/remaining_goods.json \
+    --output_dir checkpoints/grpo_$(date +%Y%m%d_%H%M) \
+    --save_steps 200 \
+    --eval_steps 200 \
+    --eval_data_file data/trial_goods.json \
+    2>&1 | tee logs/train_run.log
+
+echo "=== Training complete ==="
+echo "End time: $(date)"

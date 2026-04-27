@@ -1,0 +1,398 @@
+{
+  "models_surveyed": {
+    "GPT-3.5": {
+      "estimator": "A",
+      "est_file": "GPT-3.5_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.027738693467336685,
+      "raw_yes_y_rate": 0.04040201005025126,
+      "raw_total": 9950,
+      "raw_source": "GPT-3.5_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.00959167,
+      "median_beta_se": 0.0078853,
+      "valid_for_delta": true
+    },
+    "GPT-4o": {
+      "estimator": "A",
+      "est_file": "GPT-4o_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.22924623115577888,
+      "raw_yes_y_rate": 0.28603015075376886,
+      "raw_total": 9950,
+      "raw_source": "GPT-4o_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.01501477,
+      "median_beta_se": 0.00857521,
+      "valid_for_delta": true
+    },
+    "GPT-5": {
+      "estimator": "C",
+      "est_file": "GPT-5_Logit_MLE_Results_Final(Model C).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.384983164983165,
+      "raw_yes_y_rate": 0.4476430976430976,
+      "raw_total": 59400,
+      "raw_source": "GPT-5_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.00067906,
+      "median_beta_se": 0.0002516,
+      "valid_for_delta": true
+    },
+    "GPT-5.2": {
+      "estimator": "A",
+      "est_file": "GPT-5.2_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.26949999999999996,
+      "raw_yes_y_rate": 0.34920000000000007,
+      "raw_total": null,
+      "raw_source": "GPT-5.2_raw_choice_counts_combined.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.01895447,
+      "median_beta_se": 0.0095412,
+      "valid_for_delta": true
+    },
+    "Claude": {
+      "estimator": "B",
+      "est_file": "Claude_sms_results_bootstrap(Model B).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.0005025125628140704,
+      "raw_yes_y_rate": 0.001708542713567839,
+      "raw_total": 9950,
+      "raw_source": "Claude_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 68,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 3.219e-05,
+      "median_beta_se": 0.00103037,
+      "valid_for_delta": true
+    },
+    "Gemini": {
+      "estimator": "C",
+      "est_file": "Gemini_Logit_MLE_Results_Final(Model C).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.07257575757575757,
+      "raw_yes_y_rate": 0.09676767676767677,
+      "raw_total": 59400,
+      "raw_source": "Gemini_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.00133539,
+      "median_beta_se": 0.000306,
+      "valid_for_delta": true
+    },
+    "Apertus-70B": {
+      "estimator": "A",
+      "est_file": "Apertus-70B_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.0051256281407035175,
+      "raw_yes_y_rate": 0.005628140703517588,
+      "raw_total": 9950,
+      "raw_source": "Apertus-70B_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.01167883,
+      "median_beta_se": 0.00462075,
+      "valid_for_delta": true
+    },
+    "Llama-70B": {
+      "estimator": "A",
+      "est_file": "Llama-70B_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.07889447236180905,
+      "raw_yes_y_rate": 0.0636180904522613,
+      "raw_total": 9950,
+      "raw_source": "Llama-70B_raw_choice_counts_number.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.01088704,
+      "median_beta_se": 0.00578653,
+      "valid_for_delta": true
+    },
+    "DeepSeek-R1": {
+      "estimator": "A",
+      "est_file": "DeepSeek-R1_NLS_estimation_T1(Model A).csv",
+      "est_file_exists": true,
+      "raw_yes_x_rate": 0.44189999999999996,
+      "raw_yes_y_rate": 0.5112,
+      "raw_total": null,
+      "raw_source": "DeepSeek-R1_raw_choice_counts_combined.csv",
+      "n_alphas": 99,
+      "n_alpha_se_nonzero": 99,
+      "n_betas": 8,
+      "n_beta_se_nonzero": 8,
+      "median_alpha_se": 0.02129621,
+      "median_beta_se": 0.01181612,
+      "valid_for_delta": true
+    }
+  },
+  "delta_computation": {
+    "total_cases": 59400,
+    "per_file_case_id_ranges": {
+      "trial_goods.json": {
+        "start": 1,
+        "end": 60
+      },
+      "test_goods.json": {
+        "start": 61,
+        "end": 9950
+      },
+      "remaining_goods.json": {
+        "start": 9951,
+        "end": 59400
+      }
+    },
+    "n_models_with_valid_delta": 9,
+    "models_with_valid_delta": [
+      "Apertus-70B",
+      "Claude",
+      "DeepSeek-R1",
+      "GPT-3.5",
+      "GPT-4o",
+      "GPT-5",
+      "GPT-5.2",
+      "Gemini",
+      "Llama-70B"
+    ]
+  },
+  "cross_model_all": {
+    "n_cases": 59400,
+    "unanimous_sign": 23435,
+    "unanimous_positive": 12591,
+    "unanimous_negative": 10844,
+    "split": 35965,
+    "mean_abs_delta_distribution": {
+      "min": 0.11239136628332802,
+      "p25": 7.866743602936716,
+      "median": 21.154362855446674,
+      "p75": 45.80152420498372,
+      "p95": 122.68960776248582,
+      "max": 384.24211908023193
+    },
+    "top10_disagreement_cases": [
+      {
+        "case_id": 40943,
+        "spread": 3424.4646473593943,
+        "deltas": {
+          "GPT-3.5": 0.5522609792974693,
+          "GPT-4o": 3.413931475433096,
+          "GPT-5": 6.124910438457501,
+          "GPT-5.2": 2.0442159658505923,
+          "Claude": 3424.4231480699614,
+          "Gemini": 1.1642863729847788,
+          "Apertus-70B": -0.04149928943286896,
+          "Llama-70B": 0.444749525204194,
+          "DeepSeek-R1": 3.250439254505918
+        }
+      },
+      {
+        "case_id": 41073,
+        "spread": 3409.5438310398285,
+        "deltas": {
+          "GPT-3.5": -1.8745144805402476,
+          "GPT-4o": -1.5075724828411472,
+          "GPT-5": -1.8525490226874375,
+          "GPT-5.2": -0.872286840395387,
+          "Claude": 3399.5007020397416,
+          "Gemini": -1.1210836339086652,
+          "Apertus-70B": -0.6253554342808398,
+          "Llama-70B": -10.04312900008679,
+          "DeepSeek-R1": -9.734796376918904
+        }
+      },
+      {
+        "case_id": 1086,
+        "spread": 3404.9404198139805,
+        "deltas": {
+          "GPT-3.5": -0.16028171764916688,
+          "GPT-4o": -2.9022554918247394,
+          "GPT-5": -6.66340174414414,
+          "GPT-5.2": -1.1345022553855526,
+          "Claude": -3404.8673826744275,
+          "Gemini": 0.07303713955281443,
+          "Apertus-70B": -0.27752305474927885,
+          "Llama-70B": 0.0021942492283975046,
+          "DeepSeek-R1": -2.8734719571722334
+        }
+      },
+      {
+        "case_id": 29530,
+        "spread": 3404.4062944747443,
+        "deltas": {
+          "GPT-3.5": -0.33872163077849504,
+          "GPT-4o": -2.126612960898145,
+          "GPT-5": -4.815842081264062,
+          "GPT-5.2": -0.7054576933901133,
+          "Claude": -3404.195013605286,
+          "Gemini": 0.03425238157062083,
+          "Apertus-70B": -0.31129318178791365,
+          "Llama-70B": 0.21128086945824087,
+          "DeepSeek-R1": -1.824728509071143
+        }
+      },
+      {
+        "case_id": 15073,
+        "spread": 3402.976435559576,
+        "deltas": {
+          "GPT-3.5": -0.2818185055737774,
+          "GPT-4o": -2.852536947268633,
+          "GPT-5": -6.65959710880308,
+          "GPT-5.2": -1.1465372284862236,
+          "Claude": -3402.8900623412715,
+          "Gemini": 0.0761629875433174,
+          "Apertus-70B": -0.279111941190995,
+          "Llama-70B": 0.08637321830463063,
+          "DeepSeek-R1": -2.8250064739628273
+        }
+      },
+      {
+        "case_id": 40881,
+        "spread": 3401.727010867987,
+        "deltas": {
+          "GPT-3.5": 0.40589326952299976,
+          "GPT-4o": 3.9985922136620546,
+          "GPT-5": 6.037939378302516,
+          "GPT-5.2": 2.082184221503991,
+          "Claude": 3401.7018793805314,
+          "Gemini": 0.7559592430873481,
+          "Apertus-70B": 0.49592609036094326,
+          "Llama-70B": -0.02513148745521998,
+          "DeepSeek-R1": 3.9712048093826278
+        }
+      },
+      {
+        "case_id": 40992,
+        "spread": 3393.7155232194405,
+        "deltas": {
+          "GPT-3.5": 0.4502876125374289,
+          "GPT-4o": 2.483304490758152,
+          "GPT-5": 6.531581376764716,
+          "GPT-5.2": 1.4735076840286832,
+          "Claude": 3393.59035561047,
+          "Gemini": 0.4202482154083165,
+          "Apertus-70B": 0.5684173685724034,
+          "Llama-70B": -0.12516760897054313,
+          "DeepSeek-R1": 2.725354516431784
+        }
+      },
+      {
+        "case_id": 6248,
+        "spread": 3375.6372852709064,
+        "deltas": {
+          "GPT-3.5": 0.20033722229981943,
+          "GPT-4o": 3.2263799549362866,
+          "GPT-5": 4.09954264278895,
+          "GPT-5.2": 1.367159784977321,
+          "Claude": 3375.0256533665447,
+          "Gemini": 0.1098911518528678,
+          "Apertus-70B": 0.2771739975222933,
+          "Llama-70B": -0.6116319043616549,
+          "DeepSeek-R1": 2.9949175877727
+        }
+      },
+      {
+        "case_id": 41081,
+        "spread": 3374.842645305856,
+        "deltas": {
+          "GPT-3.5": 0.5781839960579944,
+          "GPT-4o": 2.6943347083488147,
+          "GPT-5": 5.660528430385147,
+          "GPT-5.2": 1.6439063180061562,
+          "Claude": 3374.579552851612,
+          "Gemini": 0.5458689670442971,
+          "Apertus-70B": 0.5006464851552261,
+          "Llama-70B": -0.2630924542440298,
+          "DeepSeek-R1": 2.725342586374539
+        }
+      },
+      {
+        "case_id": 6174,
+        "spread": 3367.2840209405067,
+        "deltas": {
+          "GPT-3.5": -0.04469344917906537,
+          "GPT-4o": 3.6966883269591966,
+          "GPT-5": 7.022505930114863,
+          "GPT-5.2": 2.024766392917513,
+          "Claude": 3367.2393274913275,
+          "Gemini": 0.7894058379809186,
+          "Apertus-70B": 0.6910968568747073,
+          "Llama-70B": 0.5819330107726481,
+          "DeepSeek-R1": 3.77766496140654
+        }
+      }
+    ]
+  },
+  "consensus": {
+    "v2": {
+      "tag": "v2",
+      "models": [
+        "GPT-3.5",
+        "GPT-4o",
+        "GPT-5",
+        "GPT-5.2",
+        "Gemini",
+        "Apertus-70B",
+        "Llama-70B",
+        "DeepSeek-R1"
+      ],
+      "n_models": 8,
+      "n_cases": 59400,
+      "unanimous_sign": 32624,
+      "unanimous_positive": 17063,
+      "unanimous_negative": 15561,
+      "split": 26776,
+      "mean_abs_delta_distribution": {
+        "min": 3.56821900270865e-05,
+        "p25": 0.36704856935280805,
+        "median": 0.7908869814703834,
+        "p75": 1.385288462562709,
+        "p95": 2.5887643974884034,
+        "max": 7.939150578501682
+      }
+    },
+    "v3": {
+      "tag": "v3",
+      "models": [
+        "GPT-4o",
+        "GPT-5",
+        "GPT-5.2",
+        "Gemini",
+        "Llama-70B",
+        "DeepSeek-R1"
+      ],
+      "n_models": 6,
+      "n_cases": 59400,
+      "unanimous_sign": 38043,
+      "unanimous_positive": 20091,
+      "unanimous_negative": 17952,
+      "split": 21357,
+      "mean_abs_delta_distribution": {
+        "min": 2.4062157788199794e-05,
+        "p25": 0.4419671113549633,
+        "median": 0.9555496742228916,
+        "p75": 1.6817174976481033,
+        "p95": 3.1355300201710055,
+        "max": 9.715064359053905
+      }
+    }
+  }
+}

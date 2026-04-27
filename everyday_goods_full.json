@@ -1,0 +1,1212 @@
+{
+    "Food & Drink": {
+        "Loaf of bread": {
+            "Flavor style": [
+                "plain",
+                "multigrain",
+                "sourdough artisanal"
+            ],
+            "Freshness": [
+                "packaged/shelf",
+                "bakery fresh",
+                "same-day baked"
+            ]
+        },
+        "Pack of instant noodles": {
+            "Flavor profile": [
+                "mild/basic broth",
+                "richer broth",
+                "gourmet/spicy specialty"
+            ],
+            "Packaging style": [
+                "plain plastic",
+                "branded wrap",
+                "cup with extras"
+            ]
+        },
+        "Bag of rice": {
+            "Grain quality": [
+                "broken",
+                "standard long-grain",
+                "aromatic jasmine"
+            ],
+            "Cultivation": [
+                "conventional",
+                "improved hybrid",
+                "organic"
+            ]
+        },
+        "Carton of milk": {
+            "Source": [
+                "generic dairy",
+                "pasture-fed",
+                "organic farm"
+            ],
+            "Processing": [
+                "UHT",
+                "pasteurized",
+                "micro-filtered fresh"
+            ]
+        },
+        "Bottle of mineral water": {
+            "Source": [
+                "filtered tap",
+                "purified bottled",
+                "natural spring"
+            ],
+            "Packaging": [
+                "plain plastic",
+                "branded eco-bottle",
+                "glass"
+            ]
+        },
+        "Can of soda": {
+            "Sweetness": [
+                "mild",
+                "regular",
+                "extra sweet"
+            ],
+            "Brand tier": [
+                "store brand",
+                "mainstream",
+                "premium craft soda"
+            ]
+        },
+        "Chocolate bar": {
+            "Cocoa percent": [
+                "milk-heavy",
+                "semi-dark",
+                "rich dark"
+            ],
+            "Brand position": [
+                "mass-market",
+                "mid-tier",
+                "premium"
+            ]
+        },
+        "Bag of potato chips": {
+            "Cut style": [
+                "thin",
+                "ridged",
+                "kettle-cooked"
+            ],
+            "Flavor intensity": [
+                "mild",
+                "salty",
+                "bold/spicy"
+            ]
+        },
+        "Instant coffee pack": {
+            "Roast": [
+                "light",
+                "medium",
+                "dark"
+            ],
+            "Format": [
+                "plain powder",
+                "3-in-1 mix",
+                "freeze-dried granules"
+            ]
+        },
+        "Tea bags": {
+            "Leaf grade": [
+                "dust/fannings",
+                "broken leaf",
+                "whole leaf"
+            ],
+            "Flavor": [
+                "plain black",
+                "flavored",
+                "herbal/premium blend"
+            ]
+        },
+        "Apple": {
+            "Taste": [
+                "tart",
+                "sweet",
+                "aromatic"
+            ],
+            "Quality": [
+                "bruised",
+                "standard",
+                "shiny premium"
+            ]
+        },
+        "Banana": {
+            "Ripeness": [
+                "under-ripe",
+                "ripe",
+                "golden sweet"
+            ],
+            "Type": [
+                "cavendish",
+                "plantain",
+                "honey banana"
+            ]
+        },
+        "Orange": {
+            "Sweetness": [
+                "mild",
+                "sweet",
+                "rich juicy"
+            ],
+            "Origin": [
+                "domestic",
+                "imported",
+                "specialty (mandarin/blood orange)"
+            ]
+        },
+        "Egg carton (6 pcs)": {
+            "Egg size": [
+                "small",
+                "medium",
+                "large"
+            ],
+            "Farming": [
+                "caged",
+                "cage-free",
+                "free-range"
+            ]
+        },
+        "Yogurt cup": {
+            "Texture": [
+                "thin",
+                "creamy",
+                "Greek-style thick"
+            ],
+            "Flavor": [
+                "plain",
+                "fruit",
+                "gourmet mix-in"
+            ]
+        },
+        "Biscuit pack": {
+            "Recipe": [
+                "plain",
+                "buttery",
+                "chocolate-filled"
+            ],
+            "Brand": [
+                "store",
+                "mid-tier",
+                "premium (imported)"
+            ]
+        },
+        "Peanut butter (jar)": {
+            "Texture": [
+                "smooth",
+                "slightly chunky",
+                "extra chunky"
+            ],
+            "Processing": [
+                "commercial",
+                "natural",
+                "organic"
+            ]
+        },
+        "Jam (jar)": {
+            "Fruit content": [
+                "low",
+                "medium",
+                "high"
+            ],
+            "Style": [
+                "basic",
+                "seeded",
+                "artisanal preserve"
+            ]
+        },
+        "Butter (block)": {
+            "Fat level": [
+                "reduced",
+                "regular",
+                "cultured premium"
+            ],
+            "Origin": [
+                "generic",
+                "regional brand",
+                "imported European"
+            ]
+        },
+        "Cooking oil (bottle)": {
+            "Type": [
+                "refined",
+                "blended vegetable",
+                "cold-pressed olive"
+            ],
+            "Use": [
+                "everyday",
+                "frying",
+                "gourmet salads"
+            ]
+        },
+        "Sugar (pack)": {
+            "Grain": [
+                "coarse",
+                "fine",
+                "powdered"
+            ],
+            "Source": [
+                "cane",
+                "refined white",
+                "unrefined brown"
+            ]
+        },
+        "Salt (pack)": {
+            "Type": [
+                "table",
+                "sea salt",
+                "Himalayan/premium"
+            ],
+            "Grain": [
+                "fine",
+                "coarse",
+                "flakes"
+            ]
+        },
+        "Soy sauce (bottle)": {
+            "Fermentation": [
+                "chemical",
+                "brewed",
+                "aged"
+            ],
+            "Flavor depth": [
+                "salty",
+                "balanced",
+                "umami-rich"
+            ]
+        },
+        "Vinegar (bottle)": {
+            "Type": [
+                "distilled",
+                "apple cider",
+                "balsamic"
+            ],
+            "Sharpness": [
+                "sharp",
+                "mellow",
+                "sweet aged"
+            ]
+        },
+        "Canned tuna": {
+            "Style": [
+                "flakes",
+                "chunks",
+                "fillet"
+            ],
+            "Packing": [
+                "in oil",
+                "in brine",
+                "in olive oil premium"
+            ]
+        }
+    },
+    "Personal Care & Hygiene": {
+        "Bar of soap": {
+            "Formula": [
+                "plain",
+                "moisturizing",
+                "antibacterial"
+            ],
+            "Scent": [
+                "unscented",
+                "scented",
+                "luxury fragrance"
+            ]
+        },
+        "Toothbrush": {
+            "Bristle design": [
+                "flat",
+                "tapered",
+                "multi-angled gum care"
+            ],
+            "Handle": [
+                "plain",
+                "ergonomic",
+                "rubber grip"
+            ]
+        },
+        "Toothpaste (tube)": {
+            "Formula": [
+                "whitening",
+                "cavity care",
+                "multi-care advanced"
+            ],
+            "Taste": [
+                "basic mint",
+                "refreshing",
+                "long-lasting fresh"
+            ]
+        },
+        "Shampoo": {
+            "Formula": [
+                "cleansing",
+                "nourishing",
+                "specialized treatment"
+            ],
+            "Scent": [
+                "neutral",
+                "herbal",
+                "luxury perfumed"
+            ]
+        },
+        "Conditioner": {
+            "Formula": [
+                "basic softening",
+                "vitamin-enriched",
+                "keratin treatment"
+            ],
+            "Scent": [
+                "plain",
+                "fruity",
+                "spa-grade fragrance"
+            ]
+        },
+        "Disposable razor": {
+            "Blade system": [
+                "single",
+                "twin",
+                "triple pivoting"
+            ],
+            "Comfort": [
+                "plain",
+                "cushioned",
+                "lubricated strip"
+            ]
+        },
+        "Shaving cream": {
+            "Texture": [
+                "foamy",
+                "creamy",
+                "rich lather"
+            ],
+            "Sensitivity": [
+                "regular",
+                "sensitive skin",
+                "soothing aloe"
+            ]
+        },
+        "Deodorant stick": {
+            "Formula": [
+                "standard",
+                "anti-perspirant",
+                "hypoallergenic"
+            ],
+            "Scent": [
+                "generic",
+                "citrus",
+                "subtle musk"
+            ]
+        },
+        "Pack of tissues": {
+            "Softness": [
+                "rough",
+                "soft",
+                "ultra-soft"
+            ],
+            "Layers": [
+                "1",
+                "2",
+                "3"
+            ]
+        },
+        "Wet wipes": {
+            "Formula": [
+                "basic",
+                "alcohol",
+                "aloe-infused"
+            ],
+            "Packaging": [
+                "plain",
+                "resealable",
+                "travel compact"
+            ]
+        },
+        "Hand sanitizer": {
+            "Alcohol level": [
+                "low",
+                "medium",
+                "high"
+            ],
+            "Feel": [
+                "sticky",
+                "smooth",
+                "moisturizing"
+            ]
+        },
+        "Cotton swabs": {
+            "Tip quality": [
+                "loose",
+                "firm",
+                "tightly wound"
+            ],
+            "Stick": [
+                "plastic",
+                "paper",
+                "bamboo"
+            ]
+        },
+        "Cotton pads": {
+            "Thickness": [
+                "thin",
+                "medium",
+                "thick"
+            ],
+            "Edge": [
+                "fray-prone",
+                "stitched",
+                "embossed"
+            ]
+        },
+        "Nail clippers": {
+            "Size": [
+                "small",
+                "medium",
+                "large"
+            ],
+            "Quality": [
+                "basic steel",
+                "stainless steel",
+                "ergonomic premium"
+            ]
+        },
+        "Hair comb": {
+            "Teeth": [
+                "wide",
+                "mixed",
+                "fine"
+            ],
+            "Build": [
+                "plastic",
+                "anti-static",
+                "wooden"
+            ]
+        },
+        "Lip balm": {
+            "Formula": [
+                "waxy",
+                "smooth",
+                "vitamin-enriched"
+            ],
+            "Scent": [
+                "plain",
+                "flavored",
+                "natural essential oil"
+            ]
+        },
+        "Hand cream": {
+            "Formula": [
+                "watery",
+                "creamy",
+                "rich barrier"
+            ],
+            "Fragrance": [
+                "none",
+                "scented",
+                "premium spa scent"
+            ]
+        },
+        "Face mask (disposable)": {
+            "Layers": [
+                "2",
+                "3",
+                "4+"
+            ],
+            "Comfort": [
+                "tight loops",
+                "standard",
+                "adjustable soft"
+            ]
+        },
+        "Dental floss": {
+            "Type": [
+                "flat",
+                "round",
+                "waxed"
+            ],
+            "Flavor": [
+                "none",
+                "mint",
+                "premium coated"
+            ]
+        },
+        "Pocket mirror": {
+            "Build": [
+                "plastic",
+                "metal",
+                "designer"
+            ],
+            "Mirror type": [
+                "plain",
+                "double",
+                "magnifying"
+            ]
+        }
+    },
+    "Household & Cleaning": {
+        "Dishwashing liquid": {
+            "Formula": [
+                "basic soapy",
+                "grease-cutting",
+                "concentrated eco"
+            ],
+            "Scent": [
+                "unscented",
+                "lemon",
+                "herbal/lavender"
+            ]
+        },
+        "Laundry detergent (pack)": {
+            "Fabric care": [
+                "basic",
+                "color-protection",
+                "delicate-safe"
+            ],
+            "Eco profile": [
+                "standard",
+                "partly eco",
+                "eco-certified"
+            ]
+        },
+        "Sponge": {
+            "Abrasiveness": [
+                "soft",
+                "medium",
+                "coarse"
+            ],
+            "Durability": [
+                "short-life",
+                "mid-use",
+                "long-lasting"
+            ]
+        },
+        "Scouring pad": {
+            "Surface": [
+                "rough",
+                "reinforced",
+                "steel wool"
+            ],
+            "Lifespan": [
+                "wears quickly",
+                "medium",
+                "durable"
+            ]
+        },
+        "Toilet paper roll": {
+            "Softness": [
+                "rough",
+                "soft",
+                "ultra plush"
+            ],
+            "Sustainability": [
+                "non-recycled",
+                "mixed",
+                "fully recycled"
+            ]
+        },
+        "Paper towel roll": {
+            "Strength": [
+                "tears easily",
+                "absorbent",
+                "ultra absorbent"
+            ],
+            "Texture": [
+                "plain",
+                "patterned",
+                "quilted"
+            ]
+        },
+        "Trash bags (small pack)": {
+            "Thickness": [
+                "thin",
+                "medium",
+                "tear-resistant"
+            ],
+            "Closure": [
+                "none",
+                "tie handles",
+                "drawstring"
+            ]
+        },
+        "Rubber gloves (pair)": {
+            "Thickness": [
+                "thin",
+                "medium",
+                "thick"
+            ],
+            "Comfort": [
+                "plain",
+                "lined",
+                "flocked interior"
+            ]
+        },
+        "Light bulb": {
+            "Light color": [
+                "warm",
+                "neutral",
+                "daylight"
+            ],
+            "Efficiency": [
+                "incandescent",
+                "CFL",
+                "LED"
+            ]
+        },
+        "Matches box": {
+            "Stick length": [
+                "small",
+                "medium",
+                "long-stick"
+            ],
+            "Ignition": [
+                "unreliable",
+                "standard",
+                "safety strike"
+            ]
+        },
+        "Candles (small pack)": {
+            "Burn time": [
+                "short",
+                "medium",
+                "long"
+            ],
+            "Scent": [
+                "unscented",
+                "lightly scented",
+                "aromatic"
+            ]
+        },
+        "Clothes pegs (small pack)": {
+            "Material": [
+                "plastic",
+                "wooden",
+                "steel spring"
+            ],
+            "Grip": [
+                "weak",
+                "medium",
+                "strong"
+            ]
+        },
+        "Baking soda": {
+            "Use": [
+                "single-purpose",
+                "dual-purpose",
+                "multi-purpose"
+            ],
+            "Purity": [
+                "low",
+                "medium",
+                "food-grade high"
+            ]
+        },
+        "Vinegar (cleaning grade)": {
+            "Strength": [
+                "diluted",
+                "medium",
+                "concentrated"
+            ],
+            "Scent": [
+                "sharp",
+                "mild",
+                "scented/infused"
+            ]
+        },
+        "Floor cloth/rag": {
+            "Material": [
+                "synthetic",
+                "cotton",
+                "microfiber"
+            ],
+            "Durability": [
+                "short",
+                "medium",
+                "long-lasting"
+            ]
+        },
+        "Small broom/dustpan set": {
+            "Bristles": [
+                "coarse",
+                "medium",
+                "fine"
+            ],
+            "Build": [
+                "flimsy",
+                "standard",
+                "sturdy"
+            ]
+        },
+        "Air freshener (small can)": {
+            "Longevity": [
+                "short",
+                "medium",
+                "long-lasting"
+            ],
+            "Scent type": [
+                "artificial",
+                "pleasant",
+                "natural essential oil"
+            ]
+        },
+        "Shoe polish": {
+            "Finish": [
+                "dull",
+                "shiny",
+                "mirror finish"
+            ],
+            "Formula": [
+                "basic wax",
+                "enriched",
+                "conditioning premium"
+            ]
+        },
+        "All-purpose cleaner (spray)": {
+            "Strength": [
+                "light",
+                "medium",
+                "concentrated"
+            ],
+            "Eco profile": [
+                "regular",
+                "partially eco",
+                "eco-certified"
+            ]
+        },
+        "Measuring cup": {
+            "Markings": [
+                "faint",
+                "standard",
+                "durable etched"
+            ],
+            "Build": [
+                "plastic",
+                "glass",
+                "steel"
+            ]
+        }
+    },
+    "Stationery & Office": {
+        "Ballpoint pen": {
+            "Ink flow": [
+                "scratchy",
+                "smooth",
+                "gel-like"
+            ],
+            "Barrel": [
+                "plastic",
+                "semi-metal",
+                "full-metal"
+            ]
+        },
+        "Pencil (pack of 2\u20133)": {
+            "Lead hardness": [
+                "soft",
+                "medium",
+                "hard"
+            ],
+            "Finish": [
+                "unpainted",
+                "painted",
+                "lacquered"
+            ]
+        },
+        "Eraser": {
+            "Smudge": [
+                "high",
+                "medium",
+                "clean"
+            ],
+            "Build": [
+                "crumbly",
+                "standard",
+                "dust-free"
+            ]
+        },
+        "Sharpener": {
+            "Blade sharpness": [
+                "dull",
+                "sharp",
+                "precision"
+            ],
+            "Build": [
+                "plastic",
+                "mixed",
+                "metal"
+            ]
+        },
+        "Notebook (small)": {
+            "Binding": [
+                "staple",
+                "spiral",
+                "stitched"
+            ],
+            "Paper quality": [
+                "thin",
+                "smooth",
+                "thick"
+            ]
+        },
+        "Sticky notes": {
+            "Adhesion": [
+                "weak",
+                "medium",
+                "strong"
+            ],
+            "Paper quality": [
+                "thin",
+                "smooth",
+                "thick premium"
+            ]
+        },
+        "Paper clips (small pack)": {
+            "Strength": [
+                "bends",
+                "standard",
+                "coated durable"
+            ],
+            "Finish": [
+                "plain",
+                "colored",
+                "premium steel"
+            ]
+        },
+        "Binder clips (small pack)": {
+            "Grip": [
+                "weak",
+                "medium",
+                "strong"
+            ],
+            "Finish": [
+                "plain",
+                "coated",
+                "designer colors"
+            ]
+        },
+        "Highlighter": {
+            "Saturation": [
+                "pale",
+                "bold",
+                "vivid"
+            ],
+            "Tip": [
+                "soft",
+                "standard",
+                "firm durable"
+            ]
+        },
+        "Correction tape": {
+            "Coverage": [
+                "streaky",
+                "clean",
+                "smooth"
+            ],
+            "Build": [
+                "flimsy",
+                "standard",
+                "ergonomic"
+            ]
+        },
+        "Ruler (30 cm)": {
+            "Material": [
+                "plastic",
+                "wood",
+                "steel"
+            ],
+            "Precision": [
+                "rough",
+                "accurate",
+                "engraved"
+            ]
+        },
+        "Glue stick": {
+            "Adhesion": [
+                "weak",
+                "medium",
+                "archival strong"
+            ],
+            "Application feel": [
+                "chalky",
+                "smooth",
+                "mess-free"
+            ]
+        },
+        "Scissors (basic)": {
+            "Sharpness": [
+                "blunt",
+                "standard",
+                "razor sharp"
+            ],
+            "Handle": [
+                "plain",
+                "ergonomic",
+                "cushioned"
+            ]
+        },
+        "Stapler (mini)": {
+            "Capacity": [
+                "10 sheets",
+                "20 sheets",
+                "30 sheets"
+            ],
+            "Build": [
+                "plastic",
+                "mixed",
+                "metal"
+            ]
+        },
+        "Staple pins (small pack)": {
+            "Strength": [
+                "weak",
+                "medium",
+                "reinforced"
+            ],
+            "Finish": [
+                "dull",
+                "smooth",
+                "rust-resistant"
+            ]
+        }
+    },
+    "Miscellaneous Everyday Items": {
+        "Face towel": {
+            "Texture": [
+                "rough",
+                "soft",
+                "plush"
+            ],
+            "Absorbency": [
+                "low",
+                "medium",
+                "high"
+            ]
+        },
+        "Socks (basic pair)": {
+            "Thickness": [
+                "thin",
+                "standard",
+                "cushioned"
+            ],
+            "Material": [
+                "polyester",
+                "cotton",
+                "wool blend"
+            ]
+        },
+        "Reusable shopping bag": {
+            "Material": [
+                "thin polyester",
+                "canvas",
+                "reinforced jute"
+            ],
+            "Design": [
+                "plain",
+                "patterned",
+                "foldable pouch"
+            ]
+        },
+        "Keychain": {
+            "Build": [
+                "flimsy",
+                "durable",
+                "premium metal"
+            ],
+            "Style": [
+                "plain",
+                "decorative",
+                "personalized"
+            ]
+        },
+        "Lighter": {
+            "Reliability": [
+                "inconsistent",
+                "standard",
+                "windproof"
+            ],
+            "Build": [
+                "plastic",
+                "refillable",
+                "metal premium"
+            ]
+        },
+        "USB charging cable (basic)": {
+            "Speed": [
+                "slow",
+                "standard",
+                "fast-charge"
+            ],
+            "Build": [
+                "plastic",
+                "braided",
+                "reinforced strain relief"
+            ]
+        },
+        "Earphones (budget)": {
+            "Sound": [
+                "tinny",
+                "balanced",
+                "rich bass"
+            ],
+            "Comfort": [
+                "basic",
+                "ergonomic",
+                "cushioned tips"
+            ]
+        },
+        "Coin pouch": {
+            "Material": [
+                "plastic",
+                "fabric",
+                "leather"
+            ],
+            "Closure": [
+                "snap",
+                "zipper",
+                "clasp"
+            ]
+        },
+        "Sunglasses (budget pair)": {
+            "UV protection": [
+                "low",
+                "medium",
+                "high"
+            ],
+            "Lens": [
+                "plastic",
+                "polycarbonate",
+                "polarized"
+            ]
+        },
+        "Hair ties (pack)": {
+            "Elasticity": [
+                "weak",
+                "medium",
+                "strong"
+            ],
+            "Comfort": [
+                "pulls hair",
+                "smooth",
+                "seamless"
+            ]
+        },
+        "Safety pins (pack)": {
+            "Strength": [
+                "bends easily",
+                "standard",
+                "reinforced steel"
+            ],
+            "Finish": [
+                "plain",
+                "colored",
+                "rust-proof"
+            ]
+        },
+        "Sewing kit (mini)": {
+            "Contents": [
+                "thread only",
+                "needles + thread",
+                "assorted full kit"
+            ],
+            "Case": [
+                "plastic",
+                "fabric",
+                "metal box"
+            ]
+        },
+        "Flashlight (small)": {
+            "Brightness quality": [
+                "dim yellow",
+                "bright white LED",
+                "focused tactical beam"
+            ],
+            "Build": [
+                "plastic",
+                "aluminum",
+                "steel"
+            ]
+        },
+        "Batteries (AA, 2-pack)": {
+            "Longevity": [
+                "short",
+                "medium",
+                "long-lasting"
+            ],
+            "Brand": [
+                "generic",
+                "known brand",
+                "premium brand"
+            ]
+        },
+        "Umbrella (small, foldable)": {
+            "Opening": [
+                "manual",
+                "semi-auto",
+                "automatic"
+            ],
+            "Strength": [
+                "flimsy",
+                "windproof",
+                "storm-proof"
+            ]
+        },
+        "Coffee mug": {
+            "Material": [
+                "plastic",
+                "ceramic",
+                "double-walled stainless"
+            ],
+            "Aesthetic": [
+                "plain",
+                "patterned",
+                "designer logo"
+            ]
+        },
+        "Plastic food container": {
+            "Seal quality": [
+                "loose",
+                "tight",
+                "airtight"
+            ],
+            "Build": [
+                "thin",
+                "medium",
+                "thick durable"
+            ]
+        },
+        "Reusable water bottle (basic)": {
+            "Material": [
+                "plastic",
+                "aluminum",
+                "stainless steel"
+            ],
+            "Feature": [
+                "plain",
+                "insulated",
+                "thermal lock"
+            ]
+        },
+        "Playing cards (deck)": {
+            "Finish": [
+                "matte",
+                "smooth coated",
+                "linen textured"
+            ],
+            "Artwork": [
+                "plain",
+                "themed",
+                "luxury artistic"
+            ]
+        },
+        "Dice set (small)": {
+            "Material": [
+                "plastic",
+                "resin",
+                "stone/metal"
+            ],
+            "Finish": [
+                "plain",
+                "colored",
+                "engraved premium"
+            ]
+        }
+    }
+}

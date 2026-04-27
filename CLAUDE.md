@@ -6,14 +6,24 @@ This file gives Claude Code context about this project so it can help effectivel
 
 ## Project Overview
 
-**`loss_aversion_rl`** — a reinforcement learning project that fine-tunes a small open-source LLM (Qwen2.5-7B-Instruct) using **GRPO (Group Relative Policy Optimization)** to reduce loss aversion below frontier models.
+**lambda-zero** (`loss_aversion_rl`) — a reinforcement learning project that fine-tunes Qwen2.5-7B-Instruct using **GRPO (Group Relative Policy Optimization)** to reduce loss aversion below frontier models.
 
-This project builds on top of an existing behavioral economics study (separate repo, `loss_aversion/`) that measures **λ** (loss aversion coefficient) across 9 LLMs using an endowment-effect paradigm. That study established that frontier LLMs show measurable loss aversion. This project asks whether targeted RL can correct it.
+This project builds on an existing behavioral economics study (separate repo, `loss_aversion/`) that measures **λ** (loss aversion coefficient) across 9 LLMs using an endowment-effect paradigm. That study established that frontier LLMs show measurable loss aversion. This project asks whether targeted RL can correct it.
 
 ### Thesis in one sentence
 A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10–100× its size.
 
-> **Note (April 2026):** The specific reward function and training direction are still under active discussion. Multiple reward designs are being considered (see Key Design Decisions). The immediate priority is establishing **λ̂_before** for Qwen2.5-7B-Instruct before any fine-tuning begins.
+---
+
+## Current Status (April 27, 2026)
+
+**Phase 3 — GRPO Training** is the current focus. All prerequisite work is done:
+- λ̂_before = 11.75 established (Phase 1)
+- Reward function decided: utility-weighted using consensus δ̃ (Phase 2)
+- Training code written: `grpo_train.py`, `reward_functions.py`, `prompt_builder.py`
+- NSCC ASPIRE 2A environment being set up for GPU training
+
+**Immediate next step:** Get the training pipeline running on NSCC. Verify `everyday_goods_full.json` is copied (not symlinked) on NSCC, then run sanity check on trial_goods.json (`qsub train/submit_sanity.pbs`), then full training on remaining_goods.json.
 
 ---
 
@@ -54,9 +64,9 @@ Estimation methods (in `core_exp_refactored.py`):
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
-| 1. Small-model baseline | 🔴 **Current focus** | **λ̂_before** for Qwen2.5-7B — must complete before any training |
-| 2. Reward function design | 🔴 **Under discussion** | `reward_functions.py` — training direction not yet decided |
-| 3. GRPO training | ⏳ Blocked on 1 & 2 | LoRA checkpoints |
+| 1. Small-model baseline | ✅ Done | **λ̂_before = 11.75** (SE = 1.22), η̂ = 1.52 (SE = 0.09) for Qwen2.5-7B — baseline treatment, Model A (NLS), T=1 |
+| 2. Reward function design | ✅ Done | Utility-weighted reward using consensus δ̃ from 6 frontier models (v3) |
+| 3. GRPO training | 🟡 **Code written, not yet run** | LoRA checkpoints |
 | 4. Post-training evaluation | ⏳ | **λ̂_after** |
 | 5. Cross-model comparison | ⏳ | Final paper figures |
 | 6. Ablations | ⏳ | Reward type, model size, generalization |
@@ -67,36 +77,43 @@ Estimation methods (in `core_exp_refactored.py`):
 ## Repository Structure
 
 ```
-loss_aversion_rl/
+lambda-zero/
 ├── data/
-│   ├── trial_goods.json          # Validation prompts
-│   ├── test_goods.json           # Evaluation prompts
-│   └── remaining_goods.json      # Training prompts (largest set)
+│   ├── trial_goods.json              # Validation prompts (990 cases)
+│   ├── test_goods.json               # Evaluation prompts (8,910 cases)
+│   ├── remaining_goods.json          # Training prompts (49,500 cases — largest set)
+│   └── deltas/
+│       ├── delta_consensus_v3.json   # ★ Ground truth δ̃ from 6 frontier models (59,400 entries)
+│       ├── delta_deepseek.json       # DeepSeek-R1 standalone δ̃ (for ablation)
+│       └── _summary.json             # Survey of all 9 models' Yes rates & estimator info
 │
-├── eval/                         # Reused from econ project
-│   ├── run_all_models.py         # Experiment runner (copy from loss_aversion/)
-│   ├── core_exp_refactored.py    # Structural estimation engine
-│   ├── estimate_qwen_base.py     # λ̂_before
-│   └── estimate_qwen_grpo.py     # λ̂_after
+├── eval/                             # Reused from econ project
+│   ├── run_all_models.py             # Experiment runner (copy from loss_aversion/)
+│   ├── core_exp_refactored.py        # Structural estimation engine — DO NOT MODIFY CARELESSLY
+│   ├── estimate_qwen_base.py         # λ̂_before
+│   └── estimate_qwen_grpo.py         # λ̂_after (not yet run)
 │
-├── train/                        # NEW — RL code
-│   ├── grpo_train.py             # Main GRPO training loop
-│   ├── reward_functions.py       # Symmetry + utility rewards
-│   ├── prompt_builder.py         # Generates X/Y perspective pairs
-│   └── configs/
-│       └── qwen25_7b_symmetry.yaml
+├── train/                            # RL training code
+│   ├── grpo_train.py                 # ✅ Main GRPO training loop using TRL's GRPOTrainer
+│   ├── reward_functions.py           # ✅ Utility-weighted reward using frontier δ̃
+│   ├── prompt_builder.py             # ✅ Generates X/Y perspective pairs from goods data
+│   ├── configs/
+│   │   └── qwen25_7b.yaml            # ✅ All hyperparameters
+│   ├── setup_nscc.sh                 # One-time NSCC environment setup
+│   ├── submit_sanity.pbs             # PBS job: sanity check on trial_goods (gdev, 1.5h)
+│   ├── submit_train.pbs              # PBS job: full training on remaining_goods (g1, 24h)
+│   └── NSCC_GUIDE.md                 # NSCC ASPIRE 2A reference guide
 │
-├── results/
-│   ├── baseline/                 # λ̂_before outputs
-│   ├── grpo_checkpoints/         # LoRA weights per training step
-│   └── post_training/            # λ̂_after outputs
-│
+├── baseline/Qwen-7B/                 # λ̂_before results
+├── results/                          # λ̂_after results (post training)
 ├── notebooks/
-│   └── compare_lambdas.ipynb     # Final comparison figure
+│   └── compare_lambdas.ipynb         # Final comparison figure
 │
-├── requirements.txt
-├── CLAUDE.md                     # ← this file
-└── README.md
+├── everyday_goods_full.json          # Master goods reference (item names, attributes, values)
+├── CLAUDE.md                         # ← this file
+├── KNOWN_ISSUES.md                   # Running log of problems and risks
+├── PROJECT_OVERVIEW.md               # Detailed project narrative
+└── TIMELINE.md                       # Publication schedule
 ```
 
 ---
@@ -111,71 +128,175 @@ loss_aversion_rl/
 - Fits on a single A100 40GB for GRPO training
 
 ### RL algorithm
-**GRPO** (from DeepSeekMath / DeepSeek-R1), not PPO. Reason: our reward should be a clean verifiable signal, so we don't need a learned value network. Considering **Dr. GRPO** variant because our outputs are single-token (Yes/No), which is the regime where Dr. GRPO's length-bias fix matters most.
+**GRPO** (from DeepSeekMath / DeepSeek-R1), not PPO. Reason: our reward is a clean verifiable signal, so we don't need a learned value network. Considering **Dr. GRPO** variant because our outputs are single-token (Yes/No), which is the regime where Dr. GRPO's length-bias fix matters most.
 
-### Reward function — ⚠️ Under Discussion
-The specific reward design has **not been finalized**. Candidates being considered:
+### Reward function — ✅ Decided (April 2026)
+**Utility-weighted reward (Version 2)** using consensus δ̃ from 6 frontier models.
 
-**Candidate A — Symmetry reward:**
+**Ground truth source:** `data/deltas/delta_consensus_v3.json` — mean δ̃ across GPT-4o, GPT-5, GPT-5.2, Gemini, Llama-70B, DeepSeek-R1 (excluded Claude, Apertus-70B, GPT-3.5 due to <5% Yes rates making their utility estimates unreliable).
+
+**Why not Qwen-7B's own δ̃?** Qwen says No 99% of the time → NLS can't learn meaningful α/β → δ̃ values reflect reference category geometry, not real preferences. Frontier models that actually trade produce reliable utility estimates.
+
+**Reward formula:**
+```python
+def reward(response, perspective, delta):
+    # delta = δ̃ = U_X - U_Y from consensus
+    if perspective == "X":
+        # Endowed with X. δ̃ > 0 means X is better → keep X → rational = "No"
+        rational = "No" if delta > 0 else "Yes"
+    else:
+        # Endowed with Y. δ̃ > 0 means X is better → trade for X → rational = "Yes"
+        rational = "Yes" if delta > 0 else "No"
+    return abs(delta) if response == rational else -abs(delta)
 ```
-+1  if choice(X → Y) is consistent with choice(Y → X)
-−1  if model keeps whichever good is endowed (loss-averse)
-```
-Self-contained, no dependence on external utility estimates.
 
-**Candidate B — Utility-based reward:**
-Using δ̃ (counterfactual utility gap) from the econ structural model as ground truth.
+**Coverage:** 64% of cases have unanimous sign agreement across all 6 models. Remaining 36% use the mean δ̃ — the |δ̃| weighting naturally downweights ambiguous cases.
 
-**Other directions** may also be explored. Do not treat any reward design as final until explicitly confirmed.
+**Rejected alternative:** Symmetry reward (+1 for consistent X/Y choices) was rejected because a model saying No from both perspectives scores +1 while remaining deeply irrational (high η).
 
 ### Hyperparameters
 | Param | Value | Rationale |
 |---|---|---|
-| Group size G | 8 | Binary reward, low variance — don't need G=16 |
-| Sampling temp | 0.7 | Diversity without chaos |
+| Group size G | 16 | Increased from 8 — needed for output diversity given 99% No rate |
+| Sampling temp | 1.5 | Increased from 0.7 — temp<1 makes peaked distributions MORE peaked |
 | Clip ε | 0.2 | Standard |
 | KL coefficient β | 0.04 | Tighter than DeepSeek-R1's 0.001 — we want to stay near base |
 | Learning rate | 1e-6 | Conservative |
 | LoRA rank | 16 | Standard for 7B models |
+| max_completion_length | 4 | Only need "Yes" or "No" (1-2 tokens) |
+| batch_size | 1 | Per-device, with gradient_accumulation_steps=4 |
 
 ---
 
-## Critical Conventions
+## Training Infrastructure — NSCC ASPIRE 2A
 
-### Data format (from the econ project)
-Each JSON entry has this shape:
-```json
-{
-  "case_id": 1,
-  "X_num": 0,
-  "Y_num": 1,
-  "attr": [0, 1, 2, 1],       // i, j, k, l
-  "Yes / No prob": [0.72, 0.28],
-  "output": "full prompt + response"
-}
+### System details
+- **Host:** `aspire2a.nus.edu.sg` (SSH login)
+- **GPU:** NVIDIA A100-40GB SXM (4 per node)
+- **Scheduler:** PBS Pro (NOT SLURM — use `qsub`, `qstat`, `qdel`)
+- **Project ID:** `personal-jackeyc0`
+- **Scratch:** `$HOME/scratch/lambda-zero/`
+- **PyTorch module:** `pytorch/2.10.0-py3-cu12.6` (Python 3.13, CUDA 12.6)
+- **Venv:** `$HOME/scratch/lambda-zero/venv/` (TRL, PEFT, vLLM, transformers)
+- **Model weights:** `$HOME/scratch/lambda-zero/models/Qwen2.5-7B-Instruct/`
+- **SU remaining:** ~33,389 (enough for ~139 full 24h training runs)
+
+### Queues
+| Queue | Max GPUs | Walltime | Use for |
+|-------|----------|----------|---------|
+| `gdev` | 4 | 2 hours | Quick tests, sanity checks |
+| `g1` | 1 | 2–24 hours | Full training runs |
+| `glong` | 1 | 24+ hours | Extended training |
+
+Submit via `normal` routing queue: `qsub -q normal train/submit_train.pbs`
+
+### Key commands
+```bash
+# Environment setup
+module purge && module load pytorch/2.10.0-py3-cu12.6
+source $HOME/scratch/lambda-zero/venv/bin/activate
+
+# Submit jobs
+qsub train/submit_sanity.pbs    # Sanity check (gdev, 1.5h, 100 steps)
+qsub train/submit_train.pbs     # Full training (g1, 24h)
+
+# Monitor
+qstat -u jackeyc0
+tail -f $HOME/scratch/lambda-zero/logs/*.out
+
+# Interactive GPU session (for debugging)
+qsub -I -q normal -l select=1:ncpus=8:ngpus=1:mem=80gb -l walltime=01:00:00 -P personal-jackeyc0
 ```
-`X` and `Y` JSON files are paired — same `case_id` in each represents the two perspectives of the same pair.
 
-### Model registry pattern
-New models are added to `MODEL_REGISTRY` in `run_all_models.py`. Three styles:
-- **Style A:** logprobs + temp=0 (most flexible, best for MLE estimation)
-- **Style B:** no logprobs, temp=0 (binary responses, use SMS Bootstrap)
-- **Style C:** no temp=0 (reasoning models)
+---
 
-For Qwen via Together AI: Style B initially, upgrade to Style A when we host locally with vLLM.
+## Training Code Architecture
 
-### Case ID continuity
-Case IDs continue across files: `trial_goods` → `test_goods` → `remaining_goods`. The runner reads `completed_index.json` to know the offset.
+### `train/grpo_train.py` — Main training script
+- Loads Qwen2.5-7B-Instruct, applies LoRA (rank 16), builds dataset, runs GRPOTrainer
+- Two modes: `--mode sanity` (100 steps on trial_goods) and `--mode train` (full run)
+- Config loaded from `train/configs/qwen25_7b.yaml`
+- GRPOTrainer from TRL handles: sampling G completions, computing advantages, PPO-style updates
+
+### `train/reward_functions.py` — Reward computation
+- `compute_reward(response, perspective, delta)` → +|δ̃| or -|δ̃|
+- `RewardFunction` class wraps this for TRL compatibility
+- Unparseable responses (not "Yes"/"No") get -|δ̃| penalty
+
+### `train/prompt_builder.py` — Dataset construction
+- Reads `everyday_goods_full.json` (master goods reference) + goods file + delta file
+- `build_training_examples()` → paired (X, Y) perspective examples with δ̃
+- `build_grpo_dataset()` → flattened list for GRPOTrainer (one prompt per row)
+- Prompt format matches `eval/run_all_models.py` exactly
+
+### Data flow
+```
+remaining_goods.json → prompt_builder.py → paired prompts with δ̃
+                                              ↓
+everyday_goods_full.json ─────────────────→ item names, attributes, values
+                                              ↓
+delta_consensus_v3.json ──────────────────→ reward signal per case
+                                              ↓
+                                        GRPOTrainer
+                                        (G=16 samples per prompt)
+                                              ↓
+                                        reward_functions.py scores each sample
+                                              ↓
+                                        advantage normalization → gradient update
+                                              ↓
+                                        LoRA checkpoint saved
+```
+
+### Case ID offsets (verified from baseline/Qwen-7B/completed_index.json)
+- `trial_goods.json`: 60 cases, offset = 0 → IDs 1–60
+- `test_goods.json`: 9,890 cases, offset = 60 → IDs 61–9,950
+- `remaining_goods.json`: 49,450 cases, offset = 9,950 → IDs 9,951–59,400
+- Delta file keys are global case IDs (1–59,400) as strings
+
+---
+
+## Critical Things to Know
+
+1. **Don't touch `core_exp_refactored.py` without care** — it's the shared econ estimation engine. Bugs propagate into both my results and my coauthor's.
+2. **The `run_all_models.py` has heavy checkpoint logic** — don't casually delete `loss_aversion_X.json` / `loss_aversion_Y.json` or the `completed_index.json`.
+3. **Prefer LoRA over full fine-tuning** — memory budget is a single A100 40GB.
+4. **The reward function uses consensus δ̃ from 6 frontier models** (`data/deltas/delta_consensus_v3.json`). Do NOT use Qwen-7B's own δ̃ — its utility estimates are unreliable due to 99% No rate.
+5. **TRL's `GRPOTrainer` is the training library.** Check TRL docs for the exact API — it evolves fast.
+6. **Dynamic sampling is critical** — 99% of outputs are "No", so most G=16 batches may be all-identical → zero advantage → zero gradient. If training produces zero gradients, implement DAPO-style filtering: discard batches where all G outputs match. See KNOWN_ISSUES.md item #2.
+7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.
+8. **T=1 for NLS estimation** — T=0 causes zero Jacobian → NLS can't converge → returns degenerate λ̂=0 with zero SEs. Always use T=1 for Style A models with logprobs.
+9. **The prompts in train/ must match eval/ exactly** — `prompt_builder.py` replicates `generate_prompt()` from `run_all_models.py`. If you change one, change both.
+10. **On NSCC, always `module purge` first** — stale modules cause conflicts. Load `pytorch/2.10.0-py3-cu12.6` fresh.
+11. **`everyday_goods_full.json` must be a real file on NSCC** — it's a symlink locally pointing to `../Loss_Aversion/`. Copy the actual file when deploying to NSCC.
 
 ---
 
 ## Common Tasks
 
+### Run GRPO training
+```bash
+# On NSCC:
+cd $HOME/scratch/lambda-zero
+qsub train/submit_sanity.pbs    # sanity check first
+qsub train/submit_train.pbs     # then full training
+
+# Or locally for debugging:
+python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode sanity --max_steps 10
+```
+
+### Evaluate after training
+```bash
+# Re-run experiment with fine-tuned model on test_goods.json
+python eval/run_all_models.py Qwen-7B-GRPO test_goods.json baseline
+python eval/estimate_qwen_grpo.py
+# Compare λ̂_after vs λ̂_before = 11.75
+```
+
 ### Run baseline for a new model
 ```bash
 python eval/run_all_models.py Qwen-7B trial_goods.json     baseline
 python eval/run_all_models.py Qwen-7B test_goods.json      baseline
-python eval/run_all_models.py Qwen-7B remaining_goods.json baseline
+python eval/run_all_models.py Qwen-7B remaining_goods.json  baseline
 ```
 
 ### Estimate λ̂
@@ -185,10 +306,23 @@ python eval/estimate_qwen_base.py
 # Writes results to baseline/Qwen-7B/Model_1/
 ```
 
-### GRPO training (planned)
-```bash
-python train/grpo_train.py --config train/configs/qwen25_7b_symmetry.yaml
-```
+---
+
+## Baseline Results — Qwen2.5-7B-Instruct (λ̂_before)
+
+Estimated April 14, 2026. Treatment: baseline. Estimator: Model A (NLS), T=1.
+
+| Parameter | Estimate | Std. Error |
+|---|---|---|
+| λ (loss aversion) | **11.75** | 1.22 |
+| η (status-quo bias) | 1.52 | 0.09 |
+
+**Raw choice data** (9,950 cases):
+- X-perspective: Yes = 48, No = 9,902 (keeps endowed good 99.5% of the time)
+- Y-perspective: Yes = 45, No = 9,905 (same pattern)
+- Cross-tab: 99.07% are (No, No) — model almost never trades regardless of perspective
+
+**Interpretation:** Qwen-7B is massively loss-averse. λ̂ = 11.75 is roughly 5× the human benchmark (Kahneman & Tversky: λ ≈ 2–2.5) and expected to be well above frontier models from Phase 0. The "No Bias" counterfactual shows a ~53/47 split, confirming underlying utilities are balanced — the refusal to trade is driven by loss aversion and status-quo bias, not by the goods themselves. This provides a strong training signal for GRPO.
 
 ---
 
@@ -197,20 +331,19 @@ python train/grpo_train.py --config train/configs/qwen25_7b_symmetry.yaml
 - **DeepSeekMath (Shao et al., 2024)** — original GRPO formulation
 - **DeepSeek-R1 (2025)** — GRPO at scale, reward design patterns
 - **Dr. GRPO (Sea AI Lab, 2025)** — length-bias correction, relevant because our outputs are 1 token
-- **DAPO (ByteDance, 2025)** — decoupled clip + dynamic sampling (fallback if GRPO underperforms)
+- **DAPO (ByteDance, 2025)** — decoupled clip + dynamic sampling (must adopt dynamic sampling for this project)
 - **Kahneman & Tversky (1979)** — prospect theory, defines λ
+- **Tversky & Kahneman (1992)** — human benchmark λ = 2.25
 - **List (2004)** — endowment effect diminishes with market experience (motivates "RL = experience" framing)
 
 ---
 
-## Things Claude Code Should Know
+## Publication Timeline
 
-1. **Don't touch `core_exp_refactored.py` without care** — it's the shared econ estimation engine. Bugs propagate into both my results and my coauthor's.
-2. **The `run_all_models.py` has heavy checkpoint logic** — don't casually delete `loss_aversion_X.json` / `loss_aversion_Y.json` or the `completed_index.json`.
-3. **Prefer LoRA over full fine-tuning** — memory budget is a single A100.
-4. **The reward function and training direction are not yet finalized** — do not hard-code any specific reward design. Symmetry is one candidate but not confirmed.
-5. **TRL's `GRPOTrainer` is the intended training library.** vLLM for generation during rollouts.
+- **NeurIPS 2026 workshop** (~August 2026 deadline): Preliminary results, 4-6 pages, non-archival
+- **ICML 2027 main track** (~January 2027 deadline): Full paper with ablations
+- Workshop submission does NOT block ICML submission
 
 ---
 
-*Last updated: April 13, 2026*
+*Last updated: April 27, 2026*

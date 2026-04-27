@@ -11,6 +11,8 @@ Models:
 
 Datasets:
     trial_goods.json, test_goods.json, remaining_goods.json
+    data/trial_goods.json, data/test_goods.json, data/remaining_goods.json
+    trial/goods.json, test/goods.json, remaining/goods.json
 
 Treatments:
     baseline, debias, forced
@@ -212,6 +214,31 @@ MODEL_KEY = sys.argv[1]
 GOODS_FILENAME = sys.argv[2]
 TREATMENT = sys.argv[3].lower()
 
+
+def resolve_goods_path(raw_value: str) -> Path:
+    """Accept common dataset aliases and resolve them to files under data/."""
+    candidate = Path(raw_value)
+    if candidate.exists():
+        return candidate
+
+    normalized = raw_value.strip().replace("\\", "/")
+    alias_map = {
+        "trial_goods.json": "trial_goods.json",
+        "test_goods.json": "test_goods.json",
+        "remaining_goods.json": "remaining_goods.json",
+        "data/trial_goods.json": "trial_goods.json",
+        "data/test_goods.json": "test_goods.json",
+        "data/remaining_goods.json": "remaining_goods.json",
+        "trial/goods.json": "trial_goods.json",
+        "test/goods.json": "test_goods.json",
+        "remaining/goods.json": "remaining_goods.json",
+    }
+
+    resolved_name = alias_map.get(normalized)
+    if resolved_name is None:
+        return candidate
+    return Path("data") / resolved_name
+
 if MODEL_KEY not in MODEL_REGISTRY:
     print(f"Error: Unknown model '{MODEL_KEY}'.")
     print(f"Available: {', '.join(MODEL_REGISTRY.keys())}")
@@ -222,7 +249,9 @@ if TREATMENT not in TREATMENTS:
     print(f"Available: {', '.join(TREATMENTS)}")
     sys.exit(1)
 
-if not Path(GOODS_FILENAME).exists():
+GOODS_PATH = resolve_goods_path(GOODS_FILENAME)
+
+if not GOODS_PATH.exists():
     print(f"Error: Dataset file '{GOODS_FILENAME}' not found.")
     sys.exit(1)
 
@@ -239,7 +268,7 @@ DATA_PATH = "everyday_goods_full.json"
 with open(DATA_PATH, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-with open(GOODS_FILENAME, "r", encoding="utf-8") as f:
+with open(GOODS_PATH, "r", encoding="utf-8") as f:
     dataset = json.load(f)
 
 cats = list(data.keys())
@@ -722,7 +751,7 @@ completed_index_path = OUTPUT_DIR / "completed_index.json"
 # trial → test → remaining produces non-overlapping IDs identical to
 # running full_goods.json in one shot.
 GOODS_RUN_ORDER = ["trial_goods", "test_goods", "remaining_goods"]
-_goods_stem = Path(GOODS_FILENAME).stem   # e.g. "trial_goods"
+_goods_stem = GOODS_PATH.stem   # e.g. "trial_goods"
 
 
 def dump_json(path: Path, obj) -> None:
@@ -793,7 +822,7 @@ if _goods_stem in GOODS_RUN_ORDER:
         if prior not in ci.get("file_case_counts", {}):
             _prior_warnings.append(prior)
 
-print(f"  Goods file:            {GOODS_FILENAME} (stem: {_goods_stem})")
+print(f"  Goods file:            {GOODS_FILENAME} -> {GOODS_PATH} (stem: {_goods_stem})")
 print(f"  Global case-ID offset: {case_id_offset}")
 
 # Load the shared X/Y data files (contain results from ALL prior runs)
@@ -976,7 +1005,7 @@ else:
     print(f"  Thinking:              disabled")
 print(f"  Temperature:           {MODEL_CFG['temperature'] if MODEL_CFG['temperature'] is not None else 'default (omitted)'}")
 print(f"  Treatment:             {TREATMENT}")
-print(f"  Goods file:            {GOODS_FILENAME}")
+print(f"  Goods file:            {GOODS_FILENAME} -> {GOODS_PATH}")
 print(f"  Case-ID offset:        {case_id_offset}")
 print(f"  Cases in this file:    {total_cases}")
 print(f"  Already completed:     {len(completed_case_ids)}")
@@ -1177,7 +1206,7 @@ print(f"Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print("=" * 70)
 print(f"  Model:                 {MODEL_KEY} ({MODEL_CFG['model_id']})")
 print(f"  Treatment:             {TREATMENT.upper()}")
-print(f"  Goods file:            {GOODS_FILENAME}")
+print(f"  Goods file:            {GOODS_FILENAME} -> {GOODS_PATH}")
 print(f"  Total cases completed: {len(completed_case_ids)}")
 print(f"  Total in X file:       {len(output_data_X)}")
 print(f"  Total in Y file:       {len(output_data_Y)}")

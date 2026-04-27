@@ -1,0 +1,62 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# lambda-zero GRPO training config — Qwen2.5-7B-Instruct
+# All hyperparameter rationale is documented in CLAUDE.md §Key Design Decisions
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Model ──────────────────────────────────────────────────────────────────
+model_name_or_path: models/Qwen2.5-7B-Instruct
+
+# ── LoRA ───────────────────────────────────────────────────────────────────
+lora_r: 16
+lora_alpha: 32                   # standard: 2× rank
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# ── GRPO algorithm ─────────────────────────────────────────────────────────
+num_generations: 16              # G — group size; increased from 8 for 99% No distribution
+temperature: 1.5                 # must be >= 1.0 — temp < 1 makes peaked dist even more peaked
+epsilon: 0.2                     # PPO clip ratio
+beta: 0.04                       # KL penalty coefficient; tighter than DeepSeek-R1's 0.001
+max_completion_length: 4         # Yes/No needs ~1–2 tokens; 4 gives slack
+loss_type: dapo                  # "dapo" (default in TRL 1.3) | "dr_grpo" — both eliminate length bias for 1-token outputs
+scale_rewards: "none"            # REQUIRED: avoid NaN when DAPO filter returns all-zero rewards (std=0 → 0/0)
+                                 # Also aligns with Dr. GRPO recommendation (group std normalisation introduces bias)
+mask_truncated_completions: true # Exclude truncated completions from loss — good practice (DAPO paper)
+
+# ── Training ───────────────────────────────────────────────────────────────
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 4   # effective batch = 4 prompts per optimizer step
+learning_rate: 1.0e-6
+num_train_epochs: 1
+max_steps: -1                    # -1 = run full epoch; overridden by --max_steps in CLI
+max_grad_norm: 0.1
+warmup_ratio: 0.05
+lr_scheduler_type: cosine
+bf16: true
+dataloader_num_workers: 0
+remove_unused_columns: false     # must be false — reward fn needs perspective/delta columns
+
+# ── Logging / saving ───────────────────────────────────────────────────────
+logging_steps: 10
+save_steps: 200
+eval_steps: 200
+report_to: none                  # set to "wandb" to enable Weights & Biases logging
+log_completions: true            # print sample (prompt, completion) pairs every logging_steps — useful for sanity checking
+
+# ── vLLM (faster generation during rollouts) ───────────────────────────────
+# Requires vLLM >= 0.7.0 and TRL vLLM integration to be correctly set up.
+# When false, TRL uses the model itself for generation (slower but simpler).
+use_vllm: false
+vllm_gpu_memory_utilization: 0.3
+
+# ── Project-specific paths (relative to project root) ──────────────────────
+delta_file: data/deltas/delta_consensus_v3.json
+goods_file: everyday_goods_full.json
+treatment: baseline
