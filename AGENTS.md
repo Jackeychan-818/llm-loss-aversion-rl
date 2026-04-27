@@ -13,7 +13,7 @@ This project builds on top of an existing behavioral economics study (separate r
 ### Thesis in one sentence
 A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10–100× its size.
 
-> **Note (April 2026):** The specific reward function and training direction are still under active discussion. Multiple reward designs are being considered (see Key Design Decisions). The immediate priority is establishing **λ̂_before** for Qwen2.5-7B-Instruct before any fine-tuning begins.
+> **Status (April 27, 2026):** λ̂_before = 11.75 established. Reward function decided and implemented. GRPO training code written and sanity check running on NSCC.
 
 ---
 
@@ -54,9 +54,9 @@ Estimation methods (in `core_exp_refactored.py`):
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Codex, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
-| 1. Small-model baseline | 🔴 **Current focus** | **λ̂_before** for Qwen2.5-7B — must complete before any training |
-| 2. Reward function design | 🔴 **Under discussion** | `reward_functions.py` — training direction not yet decided |
-| 3. GRPO training | ⏳ Blocked on 1 & 2 | LoRA checkpoints |
+| 1. Small-model baseline | ✅ Done | **λ̂_before = 11.75** (SE = 1.22), η̂ = 1.52 for Qwen2.5-7B |
+| 2. Reward function design | ✅ Done | Utility-weighted reward using consensus δ̃ from 6 frontier models (v3) |
+| 3. GRPO training | 🟡 **Current focus** — sanity check running on NSCC | LoRA checkpoints |
 | 4. Post-training evaluation | ⏳ | **λ̂_after** |
 | 5. Cross-model comparison | ⏳ | Final paper figures |
 | 6. Ablations | ⏳ | Reward type, model size, generalization |
@@ -113,26 +113,25 @@ loss_aversion_rl/
 ### RL algorithm
 **GRPO** (from DeepSeekMath / DeepSeek-R1), not PPO. Reason: our reward should be a clean verifiable signal, so we don't need a learned value network. Considering **Dr. GRPO** variant because our outputs are single-token (Yes/No), which is the regime where Dr. GRPO's length-bias fix matters most.
 
-### Reward function — ⚠️ Under Discussion
-The specific reward design has **not been finalized**. Candidates being considered:
+### Reward function — ✅ Decided (April 2026)
+**Utility-weighted reward** using consensus δ̃ from 6 frontier models (`data/deltas/delta_consensus_v3.json`).
 
-**Candidate A — Symmetry reward:**
+```python
+# delta = δ̃ = U_X - U_Y (mean across GPT-4o, GPT-5, GPT-5.2, Gemini, Llama-70B, DeepSeek-R1)
+if perspective == "X":
+    rational = "No" if delta > 0 else "Yes"
+else:
+    rational = "Yes" if delta > 0 else "No"
+return abs(delta) if response == rational else -abs(delta)
 ```
-+1  if choice(X → Y) is consistent with choice(Y → X)
-−1  if model keeps whichever good is endowed (loss-averse)
-```
-Self-contained, no dependence on external utility estimates.
 
-**Candidate B — Utility-based reward:**
-Using δ̃ (counterfactual utility gap) from the econ structural model as ground truth.
-
-**Other directions** may also be explored. Do not treat any reward design as final until explicitly confirmed.
+Implemented in `train/reward_functions.py`. The symmetry reward was rejected because a model that always says "No" from both perspectives would score +1 while remaining deeply irrational.
 
 ### Hyperparameters
 | Param | Value | Rationale |
 |---|---|---|
-| Group size G | 8 | Binary reward, low variance — don't need G=16 |
-| Sampling temp | 0.7 | Diversity without chaos |
+| Group size G | 16 | Increased from 8 — needed for output diversity given 99% No rate |
+| Sampling temp | 1.5 | Increased from 0.7 — temp < 1 makes peaked distributions MORE peaked |
 | Clip ε | 0.2 | Standard |
 | KL coefficient β | 0.04 | Tighter than DeepSeek-R1's 0.001 — we want to stay near base |
 | Learning rate | 1e-6 | Conservative |
