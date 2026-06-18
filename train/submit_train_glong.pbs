@@ -4,7 +4,7 @@
 # Use this when a full epoch cannot fit inside the 24h g1 limit.
 # ============================================================
 #PBS -N lz-grpo-long
-#PBS -q glong
+#PBS -q normal
 #PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
 #PBS -l walltime=72:00:00
 #PBS -o /home/users/jackeyc0/scratch/lambda-zero/logs/train_long_${PBS_JOBID}.out
