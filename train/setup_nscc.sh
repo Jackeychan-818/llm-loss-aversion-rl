@@ -40,14 +40,14 @@ echo "Installing Python packages..."
 pip install --upgrade pip
 
 # Core RL training stack
-pip install trl>=0.15.0
-pip install peft>=0.14.0
-pip install transformers>=4.48.0
-pip install accelerate>=1.2.0
-pip install datasets>=3.0.0
+pip install "trl[vllm]>=0.15.0"
+pip install "peft>=0.14.0"
+pip install "transformers>=4.48.0"
+pip install "accelerate>=1.2.0"
+pip install "datasets>=3.0.0"
 
 # vLLM for fast generation during rollouts
-pip install vllm>=0.7.0
+pip install "vllm>=0.7.0"
 
 # Utilities
 pip install pyyaml

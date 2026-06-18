@@ -23,7 +23,7 @@ DeepSeek-R1 standalone δ̃ also saved as `data/deltas/delta_deepseek.json` for 
 
 
 ### 2. Dynamic sampling implementation
-**Status:** Partially implemented (April 27, 2026)
+**Status:** Confirmed on NSCC full run (April 27, 2026)
 **Risk:** Medium — generation-level filtering still missing.
 
 99% of model outputs are "No." Without DAPO-style dynamic sampling, almost every training batch has zero advantage and zero gradient.
@@ -32,10 +32,11 @@ DeepSeek-R1 standalone δ̃ also saved as `data/deltas/delta_deepseek.json` for 
 
 **What's still missing:** Generation-level filtering. The current implementation still spends generation compute on all-identical batches before discarding them. A proper fix subclasses `GRPOTrainer` and overrides `_generate_completions` or `compute_loss` to skip batches entirely.
 
-**Why partially is acceptable for now:** With G=16 and temperature=1.5, even a 99% No model has ~(1−0.995)^16 ≈ ... wait, that's very low. The per-sample "Yes" probability at temp=1.5 may be higher than at temp=0 due to softmax temperature scaling. Need to measure empirically.
+**Empirical result:** The April 27 full run logged `frac_reward_zero_std: 0.8` at step 10, meaning ~80% of prompt groups were all-identical and produced zero useful GRPO signal.
 
-**Action needed (before full training):**
-- Run sanity check and monitor what fraction of batches are all-identical
+**Action needed:**
+- Enable vLLM so the remaining useful rollouts are generated faster
+- Resume from checkpoints so walltime kills do not lose progress
 - If >80% are discarded, implement generation-level filtering via GRPOTrainer subclass
 - If generation-level filtering proves essential, add it before the 24h full training run
 
@@ -61,16 +62,16 @@ When δ̃ ≈ 0, both goods are nearly equivalent and either choice is rational.
 - Monitor whether these cases cause instability in advantage normalization
 
 ### 5. Temperature adequacy for output diversity
-**Status:** Config updated (April 27, 2026), empirical validation pending
-**Risk:** Medium — needs sanity check to confirm G=16, temp=1.5 produces sufficient diversity.
+**Status:** Empirically insufficient at temp=1.5, G=16 (April 27, 2026)
+**Risk:** High — observed `frac_reward_zero_std: 0.8` means most generation compute does not update the model.
 
 Previously noted as a risk with G=8, temp=0.7. Both values have since been increased:
 - G: 8 → 16 (more chances to see a "Yes" in each group)
 - Temperature: 0.7 → 1.5 (flattens the distribution, unlike temp < 1 which sharpens it)
 
 **Action needed:**
-- During sanity check run: monitor the fraction of G=16 batches that are all-identical
-- If rejection rate is still > 80%, consider: increasing temp further (1.8? 2.0?) or G (32?)
+- Monitor whether vLLM improves wall-clock time enough despite 80% zero-std groups
+- If rejection rate stays near 80%, consider: increasing temp further (1.8? 2.0?) or G (32?)
 - Log `sum(reward) / len(reward)` per batch during training to check signal quality
 
 ### 6. LoRA rank 16 — is it sufficient?

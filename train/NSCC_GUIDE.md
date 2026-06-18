@@ -12,7 +12,7 @@
 |-------|----------|----------|---------|
 | `gdev` | 4 | 2 hours | Quick tests, sanity checks |
 | `g1` | 1 | 2–24 hours | Full training runs |
-| `glong` | 1 | 24+ hours | Extended training (if needed) |
+| `glong` | 1 | 24+ hours | Extended training when one epoch will not fit in g1 |
 
 Submit via `normal` routing queue — PBS routes to the right execution queue.
 
@@ -71,12 +71,29 @@ cd $HOME/scratch/lambda-zero
 qsub train/submit_sanity.pbs
 ```
 
-### Full training (g1, ~24 hours)
+### Full training (g1, resumable 24h chunks)
 
 ```bash
 cd $HOME/scratch/lambda-zero
 qsub train/submit_train.pbs
 ```
+
+By default this writes to `checkpoints/grpo_current` and resumes from the
+latest `checkpoint-*` in that directory. To resume a specific older run:
+
+```bash
+qsub -v OUTPUT_DIR=checkpoints/grpo_20260427_1724,RESUME_FROM_CHECKPOINT=checkpoints/grpo_20260427_1724/checkpoint-15200 train/submit_train.pbs
+```
+
+### Extended training (glong, >24 hours)
+
+```bash
+cd $HOME/scratch/lambda-zero
+qsub train/submit_train_glong.pbs
+```
+
+Use the same `-v OUTPUT_DIR=...,RESUME_FROM_CHECKPOINT=...` override if you
+want to continue a checkpoint outside `checkpoints/grpo_current`.
 
 ---
 
@@ -120,7 +137,9 @@ python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode sanity -
 
 **Job stuck in queue?** g1 can be busy. Try submitting with shorter walltime (< 4h gets priority) or use gdev for quick tests.
 
-**Out of memory?** Reduce batch size or LoRA rank in the config. A100-40GB should fit Qwen-7B + LoRA rank 16 + G=16 rollouts comfortably, but if vLLM is greedy, set `VLLM_WORKER_MULTIPROC_METHOD=spawn` and limit its GPU memory fraction.
+**Out of memory?** Reduce `vllm_gpu_memory_utilization` in `train/configs/qwen25_7b.yaml` first. If that is not enough, reduce batch size or LoRA rank. A100-40GB should fit Qwen-7B + LoRA rank 16 + G=16 rollouts, but colocated vLLM can be greedy.
+
+**Still too slow?** Confirm vLLM is enabled in the log (`vLLM enabled`). If `frac_reward_zero_std` stays near 0.8, most prompts still produce all-identical completions and the next fix is generation-level dynamic sampling or more aggressive sampling settings.
 
 **Module conflicts?** Always `module purge` before `module load pytorch/2.10.0-py3-cu12.6`.
 

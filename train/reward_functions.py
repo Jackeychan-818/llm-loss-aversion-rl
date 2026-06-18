@@ -15,11 +15,28 @@ Reward formula verbatim from CLAUDE.md:
 """
 
 import re
+from typing import Any
 
 
-def parse_response(completion: str) -> str:
+def completion_to_text(completion: Any) -> str:
+    """Normalize TRL plain or conversational completions to text."""
+    if isinstance(completion, str):
+        return completion
+    if isinstance(completion, dict):
+        return str(completion.get("content", ""))
+    if isinstance(completion, list):
+        if not completion:
+            return ""
+        last = completion[-1]
+        if isinstance(last, dict):
+            return str(last.get("content", ""))
+        return str(last)
+    return str(completion)
+
+
+def parse_response(completion: Any) -> str:
     """Extract Yes/No from a model completion. Returns 'Yes', 'No', or '' if unparseable."""
-    text = completion.strip()
+    text = completion_to_text(completion).strip()
     # Strip reasoning traces from thinking models (e.g. DeepSeek-R1 format)
     think_end = text.rfind("</think>")
     if think_end != -1:
@@ -124,6 +141,12 @@ if __name__ == "__main__":
     print(f"Y-perspective, delta=+2.5, rational=Yes:")
     print(f"  Yes reward: {r[0]:.4f}  (expected +2.5)")
     print(f"  No  reward: {r[1]:.4f}  (expected -2.5)")
+    assert abs(r[0] - 2.5) < 1e-6
+    assert abs(r[1] + 2.5) < 1e-6
+
+    # Conversational TRL format → parse assistant content
+    structured = [[{"role": "assistant", "content": "Yes"}], [{"role": "assistant", "content": "No"}]]
+    r = fn(structured, ["Y", "Y"], [2.5, 2.5])
     assert abs(r[0] - 2.5) < 1e-6
     assert abs(r[1] + 2.5) < 1e-6
 

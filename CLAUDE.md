@@ -21,9 +21,9 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 - λ̂_before = 11.75 established (Phase 1)
 - Reward function decided: utility-weighted using consensus δ̃ (Phase 2)
 - Training code written: `grpo_train.py`, `reward_functions.py`, `prompt_builder.py`
-- NSCC ASPIRE 2A environment being set up for GPU training
+- First NSCC full run hit the 24h walltime at step 15,265 / 98,900
 
-**Immediate next step:** Get the training pipeline running on NSCC. Verify `everyday_goods_full.json` is copied (not symlinked) on NSCC, then run sanity check on trial_goods.json (`qsub train/submit_sanity.pbs`), then full training on remaining_goods.json.
+**Immediate next step:** Resume from `checkpoints/grpo_20260427_1724/checkpoint-15200` with vLLM enabled, preferably via `train/submit_train_glong.pbs` if the full epoch still cannot fit inside g1's 24h walltime.
 
 ---
 

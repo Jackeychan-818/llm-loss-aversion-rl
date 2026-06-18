@@ -51,10 +51,17 @@ report_to: none                  # set to "wandb" to enable Weights & Biases log
 log_completions: true            # print sample (prompt, completion) pairs every logging_steps — useful for sanity checking
 
 # ── vLLM (faster generation during rollouts) ───────────────────────────────
-# Requires vLLM >= 0.7.0 and TRL vLLM integration to be correctly set up.
-# When false, TRL uses the model itself for generation (slower but simpler).
-use_vllm: false
+# Required for full training: plain HF generate took ~6.1 sec/step on NSCC.
+# On a single A100 use colocated vLLM; if you reserve a second GPU for a
+# standalone server, set vllm_mode: server and vllm_server_base_url.
+use_vllm: true
+vllm_mode: colocate
 vllm_gpu_memory_utilization: 0.3
+vllm_server_base_url:
+vllm_server_host: 0.0.0.0
+vllm_server_port: 8000
+vllm_server_timeout: 240.0
+vllm_max_model_length:
 
 # ── Project-specific paths (relative to project root) ──────────────────────
 delta_file: data/deltas/delta_consensus_v3.json

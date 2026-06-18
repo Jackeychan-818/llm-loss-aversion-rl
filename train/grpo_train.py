@@ -27,6 +27,7 @@ PBS submission: see train/submit_sanity.pbs and train/submit_train.pbs
 """
 
 import argparse
+import dataclasses
 import logging
 import os
 import sys
@@ -68,6 +69,8 @@ def parse_args() -> argparse.Namespace:
                    help="Override max_steps (use 100 for sanity check)")
     p.add_argument("--save_steps",      type=int, default=None)
     p.add_argument("--eval_steps",      type=int, default=None)
+    p.add_argument("--resume_from_checkpoint", default=None,
+                   help="Checkpoint path to resume from, or 'auto' to use the latest checkpoint")
     return p.parse_args()
 
 
@@ -90,7 +93,59 @@ def resolve(path: str) -> Path:
 # GRPO config builder
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_grpo_config(cfg: dict, args: argparse.Namespace):
+def latest_checkpoint(path: Path) -> Optional[Path]:
+    """Return the numerically latest checkpoint-* directory under path."""
+    if not path.exists():
+        return None
+    checkpoints = []
+    for child in path.glob("checkpoint-*"):
+        if child.is_dir():
+            try:
+                step = int(child.name.rsplit("-", 1)[1])
+            except (IndexError, ValueError):
+                continue
+            checkpoints.append((step, child))
+    if not checkpoints:
+        return None
+    return max(checkpoints, key=lambda item: item[0])[1]
+
+
+def find_resume_checkpoint(args: argparse.Namespace) -> Optional[str]:
+    """Resolve explicit or automatic checkpoint resume target."""
+    requested = args.resume_from_checkpoint
+    if not requested:
+        return None
+
+    output_dir = resolve(args.output_dir)
+    if requested == "auto":
+        ckpt = latest_checkpoint(output_dir)
+        if ckpt is None:
+            logger.info(f"No checkpoint found under {output_dir}; starting from scratch.")
+            return None
+        logger.info(f"Auto-resuming from latest checkpoint: {ckpt}")
+        return str(ckpt)
+
+    ckpt = resolve(requested)
+    if not ckpt.exists():
+        logger.error(f"Requested checkpoint not found: {ckpt}")
+        sys.exit(1)
+    return str(ckpt)
+
+
+def filter_supported_config_kwargs(config_cls, kwargs: dict) -> dict:
+    """Drop GRPOConfig kwargs unsupported by the installed TRL version."""
+    supported = {field.name for field in dataclasses.fields(config_cls)}
+    filtered = {key: value for key, value in kwargs.items() if key in supported}
+    dropped = sorted(set(kwargs) - supported)
+    if dropped:
+        logger.warning(
+            "Installed TRL GRPOConfig does not support these settings; ignoring: "
+            + ", ".join(dropped)
+        )
+    return filtered
+
+
+def build_grpo_config(cfg: dict, args: argparse.Namespace, resume_checkpoint: Optional[str]):
     from trl import GRPOConfig
 
     max_steps  = args.max_steps  if args.max_steps  is not None else cfg.get("max_steps", -1)
@@ -129,12 +184,25 @@ def build_grpo_config(cfg: dict, args: argparse.Namespace):
         report_to=cfg.get("report_to", "none"),
         # vLLM
         use_vllm=cfg.get("use_vllm", False),
+        resume_from_checkpoint=resume_checkpoint,
     )
 
     if cfg.get("use_vllm"):
-        kwargs["vllm_gpu_memory_utilization"] = cfg.get("vllm_gpu_memory_utilization", 0.3)
+        # TRL's vLLM API changed across releases. Keep every known knob here and
+        # filter against the installed GRPOConfig fields below.
+        kwargs.update(
+            vllm_mode=cfg.get("vllm_mode", "colocate"),
+            vllm_device=cfg.get("vllm_device", "auto"),
+            vllm_gpu_memory_utilization=cfg.get("vllm_gpu_memory_utilization", 0.3),
+            vllm_server_base_url=cfg.get("vllm_server_base_url", None),
+            vllm_server_host=cfg.get("vllm_server_host", "0.0.0.0"),
+            vllm_server_port=cfg.get("vllm_server_port", 8000),
+            vllm_server_timeout=cfg.get("vllm_server_timeout", 240.0),
+            vllm_max_model_length=cfg.get("vllm_max_model_length", None),
+            vllm_max_model_len=cfg.get("vllm_max_model_len", cfg.get("vllm_max_model_length", None)),
+        )
 
-    return GRPOConfig(**kwargs)
+    return GRPOConfig(**filter_supported_config_kwargs(GRPOConfig, kwargs))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -273,7 +341,8 @@ def main():
     # ── Trainer setup ────────────────────────────────────────────────────
     from trl import GRPOTrainer
 
-    grpo_config = build_grpo_config(cfg, args)
+    resume_checkpoint = find_resume_checkpoint(args)
+    grpo_config = build_grpo_config(cfg, args, resume_checkpoint)
     lora_config = build_lora_config(cfg)
     reward_fn   = make_reward_fn()
 
@@ -281,8 +350,15 @@ def main():
         f"GRPO config: G={grpo_config.num_generations}, "
         f"temp={grpo_config.temperature}, β={grpo_config.beta}, "
         f"ε={grpo_config.epsilon}, max_completion={grpo_config.max_completion_length}, "
-        f"loss_type={grpo_config.loss_type}"
+        f"loss_type={getattr(grpo_config, 'loss_type', 'unsupported-by-installed-trl')}"
     )
+    if getattr(grpo_config, "use_vllm", False):
+        logger.info(
+            "vLLM enabled: "
+            f"mode={getattr(grpo_config, 'vllm_mode', 'legacy')}, "
+            f"device={getattr(grpo_config, 'vllm_device', 'n/a')}, "
+            f"gpu_memory={getattr(grpo_config, 'vllm_gpu_memory_utilization', 'n/a')}"
+        )
     logger.info(
         f"Training: lr={grpo_config.learning_rate}, "
         f"batch={grpo_config.per_device_train_batch_size}×"
@@ -304,7 +380,7 @@ def main():
     logger.info("=" * 64)
     logger.info("Starting GRPO training")
     logger.info("=" * 64)
-    trainer.train()
+    trainer.train(resume_from_checkpoint=resume_checkpoint)
 
     # ── Save final checkpoint ────────────────────────────────────────────
     final_dir = Path(args.output_dir) / "final"
