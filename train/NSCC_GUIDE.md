@@ -53,7 +53,7 @@ This will:
 ### 3. Verify everything works
 
 ```bash
-module load pytorch/2.10.0-py3-cu12.6
+module load pytorch/2.6.0-py3-cu11.8
 source $HOME/scratch/lambda-zero/venv/bin/activate
 python -c "from trl import GRPOTrainer; print('TRL OK')"
 python -c "from peft import LoraConfig; print('PEFT OK')"
@@ -118,7 +118,7 @@ qdel <JOB_ID>
 ```bash
 qsub -I -q normal -l select=1:ncpus=8:ngpus=1:mem=80gb -l walltime=01:00:00 -P personal-jackeyc0
 # Wait for allocation, then:
-module load pytorch/2.10.0-py3-cu12.6
+module load pytorch/2.6.0-py3-cu11.8
 source $HOME/scratch/lambda-zero/venv/bin/activate
 python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode sanity --max_steps 10
 ```
@@ -141,6 +141,6 @@ python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode sanity -
 
 **Still too slow?** Confirm vLLM is enabled in the log (`vLLM enabled`). If `frac_reward_zero_std` stays near 0.8, most prompts still produce all-identical completions and the next fix is generation-level dynamic sampling or more aggressive sampling settings.
 
-**Module conflicts?** Always `module purge` before `module load pytorch/2.10.0-py3-cu12.6`.
+**Module conflicts?** Always `module purge` before `module load pytorch/2.6.0-py3-cu11.8` (cu12.6 is too new for the gdev/g1 driver).
 
 **pip install fails?** Use `pip install --user <package>` as fallback, or install inside the venv.

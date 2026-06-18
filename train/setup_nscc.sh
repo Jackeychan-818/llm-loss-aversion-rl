@@ -21,7 +21,7 @@ fi
 # ---------- 2. Load modules ----------
 echo "Loading modules..."
 module purge
-module load pytorch/2.10.0-py3-cu12.6
+module load pytorch/2.6.0-py3-cu11.8
 
 # ---------- 3. Create virtual environment ----------
 VENV_DIR="$PROJECT_DIR/venv"

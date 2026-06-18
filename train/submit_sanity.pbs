@@ -15,7 +15,7 @@
 # ---------- Environment ----------
 cd $PBS_O_WORKDIR
 module purge
-module load pytorch/2.10.0-py3-cu12.6
+module load pytorch/2.6.0-py3-cu11.8
 
 PROJECT_DIR="$HOME/scratch/lambda-zero"
 source "$PROJECT_DIR/venv/bin/activate"

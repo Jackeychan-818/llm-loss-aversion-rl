@@ -176,7 +176,7 @@ def reward(response, perspective, delta):
 - **Scheduler:** PBS Pro (NOT SLURM — use `qsub`, `qstat`, `qdel`)
 - **Project ID:** `personal-jackeyc0`
 - **Scratch:** `$HOME/scratch/lambda-zero/`
-- **PyTorch module:** `pytorch/2.10.0-py3-cu12.6` (Python 3.13, CUDA 12.6)
+- **PyTorch module:** `pytorch/2.6.0-py3-cu11.8` (Python 3.x, CUDA 11.8 — gdev/g1 nodes have CUDA 12.4 driver, cu12.6 is too new)
 - **Venv:** `$HOME/scratch/lambda-zero/venv/` (TRL, PEFT, vLLM, transformers)
 - **Model weights:** `$HOME/scratch/lambda-zero/models/Qwen2.5-7B-Instruct/`
 - **SU remaining:** ~33,389 (enough for ~139 full 24h training runs)
@@ -193,7 +193,7 @@ Submit via `normal` routing queue: `qsub -q normal train/submit_train.pbs`
 ### Key commands
 ```bash
 # Environment setup
-module purge && module load pytorch/2.10.0-py3-cu12.6
+module purge && module load pytorch/2.6.0-py3-cu11.8
 source $HOME/scratch/lambda-zero/venv/bin/activate
 
 # Submit jobs
@@ -266,7 +266,7 @@ delta_consensus_v3.json ──────────────────�
 7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.
 8. **T=1 for NLS estimation** — T=0 causes zero Jacobian → NLS can't converge → returns degenerate λ̂=0 with zero SEs. Always use T=1 for Style A models with logprobs.
 9. **The prompts in train/ must match eval/ exactly** — `prompt_builder.py` replicates `generate_prompt()` from `run_all_models.py`. If you change one, change both.
-10. **On NSCC, always `module purge` first** — stale modules cause conflicts. Load `pytorch/2.10.0-py3-cu12.6` fresh.
+10. **On NSCC, always `module purge` first** — stale modules cause conflicts. Load `pytorch/2.6.0-py3-cu11.8` fresh (cu12.6 is too new for the gdev/g1 driver).
 11. **`everyday_goods_full.json` must be a real file on NSCC** — it's a symlink locally pointing to `../Loss_Aversion/`. Copy the actual file when deploying to NSCC.
 
 ---

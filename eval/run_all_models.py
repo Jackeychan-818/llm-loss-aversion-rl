@@ -8,6 +8,7 @@ Usage:
 
 Models:
     GPT-5, GPT-5.2, GPT-4o, GPT-3.5, Claude, Gemini, Apertus-70B, Llama-70B, DeepSeek-R1, Qwen-7B
+    Qwen-7B-Local, Qwen-7B-GRPO  (local vLLM server — see VLLM_API_KEY / VLLM_BASE_URL below)
 
 Datasets:
     trial_goods.json, test_goods.json, remaining_goods.json
@@ -32,6 +33,15 @@ Environment variables (set these, don't hardcode keys):
     TOGETHER_API_KEY     — Llama-70B, DeepSeek-R1, Qwen-7B
     APERTUS_API_KEY      — Apertus-70B
     APERTUS_BASE_URL     — Apertus-70B endpoint (OpenAI-compatible)
+    VLLM_API_KEY         — Qwen-7B-Local, Qwen-7B-GRPO (any non-empty string, e.g. "local")
+    VLLM_BASE_URL        — local vLLM server (e.g. http://localhost:8000/v1)
+
+Local vLLM setup:
+    # Base model:
+    vllm serve models/Qwen2.5-7B-Instruct --served-model-name Qwen2.5-7B-Instruct --port 8000
+    # Fine-tuned (LoRA):
+    vllm serve models/Qwen2.5-7B-Instruct --enable-lora \\
+        --lora-modules Qwen2.5-7B-GRPO=checkpoints/grpo_run1/final --port 8000
 """
 
 import json
@@ -121,6 +131,35 @@ MODEL_REGISTRY: Dict[str, Dict[str, Any]] = {
         "thinking": False,
         "folder_name": "Qwen-7B",
         "api_key_env": "TOGETHER_API_KEY",
+    },
+    # ── Local vLLM (OpenAI-compatible) ──
+    # Start server first — see docstring above for vllm serve commands.
+    # Set: export VLLM_API_KEY=local  &&  export VLLM_BASE_URL=http://localhost:8000/v1
+    "Qwen-7B-Local": {
+        "provider": "openai",           # vLLM exposes an OpenAI-compatible API
+        "model_id": "Qwen2.5-7B-Instruct",  # matches --served-model-name
+        "style": "A",
+        "temperature": 0,
+        "top_logprobs": 5,
+        "max_tokens_key": "max_tokens",
+        "max_tokens": 5,
+        "thinking": False,
+        "folder_name": "Qwen-7B-Local",
+        "api_key_env": "VLLM_API_KEY",
+        "base_url_env": "VLLM_BASE_URL",
+    },
+    "Qwen-7B-GRPO": {
+        "provider": "openai",
+        "model_id": "Qwen2.5-7B-GRPO",     # matches --lora-modules name
+        "style": "A",
+        "temperature": 0,
+        "top_logprobs": 5,
+        "max_tokens_key": "max_tokens",
+        "max_tokens": 5,
+        "thinking": False,
+        "folder_name": "Qwen-7B-GRPO",
+        "api_key_env": "VLLM_API_KEY",
+        "base_url_env": "VLLM_BASE_URL",
     },
     "DeepSeek-R1": {
         "provider": "together",
