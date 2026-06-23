@@ -51,10 +51,13 @@ report_to: none                  # set to "wandb" to enable Weights & Biases log
 log_completions: true            # print sample (prompt, completion) pairs every logging_steps — useful for sanity checking
 
 # ── vLLM (faster generation during rollouts) ───────────────────────────────
-# Required for full training: plain HF generate took ~6.1 sec/step on NSCC.
-# On a single A100 use colocated vLLM; if you reserve a second GPU for a
-# standalone server, set vllm_mode: server and vllm_server_base_url.
-use_vllm: true
+# Disabled: every vLLM release tried (latest 0.23.0 and TRL-supported 0.18.0)
+# hit a distinct, unresolved compatibility wall on this Cray/NSCC environment
+# (Rust linker, missing CUDA-13 runtime path, torch ABI mismatch, missing
+# system nvcc for source builds). Falling back to plain HF generate
+# (~6.1 sec/step, proven to run for 15k+ real steps). Revisit as a separate
+# infra task if throughput becomes the binding constraint again.
+use_vllm: false
 vllm_mode: colocate
 vllm_gpu_memory_utilization: 0.3
 vllm_server_base_url:

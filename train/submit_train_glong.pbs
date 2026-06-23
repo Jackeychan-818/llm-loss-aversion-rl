@@ -20,6 +20,11 @@ module load pytorch/2.6.0-py3-cu11.8
 PROJECT_DIR="$HOME/scratch/lambda-zero"
 source "$PROJECT_DIR/venv/bin/activate"
 
+# vLLM's compiled extension needs libcudart.so.13, which torch's own
+# nvidia-cuda-runtime pip package bundles but doesn't put on the default
+# linker search path. Without this, "import vllm._C" fails.
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib):$LD_LIBRARY_PATH"
+
 # ---------- Verify GPU ----------
 echo "=== GPU Check ==="
 nvidia-smi
