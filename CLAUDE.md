@@ -164,7 +164,7 @@ def reward(response, perspective, delta):
 | Learning rate | 1e-6 | Conservative |
 | LoRA rank | 16 | Standard for 7B models |
 | max_completion_length | 4 | Only need "Yes" or "No" (1-2 tokens) |
-| batch_size | 1 | Per-device, with gradient_accumulation_steps=4 |
+| batch_size | 1 | Per-device, with gradient_accumulation_steps=16 |
 
 ---
 
@@ -286,8 +286,16 @@ python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode sanity -
 
 ### Evaluate after training
 ```bash
-# Re-run experiment with fine-tuned model on test_goods.json
-python eval/run_all_models.py Qwen-7B-GRPO test_goods.json baseline
+# Re-run experiment with fine-tuned model on test_goods.json, no vLLM required
+python eval/run_qwen_local.py \
+  --model_path models/Qwen2.5-7B-Instruct \
+  --adapter_path checkpoints/grpo_20260427_1724/final \
+  --model_name Qwen-7B-GRPO \
+  --data_file data/test_goods.json \
+  --treatment baseline \
+  --batch_size 8 \
+  --yes
+
 python eval/estimate_qwen_grpo.py
 # Compare λ̂_after vs λ̂_before = 11.75
 ```

@@ -113,6 +113,43 @@ nvidia-smi
 qdel <JOB_ID>
 ```
 
+## Local Evaluation Without vLLM
+
+After training, evaluate the LoRA checkpoint with plain Transformers + PEFT:
+
+```bash
+cd $HOME/scratch/lambda-zero
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source venv/bin/activate
+
+# Smoke test first
+python eval/run_qwen_local.py \
+  --model_path models/Qwen2.5-7B-Instruct \
+  --adapter_path checkpoints/grpo_20260427_1724/final \
+  --model_name Qwen-7B-GRPO \
+  --data_file data/trial_goods.json \
+  --treatment baseline \
+  --limit 20 \
+  --batch_size 4 \
+  --yes
+
+# Full held-out test evaluation
+python eval/run_qwen_local.py \
+  --model_path models/Qwen2.5-7B-Instruct \
+  --adapter_path checkpoints/grpo_20260427_1724/final \
+  --model_name Qwen-7B-GRPO \
+  --data_file data/test_goods.json \
+  --treatment baseline \
+  --batch_size 8 \
+  --yes
+
+python eval/estimate_qwen_grpo.py
+```
+
+If `final` does not exist yet, point `--adapter_path` at a specific LoRA
+checkpoint directory that contains `adapter_config.json`.
+
 ## Interactive GPU Session (for debugging)
 
 ```bash
