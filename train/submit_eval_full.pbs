@@ -1,0 +1,41 @@
+#!/bin/bash
+# ============================================================
+# PBS Job Script — Full held-out eval on test_goods.json (g1)
+# Scores 9,890 cases with final LoRA checkpoint → λ_after
+# ============================================================
+#PBS -N lz-eval-full
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_full_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_full_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+# ---------- Environment ----------
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+# ---------- Verify GPU ----------
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA: {torch.cuda.get_device_name(0)}')"
+
+# ---------- Full eval ----------
+echo "=== Starting full eval ==="
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --adapter_path checkpoints/grpo_20260427_1724/final \
+    --model_name Qwen-7B-GRPO \
+    --data_file data/test_goods.json \
+    --treatment baseline \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee logs/eval_full_run.log
+
+echo "=== Full eval complete ==="
