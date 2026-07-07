@@ -1,0 +1,67 @@
+#!/bin/bash
+# ============================================================
+# PBS Job Script — Debias + Forced treatment eval (g1)
+# Scores 9,890 test cases per treatment with final LoRA checkpoint
+# ============================================================
+#PBS -N lz-eval-treatments
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=06:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_treatments_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_treatments_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+# ---------- Environment ----------
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA: {torch.cuda.get_device_name(0)}')"
+
+ADAPTER="checkpoints/grpo_20260427_1724/final"
+DATA="data/test_goods.json"
+MODEL="models/Qwen2.5-7B-Instruct"
+
+# ---------- Debias ----------
+echo "=== Starting DEBIAS eval ==="
+python eval/run_qwen_local.py \
+    --model_path "$MODEL" \
+    --adapter_path "$ADAPTER" \
+    --model_name Qwen-7B-GRPO \
+    --data_file "$DATA" \
+    --treatment debias \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee logs/eval_debias_run.log
+
+echo "=== DEBIAS eval complete ==="
+
+# ---------- Forced ----------
+echo "=== Starting FORCED eval ==="
+python eval/run_qwen_local.py \
+    --model_path "$MODEL" \
+    --adapter_path "$ADAPTER" \
+    --model_name Qwen-7B-GRPO \
+    --data_file "$DATA" \
+    --treatment forced \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee logs/eval_forced_run.log
+
+echo "=== FORCED eval complete ==="
+
+# ---------- Structural estimation ----------
+echo "=== Running NLS estimation for DEBIAS ==="
+python eval/estimate_qwen_grpo_debias.py 2>&1 | tee logs/estimate_debias.log
+
+echo "=== Running NLS estimation for FORCED ==="
+python eval/estimate_qwen_grpo_forced.py 2>&1 | tee logs/estimate_forced.log
+
+echo "=== All done ==="

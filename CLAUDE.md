@@ -15,15 +15,26 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 
 ---
 
-## Current Status (April 27, 2026)
+## Current Status (July 7, 2026)
 
-**Phase 3 — GRPO Training** is the current focus. All prerequisite work is done:
-- λ̂_before = 11.75 established (Phase 1)
-- Reward function decided: utility-weighted using consensus δ̃ (Phase 2)
-- Training code written: `grpo_train.py`, `reward_functions.py`, `prompt_builder.py`
-- First NSCC full run hit the 24h walltime at step 15,265 / 98,900
+**Phase 4 — Complete.** Phase 6 ablation (Qwen-delta reward) now running.
 
-**Immediate next step:** Resume from `checkpoints/grpo_20260427_1724/checkpoint-15200` with vLLM enabled, preferably via `train/submit_train_glong.pbs` if the full epoch still cannot fit inside g1's 24h walltime.
+### Completed
+- λ̂_before = 11.75 (Phase 1)
+- GRPO training complete: `checkpoints/grpo_20260427_1724/final/` (Phase 3)
+- λ̂_after = **0.177** (SE=0.005) on held-out test_goods.json — 98.5% reduction (Phase 4)
+- Treatment comparison (all on test_goods.json):
+  - baseline: λ̂ = 0.177, η̂ = −0.048
+  - debias:   λ̂ = 0.205, η̂ = +0.090
+  - forced:   λ̂ = 0.173, η̂ = −0.379
+
+### Active
+- **Ablation — Qwen-delta reward:** retraining from scratch using Qwen-7B's own NLS utility
+  estimates (δ̃ from `data/deltas/delta_qwen_base.json`) instead of the 6-model consensus.
+  Job: `train/submit_train_glong_qwen_delta.pbs` → `checkpoints/grpo_qwen_delta/`
+
+**Next step after ablation:** Phase 5 (cross-model comparison) — estimate λ̂ for all 9
+frontier models from Phase 0 and place results on the same leaderboard.
 
 ---
 
@@ -64,13 +75,13 @@ Estimation methods (in `core_exp_refactored.py`):
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
-| 1. Small-model baseline | ✅ Done | **λ̂_before = 11.75** (SE = 1.22), η̂ = 1.52 (SE = 0.09) for Qwen2.5-7B — baseline treatment, Model A (NLS), T=1 |
+| 1. Small-model baseline | ✅ Done | **λ̂_before = 11.75** (SE=1.22), η̂=1.52 (SE=0.09) — baseline, Model A (NLS), T=1 |
 | 2. Reward function design | ✅ Done | Utility-weighted reward using consensus δ̃ from 6 frontier models (v3) |
-| 3. GRPO training | 🟡 **Code written, not yet run** | LoRA checkpoints |
-| 4. Post-training evaluation | ⏳ | **λ̂_after** |
-| 5. Cross-model comparison | ⏳ | Final paper figures |
-| 6. Ablations | ⏳ | Reward type, model size, generalization |
-| 7. Paper writeup | ⏳ | NeurIPS / ICML submission |
+| 3. GRPO training | ✅ Done | `checkpoints/grpo_20260427_1724/final/` — 98,900 steps, ~7 days |
+| 4. Post-training evaluation | ✅ Done | **λ̂_after = 0.177** (SE=0.005) — 98.5% reduction; debias=0.205, forced=0.173 |
+| 5. Cross-model comparison | ⏳ | Place λ̂_after on frontier leaderboard from Phase 0 |
+| 6. Ablations | 🟡 **Running** | Qwen-delta reward: `checkpoints/grpo_qwen_delta/` |
+| 7. Paper writeup | ⏳ | NeurIPS 2026 workshop / ICML 2027 submission |
 
 ---
 
@@ -90,22 +101,40 @@ lambda-zero/
 ├── eval/                             # Reused from econ project
 │   ├── run_all_models.py             # Experiment runner (copy from loss_aversion/)
 │   ├── core_exp_refactored.py        # Structural estimation engine — DO NOT MODIFY CARELESSLY
+│   ├── run_qwen_local.py             # ✅ vLLM-free local evaluator (teacher-forced log-probs)
 │   ├── estimate_qwen_base.py         # λ̂_before
-│   └── estimate_qwen_grpo.py         # λ̂_after (not yet run)
+│   ├── estimate_qwen_grpo.py         # λ̂_after (baseline treatment) → 0.177
+│   ├── estimate_qwen_grpo_debias.py  # λ̂_after (debias treatment)   → 0.205
+│   └── estimate_qwen_grpo_forced.py  # λ̂_after (forced treatment)   → 0.173
 │
 ├── train/                            # RL training code
 │   ├── grpo_train.py                 # ✅ Main GRPO training loop using TRL's GRPOTrainer
 │   ├── reward_functions.py           # ✅ Utility-weighted reward using frontier δ̃
 │   ├── prompt_builder.py             # ✅ Generates X/Y perspective pairs from goods data
 │   ├── configs/
-│   │   └── qwen25_7b.yaml            # ✅ All hyperparameters
+│   │   ├── qwen25_7b.yaml            # ✅ Frontier-consensus reward (main run)
+│   │   └── qwen25_7b_qwen_delta.yaml # ✅ Qwen-own-delta reward (ablation run)
 │   ├── setup_nscc.sh                 # One-time NSCC environment setup
-│   ├── submit_sanity.pbs             # PBS job: sanity check on trial_goods (gdev, 1.5h)
-│   ├── submit_train.pbs              # PBS job: full training on remaining_goods (g1, 24h)
+│   ├── submit_sanity.pbs             # PBS job: sanity check (gdev, 1.5h)
+│   ├── submit_train.pbs              # PBS job: full training (g1, 24h)
+│   ├── submit_train_glong.pbs        # PBS job: extended training (glong, 72h) — main run
+│   ├── submit_train_glong_qwen_delta.pbs  # PBS job: ablation run with Qwen-delta reward
+│   ├── submit_eval_full.pbs          # PBS job: full held-out eval (g1)
+│   ├── submit_eval_smoke.pbs         # PBS job: 20-case smoke test (gdev)
+│   ├── submit_eval_treatments.pbs    # PBS job: debias + forced eval (g1)
 │   └── NSCC_GUIDE.md                 # NSCC ASPIRE 2A reference guide
 │
+├── data/deltas/
+│   ├── delta_consensus_v3.json       # ★ Frontier consensus δ̃ (6 models) — main reward
+│   ├── delta_qwen_base.json          # Qwen-7B's own NLS δ̃ — ablation reward
+│   └── build_delta_qwen_base.py      # Script that generated delta_qwen_base.json
+│
 ├── baseline/Qwen-7B/                 # λ̂_before results
-├── results/                          # λ̂_after results (post training)
+├── baseline/Qwen-7B-GRPO/            # λ̂_after results (baseline treatment)
+├── debias/Qwen-7B-GRPO/              # λ̂_after results (debias treatment)
+├── forced/Qwen-7B-GRPO/              # λ̂_after results (forced treatment)
+├── checkpoints/grpo_20260427_1724/   # Main GRPO run checkpoints + final adapter
+├── checkpoints/grpo_qwen_delta/      # Ablation run checkpoints (Qwen-delta reward)
 ├── notebooks/
 │   └── compare_lambdas.ipynb         # Final comparison figure
 │

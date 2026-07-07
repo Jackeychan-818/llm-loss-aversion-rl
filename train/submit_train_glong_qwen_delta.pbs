@@ -1,0 +1,56 @@
+#!/bin/bash
+# ============================================================
+# PBS Job Script — GRPO ablation: Qwen-7B's own NLS delta
+# Same as submit_train_glong.pbs but uses delta_qwen_base.json
+# and qwen25_7b_qwen_delta.yaml config.
+# ============================================================
+#PBS -N lz-grpo-qd
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=72:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/train_qd_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/train_qd_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+# ---------- Environment ----------
+cd $PBS_O_WORKDIR
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+source "$PROJECT_DIR/venv/bin/activate"
+
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib):$LD_LIBRARY_PATH"
+
+# ---------- Verify GPU ----------
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA devices: {torch.cuda.device_count()}, Device: {torch.cuda.get_device_name(0)}')"
+python -c "import trl; print(f'TRL version: {trl.__version__}')"
+
+# ---------- Run training ----------
+echo "=== Starting GRPO ablation: Qwen-delta ==="
+echo "Start time: $(date)"
+cd "$PROJECT_DIR"
+
+OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/grpo_qwen_delta}"
+RESUME_FROM_CHECKPOINT="${RESUME_FROM_CHECKPOINT:-auto}"
+mkdir -p "$OUTPUT_DIR"
+
+echo "Output dir: $OUTPUT_DIR"
+echo "Resume from checkpoint: $RESUME_FROM_CHECKPOINT"
+
+python train/grpo_train.py \
+    --config train/configs/qwen25_7b_qwen_delta.yaml \
+    --mode train \
+    --data_file data/remaining_goods.json \
+    --output_dir "$OUTPUT_DIR" \
+    --save_steps 200 \
+    --eval_steps 200 \
+    --eval_data_file data/trial_goods.json \
+    --resume_from_checkpoint "$RESUME_FROM_CHECKPOINT" \
+    2>&1 | tee logs/train_qd_run.log
+
+echo "=== Qwen-delta training complete ==="
+echo "End time: $(date)"
