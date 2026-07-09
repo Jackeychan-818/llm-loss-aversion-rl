@@ -11,11 +11,30 @@
 | Period | Phase | Goal | Status |
 |---|---|---|---|
 | Apr 14, 2026 | Phase 1 — Small-model baseline | λ̂_before = **11.75** (SE = 1.22) | ✅ Done |
-| Apr 2026 | Phase 2 — Reward function design | Finalize reward signal for GRPO | 🔴 Current |
-| May 2026 | Phase 3 — GRPO training | LoRA fine-tuning on Qwen2.5-7B | ⏳ Blocked on 2 |
-| Jun 2026 | Phase 4 — Post-training evaluation | λ̂_after — did GRPO reduce λ? | ⏳ |
-| Jun–Jul 2026 | Phase 5 — Cross-model comparison | Qwen-7B vs frontier models | ⏳ |
-| Jul 2026 | Phase 6 — Ablations | Reward type, model size, generalization | ⏳ |
+| Apr 27, 2026 | Phase 2 — Reward function design | Utility-weighted reward using frontier consensus δ̃ v3 | ✅ Done |
+| Apr–Jun 2026 | Phase 3 — GRPO training | LoRA fine-tuning on Qwen2.5-7B; NSCC resume/eval path hardened | ✅ Done |
+| Jul 3, 2026 | Phase 4 — Post-training evaluation | λ̂_after = **0.177** (SE = 0.005), 98.5% reduction | ✅ Done |
+| Jul 7, 2026 | Treatment robustness | Debias λ̂ = 0.205; forced λ̂ = 0.173 | ✅ Done |
+| Jul 2026 | Phase 6 — Ablations | Qwen-delta reward, checkpoint selection, β/LR, generalization | 🟡 Running |
+| Jul 2026 | Phase 5 — Cross-model comparison | Qwen-7B before/after vs frontier models | ⏳ Next |
+| Aug 2026 onward | Phase 7 — Paper writeup | Workshop paper, then full paper | ⏳ |
+
+---
+
+## Commit History Integrated
+
+| Date | Commit | Project meaning |
+|---|---|---|
+| Apr 27, 2026 | `40f4b0e` | Added GRPO training code, baseline results, consensus δ̃ files, and NSCC setup. |
+| Apr 27, 2026 | `c7088c7` | Updated agent context after the reward decision and corrected GRPO hyperparameters (`G=16`, temp `1.5`). |
+| Jun 18, 2026 | `d26ac54` | Fixed GRPO resume behavior and vLLM training path; added long-queue PBS script. |
+| Jun 18, 2026 | `e938efa` | Restored NSCC-validated PyTorch module and gradient accumulation after Mac merge drift. |
+| Jun 18, 2026 | `dce0550` | Fixed `glong` routing via the normal PBS queue. |
+| Jun 23, 2026 | `b9c2041` | Disabled broken vLLM dependency on NSCC and fell back to plain HF generation. |
+| Jun 25, 2026 | `f4a2c9a` | Added vLLM-free Qwen evaluation path (`eval/run_qwen_local.py`, `eval/estimate_qwen_grpo.py`). |
+| Jul 3, 2026 | `b511e53` | Added held-out Phase 4 baseline results: λ̂_after = 0.177, below human benchmark. |
+| Jul 7, 2026 | `c643617` | Added debias/forced results, Qwen-delta ablation config/data, and training docs. |
+| Jul 9, 2026 | `f2a8710` | Added monitoring and plotting tools; changed PBS logs to append mode. |
 
 ---
 
@@ -62,6 +81,7 @@
 - Workshop papers at NeurIPS are non-archival — submitting there does **not** prevent ICML 2027 submission.
 - Confirm the specific workshop's non-archival policy before submitting.
 - Human benchmark for comparison: λ ≈ 2–2.5 (Kahneman & Tversky, 1979).
-- Current Qwen-7B baseline: λ̂ = 11.75 — roughly 5× human level, expected to be well above frontier models.
+- Qwen-7B baseline: λ̂_before = 11.75 — roughly 5× human level.
+- GRPO result: λ̂_after = 0.177 on baseline treatment, with debias and forced treatments also below the human benchmark.
 
-*Last updated: April 14, 2026*
+*Last updated: July 9, 2026*

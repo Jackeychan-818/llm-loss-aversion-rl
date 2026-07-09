@@ -15,7 +15,7 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 
 ---
 
-## Current Status (July 7, 2026)
+## Current Status (July 9, 2026)
 
 **Phase 4 — Complete.** Phase 6 ablation (Qwen-delta reward) now running.
 
@@ -206,7 +206,7 @@ def reward(response, perspective, delta):
 - **Project ID:** `personal-jackeyc0`
 - **Scratch:** `$HOME/scratch/lambda-zero/`
 - **PyTorch module:** `pytorch/2.6.0-py3-cu11.8` (Python 3.x, CUDA 11.8 — gdev/g1 nodes have CUDA 12.4 driver, cu12.6 is too new)
-- **Venv:** `$HOME/scratch/lambda-zero/venv/` (TRL, PEFT, vLLM, transformers)
+- **Venv:** `$HOME/scratch/lambda-zero/venv/` (TRL, PEFT, transformers; vLLM disabled on NSCC after compatibility failures)
 - **Model weights:** `$HOME/scratch/lambda-zero/models/Qwen2.5-7B-Instruct/`
 - **SU remaining:** ~33,389 (enough for ~139 full 24h training runs)
 
@@ -291,7 +291,7 @@ delta_consensus_v3.json ──────────────────�
 3. **Prefer LoRA over full fine-tuning** — memory budget is a single A100 40GB.
 4. **The reward function uses consensus δ̃ from 6 frontier models** (`data/deltas/delta_consensus_v3.json`). Do NOT use Qwen-7B's own δ̃ — its utility estimates are unreliable due to 99% No rate.
 5. **TRL's `GRPOTrainer` is the training library.** Check TRL docs for the exact API — it evolves fast.
-6. **Dynamic sampling is critical** — 99% of outputs are "No", so most G=16 batches may be all-identical → zero advantage → zero gradient. If training produces zero gradients, implement DAPO-style filtering: discard batches where all G outputs match. See KNOWN_ISSUES.md item #2.
+6. **Dynamic sampling is critical** — 99% of base outputs are "No", so many G=16 batches may be all-identical → zero advantage → zero gradient. Recent plots show high zero-std filtering; treat training reward as a diagnostic and select checkpoints by held-out structural λ̂. See KNOWN_ISSUES.md items #3-4.
 7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.
 8. **T=1 for NLS estimation** — T=0 causes zero Jacobian → NLS can't converge → returns degenerate λ̂=0 with zero SEs. Always use T=1 for Style A models with logprobs.
 9. **The prompts in train/ must match eval/ exactly** — `prompt_builder.py` replicates `generate_prompt()` from `run_all_models.py`. If you change one, change both.
@@ -383,4 +383,4 @@ Estimated April 14, 2026. Treatment: baseline. Estimator: Model A (NLS), T=1.
 
 ---
 
-*Last updated: April 27, 2026*
+*Last updated: July 9, 2026*

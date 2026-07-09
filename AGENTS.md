@@ -6,118 +6,114 @@ This file gives Codex context about this project so it can help effectively with
 
 ## Project Overview
 
-**`loss_aversion_rl`** — a reinforcement learning project that fine-tunes a small open-source LLM (Qwen2.5-7B-Instruct) using **GRPO (Group Relative Policy Optimization)** to reduce loss aversion below frontier models.
+**lambda-zero** (`loss_aversion_rl`) fine-tunes Qwen2.5-7B-Instruct with **GRPO** to reduce measured loss aversion in an endowment-effect task.
 
-This project builds on top of an existing behavioral economics study (separate repo, `loss_aversion/`) that measures **λ** (loss aversion coefficient) across 9 LLMs using an endowment-effect paradigm. That study established that frontier LLMs show measurable loss aversion. This project asks whether targeted RL can correct it.
+The project builds on a separate behavioral-economics baseline repo, `loss_aversion/`, which estimates **λ** (loss aversion coefficient) across frontier LLMs. This repo asks whether targeted RL can make a 7B model less loss-averse than much larger models.
 
 ### Thesis in one sentence
-A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10–100× its size.
+A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10-100x its size.
 
-> **Status (April 27, 2026):** λ̂_before = 11.75 established. Reward function decided and implemented. GRPO training code written and sanity check running on NSCC.
+> **Status (July 9, 2026):** Main GRPO result is complete. Qwen moved from λ̂_before = 11.75 to λ̂_after = 0.177 on held-out baseline evaluation. Debias and forced treatments are also low. Phase 6 Qwen-delta ablation and training-health checks are current.
 
 ---
 
-## Background — The Experimental Paradigm
+## Core Results
 
-### Endowment effect task
+| Model / treatment | λ̂ | η̂ | Notes |
+|---|---:|---:|---|
+| Qwen-7B base, baseline | 11.75 | 1.52 | Pre-training result, Model A NLS, T=1 |
+| Qwen-7B-GRPO, baseline | 0.177 | -0.048 | Main held-out result |
+| Qwen-7B-GRPO, debias | 0.205 | 0.090 | Treatment robustness |
+| Qwen-7B-GRPO, forced | 0.173 | -0.379 | Treatment robustness |
+
+Human benchmark is usually cited around λ ≈ 2-2.5, so the current post-GRPO estimate is far below human-level loss aversion. Treat this as strong but still requiring cross-model comparison, checkpoint selection, and ablations.
+
+---
+
+## Experimental Paradigm
+
 Each LLM is prompted:
 
 > You receive good X (with attributes i, j). Would you trade for good Y (with attributes k, l)? Answer Yes or No.
 
-Each case is run from **both perspectives**:
-- X-perspective: endowed with X, offered Y
-- Y-perspective: endowed with Y, offered X
+Each case is run from both perspectives:
+- X-perspective: endowed with X, offered Y.
+- Y-perspective: endowed with Y, offered X.
 
-A *rational* agent makes symmetric choices: the decision depends only on which good is genuinely better, not on which is endowed. A *loss-averse* agent keeps whichever good it's endowed with. This asymmetry is what λ measures.
+A rational agent chooses based on which good is better, not which good it owns. A loss-averse agent keeps whichever good it is endowed with. This asymmetry is what λ measures.
 
-### Three treatments
-- `baseline` — plain trade question
-- `debias` — instructs the model to ignore status quo / gain-loss framing
-- `forced` — introduces a 50% random swap probability
-
-### Structural model
-Utility specification:
+Structural model:
+```text
+z = (1 + λ) · exp(U_X) - exp(U_Y) + η
 ```
-z = (1 + λ) · exp(U_X) − exp(U_Y) + η
-```
-where U = α + β (item + attribute fixed effects), λ is loss aversion, η is status-quo bias.
 
-Estimation methods (in `core_exp_refactored.py`):
-- **Model A (NLS)** — Nonlinear Least Squares, for initialization
-- **Model B (SMS Bootstrap)** — Smoothed Maximum Score + 500 bootstrap replications, main estimator for binary (T=0) data
-- **Model C (Logit MLE)** — for models with logprob access
+where U = α + β item/attribute fixed effects, λ is loss aversion, and η is status-quo bias.
 
 ---
 
-## Project Phases
+## Phase Status
 
 | Phase | Status | Deliverable |
 |---|---|---|
-| 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Codex, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
-| 1. Small-model baseline | ✅ Done | **λ̂_before = 11.75** (SE = 1.22), η̂ = 1.52 for Qwen2.5-7B |
-| 2. Reward function design | ✅ Done | Utility-weighted reward using consensus δ̃ from 6 frontier models (v3) |
-| 3. GRPO training | 🟡 **Current focus** — sanity check running on NSCC | LoRA checkpoints |
-| 4. Post-training evaluation | ⏳ | **λ̂_after** |
-| 5. Cross-model comparison | ⏳ | Final paper figures |
-| 6. Ablations | ⏳ | Reward type, model size, generalization |
-| 7. Paper writeup | ⏳ | NeurIPS / ICML submission |
+| 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
+| 1. Small-model baseline | ✅ Done | λ̂_before = 11.75 |
+| 2. Reward design | ✅ Done | Utility-weighted reward using consensus δ̃ v3 |
+| 3. GRPO training | ✅ Done | Main LoRA checkpoint, NSCC pipeline |
+| 4. Post-training evaluation | ✅ Done | λ̂_after = 0.177; debias/forced treatment results |
+| 5. Cross-model comparison | ⏳ Next | Leaderboard vs frontier models |
+| 6. Ablations | 🟡 Current | Qwen-delta reward run, checkpoint/training-health analysis |
+| 7. Paper writeup | ⏳ | Workshop/full-paper materials |
 
 ---
 
 ## Repository Structure
 
-```
-loss_aversion_rl/
+```text
+lambda-zero/
 ├── data/
-│   ├── trial_goods.json          # Validation prompts
-│   ├── test_goods.json           # Evaluation prompts
-│   └── remaining_goods.json      # Training prompts (largest set)
-│
-├── eval/                         # Reused from econ project
-│   ├── run_all_models.py         # Experiment runner (copy from loss_aversion/)
-│   ├── core_exp_refactored.py    # Structural estimation engine
-│   ├── estimate_qwen_base.py     # λ̂_before
-│   └── estimate_qwen_grpo.py     # λ̂_after
-│
-├── train/                        # NEW — RL code
-│   ├── grpo_train.py             # Main GRPO training loop
-│   ├── reward_functions.py       # Symmetry + utility rewards
-│   ├── prompt_builder.py         # Generates X/Y perspective pairs
-│   └── configs/
-│       └── qwen25_7b_symmetry.yaml
-│
-├── results/
-│   ├── baseline/                 # λ̂_before outputs
-│   ├── grpo_checkpoints/         # LoRA weights per training step
-│   └── post_training/            # λ̂_after outputs
-│
-├── notebooks/
-│   └── compare_lambdas.ipynb     # Final comparison figure
-│
-├── requirements.txt
-├── AGENTS.md                     # ← this file
+│   ├── trial_goods.json
+│   ├── test_goods.json
+│   ├── remaining_goods.json
+│   └── deltas/
+│       ├── delta_consensus_v3.json       # Main frontier-consensus reward signal
+│       ├── delta_qwen_base.json          # Qwen-own-delta ablation reward
+│       └── build_delta_qwen_base.py
+├── eval/
+│   ├── run_all_models.py
+│   ├── run_qwen_local.py                 # vLLM-free local/HF evaluator
+│   ├── estimate_qwen_base.py
+│   ├── estimate_qwen_grpo.py
+│   ├── estimate_qwen_grpo_debias.py
+│   ├── estimate_qwen_grpo_forced.py
+│   └── core_exp_refactored.py            # Shared structural estimator
+├── train/
+│   ├── grpo_train.py
+│   ├── reward_functions.py
+│   ├── prompt_builder.py
+│   ├── configs/qwen25_7b.yaml
+│   ├── configs/qwen25_7b_qwen_delta.yaml
+│   ├── submit_train_glong.pbs
+│   ├── submit_train_glong_qwen_delta.pbs
+│   └── submit_eval_treatments.pbs
+├── baseline/Qwen-7B/
+├── baseline/Qwen-7B-GRPO/
+├── debias/Qwen-7B-GRPO/
+├── forced/Qwen-7B-GRPO/
+├── monitor.sh
+├── plot_training.py
+├── HISTORY.md
+├── PROJECT_OVERVIEW.md
+├── TIMELINE.md
 └── README.md
 ```
 
 ---
 
-## Key Design Decisions
+## Reward Function
 
-### Base model
-**Qwen2.5-7B-Instruct** — chosen because:
-- Well-supported by TRL, Unsloth, LLaMA-Factory for fine-tuning
-- Not quantized (clean for later GRPO + LoRA)
-- Represents a model family not yet in the econ baseline (fair addition)
-- Fits on a single A100 40GB for GRPO training
-
-### RL algorithm
-**GRPO** (from DeepSeekMath / DeepSeek-R1), not PPO. Reason: our reward should be a clean verifiable signal, so we don't need a learned value network. Considering **Dr. GRPO** variant because our outputs are single-token (Yes/No), which is the regime where Dr. GRPO's length-bias fix matters most.
-
-### Reward function — ✅ Decided (April 2026)
-**Utility-weighted reward** using consensus δ̃ from 6 frontier models (`data/deltas/delta_consensus_v3.json`).
+Main run uses a utility-weighted reward from `data/deltas/delta_consensus_v3.json`.
 
 ```python
-# delta = δ̃ = U_X - U_Y (mean across GPT-4o, GPT-5, GPT-5.2, Gemini, Llama-70B, DeepSeek-R1)
 if perspective == "X":
     rational = "No" if delta > 0 else "Yes"
 else:
@@ -125,91 +121,54 @@ else:
 return abs(delta) if response == rational else -abs(delta)
 ```
 
-Implemented in `train/reward_functions.py`. The symmetry reward was rejected because a model that always says "No" from both perspectives would score +1 while remaining deeply irrational.
-
-### Hyperparameters
-| Param | Value | Rationale |
-|---|---|---|
-| Group size G | 16 | Increased from 8 — needed for output diversity given 99% No rate |
-| Sampling temp | 1.5 | Increased from 0.7 — temp < 1 makes peaked distributions MORE peaked |
-| Clip ε | 0.2 | Standard |
-| KL coefficient β | 0.04 | Tighter than DeepSeek-R1's 0.001 — we want to stay near base |
-| Learning rate | 1e-6 | Conservative |
-| LoRA rank | 16 | Standard for 7B models |
-
----
-
-## Critical Conventions
-
-### Data format (from the econ project)
-Each JSON entry has this shape:
-```json
-{
-  "case_id": 1,
-  "X_num": 0,
-  "Y_num": 1,
-  "attr": [0, 1, 2, 1],       // i, j, k, l
-  "Yes / No prob": [0.72, 0.28],
-  "output": "full prompt + response"
-}
-```
-`X` and `Y` JSON files are paired — same `case_id` in each represents the two perspectives of the same pair.
-
-### Model registry pattern
-New models are added to `MODEL_REGISTRY` in `run_all_models.py`. Three styles:
-- **Style A:** logprobs + temp=0 (most flexible, best for MLE estimation)
-- **Style B:** no logprobs, temp=0 (binary responses, use SMS Bootstrap)
-- **Style C:** no temp=0 (reasoning models)
-
-For Qwen via Together AI: Style B initially, upgrade to Style A when we host locally with vLLM.
-
-### Case ID continuity
-Case IDs continue across files: `trial_goods` → `test_goods` → `remaining_goods`. The runner reads `completed_index.json` to know the offset.
+The pure symmetry reward was rejected because an always-`No` model can be symmetric while still irrational. Qwen-own-delta reward is now an ablation using `data/deltas/delta_qwen_base.json`.
 
 ---
 
 ## Common Tasks
 
-### Run baseline for a new model
+### Train main GRPO
 ```bash
-python eval/run_all_models.py Qwen-7B trial_goods.json     baseline
-python eval/run_all_models.py Qwen-7B test_goods.json      baseline
-python eval/run_all_models.py Qwen-7B remaining_goods.json baseline
+python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode train
 ```
 
-### Estimate λ̂
+### Train Qwen-delta ablation
 ```bash
-python eval/estimate_qwen_base.py
-# Reads loss_aversion_X.json + loss_aversion_Y.json
-# Writes results to baseline/Qwen-7B/Model_1/
+qsub train/submit_train_glong_qwen_delta.pbs
 ```
 
-### GRPO training (planned)
+### Evaluate GRPO checkpoint
 ```bash
-python train/grpo_train.py --config train/configs/qwen25_7b_symmetry.yaml
+python eval/run_qwen_local.py \
+  --model_path models/Qwen2.5-7B-Instruct \
+  --adapter_path checkpoints/grpo_20260427_1724/final \
+  --model_name Qwen-7B-GRPO \
+  --data_file data/test_goods.json \
+  --treatment baseline \
+  --batch_size 8 \
+  --yes
+
+python eval/estimate_qwen_grpo.py
+```
+
+### Monitor / plot training
+```bash
+./monitor.sh
+python plot_training.py logs/<training-log>.out
 ```
 
 ---
 
-## Papers the Project Builds On
+## Critical Conventions
 
-- **DeepSeekMath (Shao et al., 2024)** — original GRPO formulation
-- **DeepSeek-R1 (2025)** — GRPO at scale, reward design patterns
-- **Dr. GRPO (Sea AI Lab, 2025)** — length-bias correction, relevant because our outputs are 1 token
-- **DAPO (ByteDance, 2025)** — decoupled clip + dynamic sampling (fallback if GRPO underperforms)
-- **Kahneman & Tversky (1979)** — prospect theory, defines λ
-- **List (2004)** — endowment effect diminishes with market experience (motivates "RL = experience" framing)
-
----
-
-## Things Codex Should Know
-
-1. **Don't touch `core_exp_refactored.py` without care** — it's the shared econ estimation engine. Bugs propagate into both my results and my coauthor's.
-2. **The `run_all_models.py` has heavy checkpoint logic** — don't casually delete `loss_aversion_X.json` / `loss_aversion_Y.json` or the `completed_index.json`.
-3. **Prefer LoRA over full fine-tuning** — memory budget is a single A100.
-4. **The reward function and training direction are not yet finalized** — do not hard-code any specific reward design. Symmetry is one candidate but not confirmed.
-5. **TRL's `GRPOTrainer` is the intended training library.** vLLM for generation during rollouts.
+1. **Do not casually edit `eval/core_exp_refactored.py`**; it is the shared structural estimation engine.
+2. **Do not delete `loss_aversion_X.json`, `loss_aversion_Y.json`, or `completed_index.json`**; runners use checkpoint/resume logic.
+3. **Use Model A with `T=1` for logprob evaluations.** `T=0` caused a silent zero-Jacobian failure before.
+4. **Keep train prompts aligned with eval prompts.**
+5. **Prefer LoRA over full fine-tuning** because the memory budget is a single A100.
+6. **vLLM is optional, not the working dependency.** NSCC-compatible vLLM failed; the working path uses plain HF generation/evaluation.
+7. **Do not select checkpoints from training reward alone.** Recent plots show high zero-std/DAPO filtering, weak reward trend, and nontrivial KL drift; validate with held-out structural λ̂.
 
 ---
 
-*Last updated: April 13, 2026*
+*Last updated: July 9, 2026*
