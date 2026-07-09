@@ -52,7 +52,7 @@ python train/grpo_train.py \
     --eval_steps 200 \
     --eval_data_file data/trial_goods.json \
     --resume_from_checkpoint "$RESUME_FROM_CHECKPOINT" \
-    2>&1 | tee logs/train_long_run.log
+    2>&1 | tee -a logs/train_long_run.log
 
 echo "=== Extended training complete ==="
 echo "End time: $(date)"
