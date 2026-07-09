@@ -98,30 +98,30 @@ W = args.smooth
 
 # ── Style ─────────────────────────────────────────────────────────────────────
 plt.rcParams.update({
-    "figure.facecolor": "#0f1117",
-    "axes.facecolor":   "#0f1117",
-    "axes.edgecolor":   "#333344",
-    "axes.labelcolor":  "#ccccdd",
-    "xtick.color":      "#888899",
-    "ytick.color":      "#888899",
-    "text.color":       "#ccccdd",
-    "grid.color":       "#222233",
+    "figure.facecolor": "white",
+    "axes.facecolor":   "white",
+    "axes.edgecolor":   "#cccccc",
+    "axes.labelcolor":  "#333333",
+    "xtick.color":      "#555555",
+    "ytick.color":      "#555555",
+    "text.color":       "#222222",
+    "grid.color":       "#dddddd",
     "grid.linestyle":   "--",
-    "grid.alpha":       0.5,
+    "grid.alpha":       0.7,
     "font.size":        9,
 })
 
-ACCENT  = "#4ea8de"
-GREEN   = "#56d364"
-ORANGE  = "#ffa657"
-RED     = "#f85149"
-PURPLE  = "#bc8cff"
+ACCENT  = "#1f77b4"
+GREEN   = "#2ca02c"
+ORANGE  = "#ff7f0e"
+RED     = "#d62728"
+PURPLE  = "#9467bd"
 
-fig = plt.figure(figsize=(14, 10), facecolor="#0f1117")
+fig = plt.figure(figsize=(14, 10), facecolor="white")
 fig.suptitle(
     f"GRPO Training Convergence — {args.log_stem}\n"
     f"{len(records):,} metric records  |  smoothing window = {W}",
-    fontsize=13, color="#e6edf3", y=0.98
+    fontsize=13, color="#111111", y=0.98
 )
 
 gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.45, wspace=0.3,
@@ -210,6 +210,6 @@ if len(steps) > 0:
     fig.text(0.99, 0.01, f"Progress: {steps[-1]:,.0f} / {total_steps:,} steps  ({pct:.1f}%)",
              ha="right", va="bottom", fontsize=8, color="#666677")
 
-plt.savefig(outpng, dpi=150, bbox_inches="tight", facecolor="#0f1117")
+plt.savefig(outpng, dpi=150, bbox_inches="tight", facecolor="white")
 print(f"Saved: {outpng}")
 print(f"Parsed {len(records):,} log entries  |  step range: {steps[0]:.0f} – {steps[-1]:.0f}")
