@@ -37,11 +37,19 @@ if not log.exists():
     sys.exit(f"Log not found: {log}")
 
 # ── Parse ─────────────────────────────────────────────────────────────────────
+log_text = log.read_text(errors="replace")
+
+# Infer total steps from progress bar — use max denominator to skip batch-level bars
+total_steps = 98900
+bar_hits = re.findall(r"\| \d+/(\d+) \[", log_text)
+if bar_hits:
+    total_steps = max(int(x) for x in bar_hits)
+
 KEYS = ["reward", "reward_std", "frac_reward_zero_std", "kl", "entropy", "loss"]
 records = []
 
 pat = re.compile(r"\{[^{}]+\}")   # match each JSON-like metric dict
-for m in pat.finditer(log.read_text(errors="replace")):
+for m in pat.finditer(log_text):
     blob = m.group()
     if "'reward'" not in blob:
         continue
@@ -56,7 +64,7 @@ for m in pat.finditer(log.read_text(errors="replace")):
     # epoch → approx step
     ep_hit = re.search(r"'epoch': '([^']+)'", blob)
     if ep_hit:
-        row["step"] = float(ep_hit.group(1)) * 98900
+        row["step"] = float(ep_hit.group(1)) * total_steps
     if row.get("reward") is not None:
         records.append(row)
 
@@ -77,10 +85,14 @@ steps, reward, rstd, dapo, kl, entropy = (
 )
 
 def smooth(y, w):
+    """Causal rolling mean — no edge zero-padding artifacts."""
     if w <= 1 or len(y) < w:
         return y
-    kernel = np.ones(w) / w
-    return np.convolve(y, kernel, mode="same")
+    out = np.full_like(y, np.nan, dtype=float)
+    for i in range(len(y)):
+        start = max(0, i - w + 1)
+        out[i] = np.nanmean(y[start:i + 1])
+    return out
 
 W = args.smooth
 
@@ -108,7 +120,7 @@ PURPLE  = "#bc8cff"
 fig = plt.figure(figsize=(14, 10), facecolor="#0f1117")
 fig.suptitle(
     f"GRPO Training Convergence — {args.log_stem}\n"
-    f"{len(records):,} steps logged  |  smoothing window = {W}",
+    f"{len(records):,} metric records  |  smoothing window = {W}",
     fontsize=13, color="#e6edf3", y=0.98
 )
 
@@ -145,7 +157,7 @@ def make_ax(pos, title, ylabel, y, color, fill_std=None, hline=None, hline_label
 ax1 = make_ax(gs[0, 0],
               "Mean Reward  (want → positive & stable)",
               "reward",
-              reward, ACCENT, fill_std=rstd,
+              reward, ACCENT,
               hline=0, hline_label="zero (break-even)")
 ax1.axhspan(ax1.get_ylim()[0], 0, color=RED, alpha=0.04)
 ax1.axhspan(0, ax1.get_ylim()[1], color=GREEN, alpha=0.04)
@@ -194,8 +206,8 @@ ax6.legend(fontsize=7, framealpha=0.2)
 
 # ── Progress annotation ───────────────────────────────────────────────────────
 if len(steps) > 0:
-    pct = steps[-1] / 98900 * 100
-    fig.text(0.99, 0.01, f"Progress: {steps[-1]:,.0f} / 98,900 steps  ({pct:.1f}%)",
+    pct = steps[-1] / total_steps * 100
+    fig.text(0.99, 0.01, f"Progress: {steps[-1]:,.0f} / {total_steps:,} steps  ({pct:.1f}%)",
              ha="right", va="bottom", fontsize=8, color="#666677")
 
 plt.savefig(outpng, dpi=150, bbox_inches="tight", facecolor="#0f1117")

@@ -81,14 +81,14 @@ print(f'  reward: {sign}{v:.4f}  {bar}  {note}')
 v=float('$v')
 n=int(v*30)
 bar='█'*n+'░'*(30-n)
-note='⚠ converging' if v<0.5 else ('✓ healthy diversity' if v<0.8 else '✗ mostly degenerate')
+note='✓ healthy diversity' if v<0.5 else ('⚠ converging' if v<0.8 else '✗ mostly degenerate')
 print(f'  {v:.3f}  [{bar}]  {note}')
 " 2>/dev/null
     done
 
-    # ── Yes-rate from sample completions ──────────────────────
+    # ── Rational completion rate from sample completions ─────
     echo ""
-    echo "── Sample Completions Yes-rate (from log table) ──────────"
+    echo "── Rational Completion Rate (from log table) ─────────────"
     echo "  (rational target ~50%; 0% = model still refuses everything)"
     python3 -c "
 import re, sys
