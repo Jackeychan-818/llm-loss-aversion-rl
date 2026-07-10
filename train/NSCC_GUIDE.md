@@ -150,6 +150,35 @@ python eval/estimate_qwen_grpo.py
 If `final` does not exist yet, point `--adapter_path` at a specific LoRA
 checkpoint directory that contains `adapter_config.json`.
 
+### Frozen 50-good OOD evaluation
+
+The OOD suite contains 50 goods and 100 attributes that do not occur in the
+training/checkpoint-selection goods master. It evaluates 9,800 cases (19,600
+paired X/Y prompts) for base Qwen, the consensus-reward adapter, and the frozen
+Qwen-delta step-8,000 adapter. Do not use these results to revise checkpoint or
+hyperparameter choices.
+
+```bash
+cd $HOME/scratch/lambda-zero
+git pull
+
+# The job uses checkpoint-8000 automatically if the Qwen-delta final alias is
+# absent. Adapter locations can also be overridden with qsub -v; see the PBS file.
+qsub train/submit_eval_ood_new_goods.pbs
+```
+
+Monitor and inspect results:
+
+```bash
+qstat -u "$USER"
+tail -f logs/eval_ood50_<job-id>.out
+find ood -path '*/Model_1/*NLS_estimation_T1*' -print
+```
+
+The evaluator resumes from existing JSON outputs under `ood/<model-name>/`, so
+rerunning the job after a walltime interruption does not discard completed
+cases.
+
 ## Interactive GPU Session (for debugging)
 
 ```bash
