@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# lambda-zero GRPO config — Reward Design v2 CORE (R_pair + R_neutral)
+# Used ONLY by train/grpo_train_v2.py. NOT interchangeable with qwen25_7b.yaml:
+# there is no delta_file here (v2 uses ownership consistency + frozen anchor),
+# and the batch geometry is set up for paired X/Y sampling.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Model ──────────────────────────────────────────────────────────────────
+model_name_or_path: models/Qwen2.5-7B-Instruct
+goods_file: everyday_goods_full.json
+
+# ── LoRA ───────────────────────────────────────────────────────────────────
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# ── Reward v2 (component weights; hyperparameters to ablate) ────────────────
+# Passed to GRPOConfig.reward_weights as [w_pair, w_neutral] in that order.
+w_pair: 1.0
+w_neutral: 0.5
+
+# ── GRPO algorithm ─────────────────────────────────────────────────────────
+num_generations: 16              # G completions per PERSPECTIVE (X gets 16, Y gets 16)
+# Paired batch geometry: generation_batch_size // num_generations must be EVEN
+# (whole X/Y pairs per generation batch). 32 // 16 = 2 prompts = 1 pair/batch.
+generation_batch_size: 32
+steps_per_generation: 1
+per_device_train_batch_size: 32  # one whole pair (2 prompts x 16) per device forward
+gradient_accumulation_steps: 8   # accumulate 8 pairs before an optimizer step
+
+temperature: 1.5                 # >= 1.0 — base dist is ~99% "No"; keep it diverse
+epsilon: 0.2
+beta: 0.04
+max_completion_length: 4
+loss_type: dapo
+scale_rewards: "none"
+mask_truncated_completions: true
+shuffle_dataset: true            # PairedRepeatSampler shuffles at PAIR granularity
+
+# ── Training ───────────────────────────────────────────────────────────────
+learning_rate: 1.0e-6
+num_train_epochs: 1
+max_steps: -1
+max_grad_norm: 0.1
+warmup_ratio: 0.05
+lr_scheduler_type: cosine
+bf16: true
+dataloader_num_workers: 0
+
+# ── Logging / saving ───────────────────────────────────────────────────────
+logging_steps: 5                 # frequent for the sanity run
+save_steps: 200
+report_to: none
+log_completions: true
+
+# ── vLLM (disabled on NSCC — see qwen25_7b.yaml note) ───────────────────────
+use_vllm: false

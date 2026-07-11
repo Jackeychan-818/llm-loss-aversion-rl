@@ -233,6 +233,63 @@ def build_grpo_dataset(
     return datasets.Dataset.from_list(examples)
 
 
+def build_grpo_dataset_v2(
+    goods_path: str,
+    goods_json_path: str,
+    data_dir: str,
+) -> "datasets.Dataset":
+    """
+    Dataset builder for Reward Design v2 (R_pair + R_neutral).
+
+    Unlike build_grpo_dataset, this does NOT read or filter by delta — the v2
+    reward is derived from ownership consistency and the frozen neutral anchor,
+    so EVERY case is kept (R_pair applies to all). Columns:
+
+      prompt      : str  — plain user message
+      perspective : str  — "X" or "Y"
+      case_id     : int  — global 1-indexed case ID (matches anchor / delta keys)
+
+    X and Y perspectives of a case are emitted consecutively (paired), so
+    build_pairs_from_columns() over (case_id, perspective) recovers the pairs.
+    """
+    goods_path = Path(goods_path)
+    with open(goods_path, "r", encoding="utf-8") as f:
+        dataset_raw = json.load(f)
+    goods = GoodsData(goods_json_path)
+
+    case_id_offset = compute_case_id_offset(goods_path.stem, data_dir)
+    logger.info(f"[v2] Case ID offset for '{goods_path.stem}': {case_id_offset}")
+
+    examples = []
+    local_id = 0
+    for entry in dataset_raw:
+        if not (isinstance(entry, (list, tuple)) and len(entry) >= 3):
+            continue
+        X_num, Y_num, attr_list = entry[0], entry[1], entry[2]
+        if not isinstance(attr_list, list):
+            continue
+        if not (0 <= X_num < len(goods.items) and 0 <= Y_num < len(goods.items)):
+            continue
+        X, Y = goods.items[X_num], goods.items[Y_num]
+        for attr_code in attr_list:
+            local_id += 1
+            global_id = case_id_offset + local_id   # 1-indexed, matches anchors
+            i, j, k, l = decode_attr(attr_code)
+            examples.append({
+                "prompt": generate_prompt(goods, X, Y, i, j, k, l),
+                "perspective": "X", "case_id": global_id,
+            })
+            examples.append({
+                "prompt": generate_prompt(goods, Y, X, k, l, i, j),
+                "perspective": "Y", "case_id": global_id,
+            })
+
+    logger.info(f"[v2] Dataset built: {local_id} cases → {len(examples)} examples (no delta filtering)")
+    if not examples:
+        raise RuntimeError(f"No v2 examples built from {goods_path} — check goods file / offset.")
+    return datasets.Dataset.from_list(examples)
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
