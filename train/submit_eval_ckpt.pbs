@@ -1,0 +1,62 @@
+#!/bin/bash
+# ============================================================
+# PBS Job Script — Evaluate a single ablation checkpoint (gdev)
+# Scores test_goods.json with checkpoint-${CKPT} of grpo_qwen_delta,
+# then runs NLS (Model A) to estimate lambda_hat.
+#
+# Submit with:
+#   qsub -v CKPT=30000 train/submit_eval_ckpt.pbs
+# ============================================================
+#PBS -N lz-eval-ckpt
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_ckpt_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/eval_ckpt_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+# ---------- Environment ----------
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+: "${CKPT:?Must pass -v CKPT=<step> (e.g. 30000)}"
+ADAPTER="checkpoints/grpo_qwen_delta/checkpoint-${CKPT}"
+MODEL_NAME="Qwen-7B-GRPO-qd-ckpt${CKPT}"
+
+echo "=== GPU Check ==="
+nvidia-smi
+echo "Checkpoint: $ADAPTER"
+echo "Model name: $MODEL_NAME"
+
+if [[ ! -d "$ADAPTER" ]]; then
+    echo "ERROR: adapter dir not found: $ADAPTER"
+    exit 1
+fi
+
+# ---------- Eval: teacher-forced log-probs on held-out test set ----------
+echo "=== Eval $MODEL_NAME on test_goods.json ==="
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --adapter_path "$ADAPTER" \
+    --model_name "$MODEL_NAME" \
+    --data_file data/test_goods.json \
+    --treatment baseline \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee "logs/eval_${MODEL_NAME}.log"
+
+# ---------- NLS estimation (Model A) ----------
+echo "=== NLS estimation for $MODEL_NAME ==="
+python eval/estimate_qwen_checkpoint.py \
+    --model_name "$MODEL_NAME" \
+    --feature baseline \
+    --temperature 1 \
+    2>&1 | tee "logs/estimate_${MODEL_NAME}.log"
+
+echo "=== Done: $MODEL_NAME ==="
