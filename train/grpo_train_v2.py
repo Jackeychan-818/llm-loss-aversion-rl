@@ -84,10 +84,14 @@ def build_grpo_config_v2(cfg, args, resume_checkpoint):
 
     kwargs = dict(
         output_dir=args.output_dir,
-        # GRPO algorithm
+        # GRPO algorithm.
+        # NOTE: do NOT set generation_batch_size AND steps_per_generation — TRL
+        # forbids both. We set neither and let TRL derive
+        #   generation_batch_size = per_device_train_batch_size * num_proc * steps_per_generation
+        # where steps_per_generation defaults to gradient_accumulation_steps.
+        # With per_device=1, grad_accum=32 → generation_batch_size=32 = one whole
+        # X/Y pair (2 prompts x G=16). PairedGRPOTrainer reads the derived value.
         num_generations=cfg.get("num_generations", 16),
-        generation_batch_size=cfg.get("generation_batch_size", 32),
-        steps_per_generation=cfg.get("steps_per_generation", 1),
         temperature=cfg.get("temperature", 1.5),
         epsilon=cfg.get("epsilon", 0.2),
         beta=cfg.get("beta", 0.04),
@@ -100,9 +104,9 @@ def build_grpo_config_v2(cfg, args, resume_checkpoint):
         reward_weights=[w_pair, w_neutral],
         # keep X/Y pairs adjacent — pairing relies on the PairedRepeatSampler
         shuffle_dataset=cfg.get("shuffle_dataset", True),
-        # Training
-        per_device_train_batch_size=cfg.get("per_device_train_batch_size", 32),
-        gradient_accumulation_steps=cfg.get("gradient_accumulation_steps", 8),
+        # Training — geometry controls generation_batch_size (see note above)
+        per_device_train_batch_size=cfg.get("per_device_train_batch_size", 1),
+        gradient_accumulation_steps=cfg.get("gradient_accumulation_steps", 32),
         learning_rate=cfg.get("learning_rate", 1e-6),
         num_train_epochs=cfg.get("num_train_epochs", 1),
         max_steps=max_steps,

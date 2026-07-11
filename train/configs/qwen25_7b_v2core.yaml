@@ -29,12 +29,14 @@ w_neutral: 0.5
 
 # ── GRPO algorithm ─────────────────────────────────────────────────────────
 num_generations: 16              # G completions per PERSPECTIVE (X gets 16, Y gets 16)
-# Paired batch geometry: generation_batch_size // num_generations must be EVEN
-# (whole X/Y pairs per generation batch). 32 // 16 = 2 prompts = 1 pair/batch.
-generation_batch_size: 32
-steps_per_generation: 1
-per_device_train_batch_size: 32  # one whole pair (2 prompts x 16) per device forward
-gradient_accumulation_steps: 8   # accumulate 8 pairs before an optimizer step
+# Paired batch geometry. Do NOT set generation_batch_size OR steps_per_generation
+# (TRL forbids setting both, and derives generation_batch_size from these two):
+#   generation_batch_size = per_device_train_batch_size * num_proc * grad_accum
+# per_device=1, grad_accum=32 → generation_batch_size = 32 = one whole X/Y pair
+# (2 prompts x G=16). Must be a multiple of 2*num_generations (32) to hold whole
+# pairs; increase grad_accum to 64/96/... for 2/3/... pairs per generation.
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 32
 
 temperature: 1.5                 # >= 1.0 — base dist is ~99% "No"; keep it diverse
 epsilon: 0.2
