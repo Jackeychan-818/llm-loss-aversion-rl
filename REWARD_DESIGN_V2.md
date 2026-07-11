@@ -216,3 +216,93 @@ subjective goods. A defensible description is:
 The existing six-model delta should be called a **consensus pseudo-utility
 oracle**. Its results remain informative, but they should not be presented as
 validation against economic ground truth.
+
+---
+
+## Reviewer notes (appended 2026-07-11)
+
+> Independent review of the design above, backed by a static coverage audit
+> (`data/audit_reward_v2_coverage.py`) run over the full 59,400-case dataset.
+
+### Strongest elements
+
+- **`R_neutral` is the core idea.** Loss aversion *is* the gap between an
+  ownership-free preference and endowed behavior; anchoring endowed answers to
+  the model's own **frozen** neutral preference operationalizes "remove the
+  framing effect" directly. Sourcing the anchor from the frozen base model makes
+  the whole reward **self-contained with no test-set leakage** — this closes the
+  indirect leakage path flagged for the Qwen-delta ablation in
+  `KNOWN_ISSUES.md` #9. Lead with this framing.
+- **The Pareto "critical restriction" (§3) is correct economics** — forbidding
+  cross-attribute level comparisons is the exact mistake to avoid.
+- **`R_pair`'s cross-tab is right**: No/No (keep-both) and Yes/Yes (trade-both)
+  both score −1 because both are endowment-dependent; only the off-diagonal is
+  consistent.
+
+### Priority concerns
+
+1. **`R_pair` is nearly the quantity we *evaluate* (λ).** λ is identified by
+   cross-perspective asymmetry; `R_pair` rewards cross-perspective consistency.
+   So "λ dropped after training" is close to tautological — we would be training
+   on the test statistic. This does not invalidate the approach, but it moves
+   the defensible claim to (a) **OOD generalization** and (b) **choosing the
+   right good, not merely the same good**. Let `R_neutral` / `R_dominance`
+   accuracy and OOD results carry the headline, not the λ reduction itself.
+
+2. **Two of the four components are near-empty on existing data** (see audit).
+   `R_pair` and `R_neutral` operate on the current pairs; `R_dominance` covers
+   0.23% of cases and `R_monotonicity` needs *constructed* counterfactuals.
+   Treat this as a **two-tier plan**, not four co-equal components.
+
+3. **The combined optimum is the desired policy — state this positively.**
+   `R_pair` alone is trivially gamed ("always pick the first-listed good"), but
+   the *combined* reward's optimum — endowed behavior matching the frozen
+   neutral preference, ignoring the endowment frame — **is exactly the target**.
+   The Goodhart solution here is the intended solution.
+
+4. **Relational rewards are a real trainer lift.** `R_pair` and
+   `R_monotonicity` score *matched* prompts jointly, but TRL's `GRPOTrainer`
+   scores one prompt's group at a time. This needs a custom sampler/reward path
+   that keeps matched X/Y (and counterfactual) records together with aligned
+   completions — beyond the current `reward_functions.py` interface. Ship the
+   unit tests §"Training-unit requirement" calls for (all four cross-tab cells)
+   before trusting it.
+
+5. **Watch the GRPO zero-variance trap again.** Consistency rewards collapse to
+   low within-group variance once the policy is mostly consistent (all +1) or
+   still frozen (all −1) — the same `frac_reward_zero_std` failure mode as run 1.
+   Keep `monitor.sh`'s DAPO panel in view. For `R_monotonicity`, score with
+   **teacher-forced log-probs**, not sampled choice rates (far less noisy at
+   G=16).
+
+### Coverage audit (measured, not estimated)
+
+`python data/audit_reward_v2_coverage.py` over trial + test + remaining
+(59,400 structural cases, 9,895 goods-pairs, 100 goods):
+
+| Component | Applicable on existing data | Note |
+|---|---:|---|
+| `R_pair` | **59,400 (100%)** | every matched X/Y perspective |
+| `R_neutral` | requires a model pass | anchor stability cannot be counted statically |
+| `R_dominance` (genuine) | **137 (0.23%)** | only 18 good-pairs share attribute-dimension names; even these need comparability justification → effectively ~0 |
+| `R_monotonicity` (constructible) | 98.78% of cases seed ≥1 variant; **158,241** total +1 variants | each is a *new constructed prompt*, not an existing case |
+| Same-good dominance (constructible) | **2,700** synthetic comparisons | 27 ordered config-pairs × 100 goods |
+
+Implication: **`R_pair` + `R_neutral` is the only pair that runs on the data as
+it exists.** `R_dominance` must be built from same-good configs (2,700
+available); `R_monotonicity` has huge constructible potential but requires
+generating counterfactual prompts and relational scoring.
+
+### Recommendations
+
+1. **Stage it.** v2-core = `R_pair + R_neutral` (self-contained, no leakage,
+   runs on existing data) → run ablations 3–4 first. v2.1 = add `R_dominance`
+   (build the 2,700 same-good dominance set) + `R_monotonicity` (sampled
+   counterfactual set).
+2. **Gate, don't just sum, `R_pair`.** Grant the consistency bonus only when the
+   chosen good also matches the neutral/dominance direction — kills the
+   "consistent but arbitrary" degenerate without relying on weight tuning.
+3. **Frame the claim** around *generalization + correct-direction under no
+   cardinal oracle*, not the λ drop.
+4. **Validate the frozen anchor** against human labels on a subset, so a
+   base-model artifact (position / verbosity bias) isn't baked in as the target.
