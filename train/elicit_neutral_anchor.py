@@ -132,8 +132,11 @@ def iter_cases(goods: GoodsData, data_file: Path, offset: int, limit: int | None
         X, Y = goods.items[X_num], goods.items[Y_num]
         for code in attr_list:
             i, j, k, l = decode_attr(code)
-            yield offset + local, X, Y, i, j, k, l
+            # 1-indexed to match prompt_builder (local_id += 1 BEFORE use) and
+            # the delta-file keys (1..59400). Incrementing after would be the
+            # off-by-one that shifts every anchor id down by 1.
             local += 1
+            yield offset + local, X, Y, i, j, k, l
             if limit and local >= limit:
                 return
 
