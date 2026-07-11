@@ -71,6 +71,11 @@ def load_model(model_path: str, adapter_path: str | None, dtype: str):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     torch_dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[dtype]
     tok = AutoTokenizer.from_pretrained(model_path)
+    # score_batch reads the logit at attention_mask.sum()-1, which is the last
+    # real token only under RIGHT padding — pin it so batching stays correct.
+    tok.padding_side = "right"
+    if tok.pad_token_id is None:
+        tok.pad_token = tok.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         model_path, torch_dtype=torch_dtype, device_map="auto"
     )

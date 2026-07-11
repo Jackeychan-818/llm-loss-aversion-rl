@@ -1,0 +1,55 @@
+#!/bin/bash
+# ============================================================
+# PBS Job — Frozen neutral-anchor elicitation (Reward Design v2, R_neutral)
+#
+# Asks the FROZEN BASE model its ownership-free A/B preference for every
+# test_goods.json case, then reports the frozen rate (how many cases get a
+# stable anchor). Runs a 20-case smoke first, then the full pass.
+#
+#   qsub train/submit_elicit_anchor.pbs
+#   # override the data file:
+#   qsub -v DATA_FILE=data/trial_goods.json train/submit_elicit_anchor.pbs
+# ============================================================
+#PBS -N lz-anchor
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/anchor_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/anchor_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):${LD_LIBRARY_PATH:-}"
+
+DATA_FILE="${DATA_FILE:-data/test_goods.json}"
+BATCH_SIZE="${BATCH_SIZE:-32}"
+
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA: {torch.cuda.get_device_name(0)}')"
+echo "Data file: $DATA_FILE"
+
+# ---------- Smoke: 20 cases (fails fast if scoring is broken) ----------
+echo "=== Smoke (20 cases) ==="
+python train/elicit_neutral_anchor.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --data_file "$DATA_FILE" \
+    --batch_size "$BATCH_SIZE" \
+    --limit 20 \
+    --out logs/anchor_smoke.json \
+    2>&1 | tee logs/anchor_smoke.log
+
+# ---------- Full pass ----------
+echo "=== Full elicitation on $DATA_FILE ==="
+python train/elicit_neutral_anchor.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --data_file "$DATA_FILE" \
+    --batch_size "$BATCH_SIZE" \
+    2>&1 | tee "logs/anchor_$(basename "$DATA_FILE" .json).log"
+
+echo "=== Done. Frozen rate is in the summary above. ==="
