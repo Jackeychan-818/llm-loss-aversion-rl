@@ -15,5 +15,9 @@ Fine-tuning Qwen2.5-7B-Instruct with GRPO to reduce measured loss aversion in an
 - Qwen-delta reward ablation using `data/deltas/delta_qwen_base.json`
 - Checkpoint/training-health audit using `monitor.sh` and `plot_training.py`
 - Cross-model comparison against the frontier-model baseline
+- Follow-up reward design based on paired ownership consistency, neutral
+  preference anchors, valid Pareto cases, and ordinal attribute monotonicity
 
-See `PROJECT_OVERVIEW.md` for the research narrative and `HISTORY.md` for the commit-by-commit project history.
+See `PROJECT_OVERVIEW.md` for the research narrative,
+`REWARD_DESIGN_V2.md` for the proposed non-cardinal reward design, and
+`HISTORY.md` for the commit-by-commit project history.
