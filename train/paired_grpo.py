@@ -30,7 +30,9 @@ import random
 from typing import Callable, Optional
 
 from reward_functions import parse_response
-from reward_functions_v2 import r_pair, r_neutral, W_PAIR_DEFAULT, W_NEUTRAL_DEFAULT
+from reward_functions_v2 import (
+    r_pair, r_neutral, r_gated, W_PAIR_DEFAULT, W_NEUTRAL_DEFAULT,
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +101,93 @@ def make_r_pair_reward() -> Callable:
         return rewards
 
     _reward.__name__ = "r_pair"
+    return _reward
+
+
+def make_r_gated_reward(anchor: dict) -> Callable:
+    """
+    Production v2-core reward: ONE gated paired reward (replaces the additive
+    r_pair + r_neutral). Groups the batch by case_id, pairs the g-th X-endowed
+    completion with the g-th Y-endowed completion, computes r_gated(rx, ry, pref)
+    (see reward_functions_v2.r_gated), and assigns that single scalar to BOTH
+    members of the pair. Unpaired leftovers get 0.0 (no signal, not a penalty).
+
+    `anchor` is the elicit_neutral_anchor.py output: {case_id: {"pref": "X"/"Y"/None}}
+    or a flat {case_id: "X"/"Y"/None}.
+    """
+    amap: dict[int, Optional[str]] = {}
+    for k, v in anchor.items():
+        amap[int(k)] = v["pref"] if isinstance(v, dict) else v
+
+    def _reward(completions, perspective, case_id, log_metric=None, **kwargs):
+        parsed = [parse_response(c) for c in completions]
+        groups: dict[int, dict[str, list[int]]] = {}
+        for idx, (cid, persp) in enumerate(zip(case_id, perspective)):
+            if persp in ("X", "Y"):
+                groups.setdefault(int(cid), {"X": [], "Y": []})[persp].append(idx)
+
+        rewards = [0.0] * len(completions)
+        paired = unpaired = 0
+        consistent = keep_both = trade_both = 0
+        correct = wrong_pref = 0
+        neg1 = zero = pos1 = 0
+        anchored_pairs = unanchored_pairs = 0
+        for cid, g in groups.items():
+            pref = amap.get(int(cid))
+            xs, ys = g["X"], g["Y"]
+            n = min(len(xs), len(ys))
+            unpaired += (len(xs) - n) + (len(ys) - n)
+            for k in range(n):
+                rx, ry = parsed[xs[k]], parsed[ys[k]]
+                rg = r_gated(rx, ry, pref)
+                rewards[xs[k]] = rewards[ys[k]] = rg
+                paired += 1
+                anchored_pairs += pref is not None
+                unanchored_pairs += pref is None
+                # diagnostics
+                if rx in ("Yes", "No") and ry in ("Yes", "No"):
+                    if rx != ry:
+                        consistent += 1
+                        if pref is not None:
+                            if ("X" if rx == "No" else "Y") == pref:
+                                correct += 1
+                            else:
+                                wrong_pref += 1
+                    elif rx == "No":
+                        keep_both += 1
+                    else:
+                        trade_both += 1
+                if rg < 0:
+                    neg1 += 1
+                elif rg == 0.0:
+                    zero += 1
+                else:
+                    pos1 += 1
+
+        if log_metric is not None and parsed:
+            ny = sum(p == "Yes" for p in parsed)
+            nn = sum(p == "No" for p in parsed)
+            log_metric("v2/yes_rate", ny / len(parsed))
+            log_metric("v2/no_rate", nn / len(parsed))
+            log_metric("v2/unparseable_rate", (len(parsed) - ny - nn) / len(parsed))
+            log_metric("v2/pairs_scored", float(paired))
+            log_metric("v2/unpaired_completions", float(unpaired))
+            log_metric("v2/anchor_coverage",
+                       anchored_pairs / paired if paired else 0.0)
+            log_metric("v2/unanchored_pairs", float(unanchored_pairs))
+            if paired:
+                log_metric("v2/pair_consistent_rate", consistent / paired)
+                log_metric("v2/pair_keep_both_rate", keep_both / paired)
+                log_metric("v2/pair_trade_both_rate", trade_both / paired)
+                # gated-table distribution — should match the reward ladder
+                log_metric("v2/gated_neg1_rate", neg1 / paired)
+                log_metric("v2/gated_zero_rate", zero / paired)
+                log_metric("v2/gated_pos1_rate", pos1 / paired)
+            if consistent:
+                log_metric("v2/consistent_correct_rate", correct / consistent)
+        return rewards
+
+    _reward.__name__ = "r_gated"
     return _reward
 
 

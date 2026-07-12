@@ -14,6 +14,7 @@ from paired_grpo import (
     build_pairs_from_columns,
     make_r_pair_reward,
     make_r_neutral_reward,
+    make_r_gated_reward,
     PairedRepeatSampler,
 )
 
@@ -75,6 +76,50 @@ def test_neutral_reward():
     r = r_neutral(completions=completions, perspective=perspective, case_id=case_id)
     assert r == [1.0, 1.0, -1.0, 0.0, -1.0], r
     print("test_neutral_reward: OK")
+
+
+# ── 2c. GATED paired reward closure (production reward) ──────────────────────
+def test_gated_reward_closure():
+    anchor = {"7": {"pref": "X"}, "9": {"pref": "Y"}, "11": "X"}
+    r_gated = make_r_gated_reward(anchor)
+    # case 7 (pref X), G=2:
+    #   pair0: X=No,Y=Yes → consistent, picked X == anchor X → +1
+    #   pair1: X=Yes,Y=No → consistent, picked Y != anchor X → 0 (wrong pref)
+    # case 9 (pref Y), G=1:
+    #   pair0: X=No,Y=No → keep-both → -1
+    completions = ["No", "Yes", "Yes", "No",  "No", "No"]
+    perspective = ["X",  "X",   "Y",   "Y",   "X",  "Y"]
+    case_id     = [7,    7,     7,     7,     9,    9]
+    metrics = {}
+    r = r_gated(completions=completions, perspective=perspective, case_id=case_id,
+                log_metric=lambda k, v: metrics.__setitem__(k, v))
+    # aligned: X rows [0,1]→case7 X; Y rows [2,3]→case7 Y; [4]X [5]Y →case9
+    assert r[0] == 1.0 and r[2] == 1.0, "case7 pair0 correct (+1), shared"
+    assert r[1] == 0.0 and r[3] == 0.0, "case7 pair1 wrong-pref (0), shared"
+    assert r[4] == -1.0 and r[5] == -1.0, "case9 keep-both (-1), shared"
+    assert metrics["v2/pairs_scored"] == 3.0
+    assert metrics["v2/unpaired_completions"] == 0.0
+    assert abs(metrics["v2/anchor_coverage"] - 1.0) < 1e-9  # all paired cases anchored
+    # gated distribution: 1×(-1), 1×(0), 1×(+1) over 3 pairs
+    assert abs(metrics["v2/gated_neg1_rate"] - 1/3) < 1e-9
+    assert abs(metrics["v2/gated_zero_rate"] - 1/3) < 1e-9
+    assert abs(metrics["v2/gated_pos1_rate"] - 1/3) < 1e-9
+    print("test_gated_reward_closure: OK")
+
+
+def test_gated_incomplete_pair():
+    r_gated = make_r_gated_reward({"5": "X"})
+    # only X completions for case 5 → no pairing, 0.0, no crash, unpaired counted
+    completions = ["No", "Yes"]
+    perspective = ["X", "X"]
+    case_id = [5, 5]
+    metrics = {}
+    r = r_gated(completions=completions, perspective=perspective, case_id=case_id,
+                log_metric=lambda k, v: metrics.__setitem__(k, v))
+    assert r == [0.0, 0.0], r
+    assert metrics["v2/pairs_scored"] == 0.0
+    assert metrics["v2/unpaired_completions"] == 2.0
+    print("test_gated_incomplete_pair: OK")
 
 
 # ── 3a. Incomplete pair on the reward side (missing perspective) ─────────────
@@ -151,6 +196,8 @@ if __name__ == "__main__":
     test_pair_scoring_aligned()
     test_pair_all_cells_and_multi_case()
     test_neutral_reward()
+    test_gated_reward_closure()
+    test_gated_incomplete_pair()
     test_reward_incomplete_pair()
     test_sampler_incomplete_batch_dropped()
     test_sampler_shuffle_keeps_pairs_whole()

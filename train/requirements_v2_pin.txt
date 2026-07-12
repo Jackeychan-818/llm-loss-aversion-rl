@@ -1,0 +1,3 @@
+# NSCC pinned versions for the v2-core GRPO run (asserted in PBS before training).
+# The paired trainer + reward-func kwargs contract were verified against these.
+trl==1.3.0

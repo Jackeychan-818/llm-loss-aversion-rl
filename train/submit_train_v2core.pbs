@@ -32,7 +32,14 @@ export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/
 echo "=== GPU Check ==="
 nvidia-smi
 python -c "import torch; print(f'CUDA devices: {torch.cuda.device_count()}, Device: {torch.cuda.get_device_name(0)}')"
-python -c "import trl; print(f'TRL version: {trl.__version__}')"
+
+# ---------- Pin check: TRL version (fail fast) ----------
+python -c "import trl,sys; want='1.3.0'; got=trl.__version__; print(f'TRL {got} (pinned {want})'); sys.exit(0 if got==want else 1)" \
+    || { echo "TRL VERSION MISMATCH — expected 1.3.0"; exit 1; }
+
+# ---------- Unit tests (fail fast, same as sanity) ----------
+( cd train && python test_paired_grpo.py ) || { echo "UNIT TESTS FAILED"; exit 1; }
+python train/reward_functions_v2.py || { echo "REWARD LOGIC TESTS FAILED"; exit 1; }
 
 # ---------- Run training ----------
 echo "=== Starting GRPO v2-core (R_pair + R_neutral) ==="

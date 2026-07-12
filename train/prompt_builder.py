@@ -237,13 +237,14 @@ def build_grpo_dataset_v2(
     goods_path: str,
     goods_json_path: str,
     data_dir: str,
+    anchor_map: "Dict[int, str] | None" = None,
 ) -> "datasets.Dataset":
     """
-    Dataset builder for Reward Design v2 (R_pair + R_neutral).
+    Dataset builder for Reward Design v2 (gated paired reward).
 
     Unlike build_grpo_dataset, this does NOT read or filter by delta — the v2
-    reward is derived from ownership consistency and the frozen neutral anchor,
-    so EVERY case is kept (R_pair applies to all). Columns:
+    reward is derived from ownership consistency gated by the frozen neutral
+    anchor. Columns:
 
       prompt      : str  — plain user message
       perspective : str  — "X" or "Y"
@@ -251,6 +252,12 @@ def build_grpo_dataset_v2(
 
     X and Y perspectives of a case are emitted consecutively (paired), so
     build_pairs_from_columns() over (case_id, perspective) recovers the pairs.
+
+    anchor_map: if given ({case_id: "X"/"Y"/None}), the dataset is FILTERED to
+    cases with a STABLE anchor (pref in {"X","Y"}). The gated reward needs a
+    stable anchor to grade preference direction, so training only on stable-anchor
+    cases makes anchor coverage exactly 100% and every pair fully graded. Cases
+    with pref None / missing are dropped. If None, every case is kept.
     """
     goods_path = Path(goods_path)
     with open(goods_path, "r", encoding="utf-8") as f:
@@ -260,8 +267,14 @@ def build_grpo_dataset_v2(
     case_id_offset = compute_case_id_offset(goods_path.stem, data_dir)
     logger.info(f"[v2] Case ID offset for '{goods_path.stem}': {case_id_offset}")
 
+    def _stable(cid: int) -> bool:
+        if anchor_map is None:
+            return True
+        return anchor_map.get(int(cid)) in ("X", "Y")
+
     examples = []
     local_id = 0
+    n_cases = n_kept = 0
     for entry in dataset_raw:
         if not (isinstance(entry, (list, tuple)) and len(entry) >= 3):
             continue
@@ -274,6 +287,10 @@ def build_grpo_dataset_v2(
         for attr_code in attr_list:
             local_id += 1
             global_id = case_id_offset + local_id   # 1-indexed, matches anchors
+            n_cases += 1
+            if not _stable(global_id):
+                continue
+            n_kept += 1
             i, j, k, l = decode_attr(attr_code)
             examples.append({
                 "prompt": generate_prompt(goods, X, Y, i, j, k, l),
@@ -284,9 +301,11 @@ def build_grpo_dataset_v2(
                 "perspective": "Y", "case_id": global_id,
             })
 
-    logger.info(f"[v2] Dataset built: {local_id} cases → {len(examples)} examples (no delta filtering)")
+    filt = "no anchor filter" if anchor_map is None \
+        else f"stable-anchor filter: {n_kept}/{n_cases} cases kept"
+    logger.info(f"[v2] Dataset built: {n_kept} cases → {len(examples)} examples ({filt})")
     if not examples:
-        raise RuntimeError(f"No v2 examples built from {goods_path} — check goods file / offset.")
+        raise RuntimeError(f"No v2 examples built from {goods_path} — check goods file / offset / anchor filter.")
     return datasets.Dataset.from_list(examples)
 
 

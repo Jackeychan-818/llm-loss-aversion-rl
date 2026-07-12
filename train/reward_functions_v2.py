@@ -85,6 +85,43 @@ def r_neutral(response: str, perspective: str, anchor_pref: Optional[str]) -> Op
     return 1.0 if response == rational_answer_for_anchor(perspective, anchor_pref) else -1.0
 
 
+# ── GATED paired reward (v2-core production reward) ──────────────────────────
+# Single scalar per (X,Y) pair, shared by both members. Replaces the additive
+# w_pair*r_pair + w_neutral*r_neutral combination: the anchor-direction credit is
+# GATED behind the ownership-consistency gate, giving a monotone ladder
+#   keep-both / trade-both / malformed  = -1
+#   consistent but wrong preferred good =  0
+#   consistent and picks anchored good  = +1
+# See REWARD_DESIGN_V2.md §"Gated reward". anchor_pref must be "X" or "Y" for the
+# graded ladder; the training set is filtered to stable anchors so this holds.
+# If anchor_pref is None (no stable anchor) we fall back to the consistency gate
+# alone (+1 consistent / -1 not) — this path is dead on the filtered set and the
+# trainer asserts anchor coverage == 100%, but it keeps the function total.
+GATED_UNPARSEABLE = -1.0
+GATED_INCONSISTENT = -1.0
+GATED_WRONG_PREF = 0.0
+GATED_CORRECT = 1.0
+
+
+def r_gated(resp_x: str, resp_y: str, anchor_pref: Optional[str]) -> float:
+    """Gated paired reward for one aligned (X-endowed, Y-endowed) completion pair.
+
+    resp_x / resp_y are parsed answers ("Yes"/"No"/other). Returns a single float
+    shared by both members of the pair (pair-level advantage).
+    """
+    if resp_x not in ("Yes", "No") or resp_y not in ("Yes", "No"):
+        return GATED_UNPARSEABLE
+    if resp_x == resp_y:                       # keep-both (No,No) or trade-both (Yes,Yes)
+        return GATED_INCONSISTENT
+    # Consistent: the pair selected the same good from both perspectives.
+    #   (No, Yes) → X-persp keeps X, Y-persp trades for X → picked "X"
+    #   (Yes, No) → X-persp trades for Y, Y-persp keeps Y → picked "Y"
+    picked = "X" if resp_x == "No" else "Y"
+    if anchor_pref is None:
+        return GATED_CORRECT                   # dead path on filtered set: gate only
+    return GATED_CORRECT if picked == anchor_pref else GATED_WRONG_PREF
+
+
 # ── Weighted combination with active-weight renormalization ──────────────────
 def _combine(components: dict[str, tuple[float, Optional[float]]]) -> float:
     """
@@ -201,5 +238,26 @@ if __name__ == "__main__":
     xr, yr = score_paired_group(["No"], ["Yes"], anchor_pref=None)
     assert abs(xr[0] - 1.0) < 1e-9   # only R_pair active → +1
     print("Ambiguous-anchor renormalization: OK")
+
+    # ---- GATED reward: full table (production reward) ----
+    # anchor pref X: consistent-picks-X = +1, consistent-picks-Y = 0
+    assert r_gated("No", "Yes", "X") == 1.0     # picked X, anchor X → correct
+    assert r_gated("Yes", "No", "X") == 0.0     # picked Y, anchor X → wrong pref
+    # anchor pref Y: mirror
+    assert r_gated("Yes", "No", "Y") == 1.0     # picked Y, anchor Y → correct
+    assert r_gated("No", "Yes", "Y") == 0.0     # picked X, anchor Y → wrong pref
+    # consistency gate fails regardless of anchor
+    assert r_gated("No", "No", "X") == -1.0     # keep-both
+    assert r_gated("Yes", "Yes", "X") == -1.0   # trade-both
+    assert r_gated("No", "No", "Y") == -1.0
+    # unparseable on either side
+    assert r_gated("", "Yes", "X") == -1.0
+    assert r_gated("No", "maybe", "Y") == -1.0
+    # dead-path fallback: no anchor → consistency gate only
+    assert r_gated("No", "Yes", None) == 1.0    # consistent → +1
+    assert r_gated("No", "No", None) == -1.0    # inconsistent → -1
+    # ladder is monotone: inconsistent < wrong-pref < correct
+    assert GATED_INCONSISTENT < GATED_WRONG_PREF < GATED_CORRECT
+    print("Gated reward table: OK")
 
     print("All v2-core reward checks passed.")

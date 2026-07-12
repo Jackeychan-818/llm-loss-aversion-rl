@@ -27,6 +27,11 @@ echo "=== GPU Check ==="
 nvidia-smi
 python -c "import torch; print(f'CUDA: {torch.cuda.get_device_name(0)}')"
 
+# ---------- Pin check: TRL version (fail fast) ----------
+echo "=== TRL version pin ==="
+python -c "import trl,sys; want='1.3.0'; got=trl.__version__; print(f'TRL {got} (pinned {want})'); sys.exit(0 if got==want else 1)" \
+    || { echo "TRL VERSION MISMATCH — expected 1.3.0"; exit 1; }
+
 # ---------- Pure-logic tests first (fail fast) ----------
 echo "=== v2 unit tests ==="
 ( cd train && python test_paired_grpo.py ) || { echo "UNIT TESTS FAILED"; exit 1; }

@@ -39,11 +39,10 @@ import torch
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "train"))
 
-from prompt_builder import build_grpo_dataset_v2
+from prompt_builder import build_grpo_dataset_v2, compute_case_id_offset
 from paired_grpo import (
     build_pairs_from_columns,
-    make_r_pair_reward,
-    make_r_neutral_reward,
+    make_r_gated_reward,
     build_paired_grpo_trainer_cls,
 )
 # reuse the vetted helpers from the legacy entry point
@@ -58,6 +57,76 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger("grpo_v2")
+
+# Hard-coded 1-indexed global case-ID ranges per goods file (CLAUDE.md, verified
+# against baseline/Qwen-7B/completed_index.json). Startup checks assert against these.
+EXPECTED_ID_RANGE = {
+    "trial_goods": (1, 60),
+    "test_goods": (61, 9950),
+    "remaining_goods": (9951, 59400),
+}
+
+
+def run_startup_checks(stem, anchor_file, amap, train_ds, pairs, data_dir):
+    """Fail LOUD and EARLY (before the model trains) on any structural mismatch:
+    anchor file, case-ID range, one-X-one-Y-per-case, pair count, anchor coverage.
+    Raises AssertionError on the first violation."""
+    case_ids = [int(c) for c in train_ds["case_id"]]
+    persp = list(train_ds["perspective"])
+    uniq = sorted(set(case_ids))
+    errs = []
+
+    # (1) Correct anchor file for this data file.
+    if f"neutral_anchor_{stem}" not in Path(anchor_file).stem:
+        errs.append(f"anchor file {Path(anchor_file).name} does not match data stem '{stem}'")
+
+    # (2) Case-ID range matches the file's known global range.
+    lo, hi = EXPECTED_ID_RANGE.get(stem, (None, None))
+    if lo is not None:
+        if min(uniq) < lo or max(uniq) > hi:
+            errs.append(f"case-ID range [{min(uniq)},{max(uniq)}] outside expected [{lo},{hi}] for '{stem}'")
+    else:
+        logger.warning(f"[checks] no expected ID range registered for stem '{stem}' — skipping range check")
+
+    # (3) Exactly one X row and one Y row per case_id.
+    from collections import Counter
+    persp_by_case: dict[int, Counter] = {}
+    for c, p in zip(case_ids, persp):
+        persp_by_case.setdefault(int(c), Counter())[p] += 1
+    bad = [c for c, cc in persp_by_case.items() if cc.get("X", 0) != 1 or cc.get("Y", 0) != 1
+           or sum(cc.values()) != 2]
+    if bad:
+        errs.append(f"{len(bad)} cases do NOT have exactly one X + one Y row (e.g. {bad[:5]})")
+    if len(case_ids) != 2 * len(uniq):
+        errs.append(f"dataset has {len(case_ids)} rows but {len(uniq)} unique cases (expected 2x)")
+
+    # (4) Expected number of pairs == number of unique stable-anchor cases.
+    stable_in_range = sum(1 for c in uniq if amap.get(c) in ("X", "Y"))
+    if len(pairs) != len(uniq):
+        errs.append(f"pairs built ({len(pairs)}) != unique cases ({len(uniq)})")
+    if len(pairs) != stable_in_range:
+        errs.append(f"pairs built ({len(pairs)}) != stable-anchor cases in dataset ({stable_in_range})")
+
+    # (5) Anchor coverage on the (already-filtered) training set must be 100%.
+    covered = sum(1 for c in uniq if amap.get(c) in ("X", "Y"))
+    coverage = covered / max(len(uniq), 1)
+    if coverage < 1.0 - 1e-9:
+        missing = [c for c in uniq if amap.get(c) not in ("X", "Y")][:5]
+        errs.append(f"anchor coverage on filtered train set is {coverage:.4%} (<100%); "
+                    f"{len(uniq) - covered} cases lack a stable anchor (e.g. {missing})")
+
+    if errs:
+        for e in errs:
+            logger.error(f"[STARTUP CHECK FAILED] {e}")
+        raise AssertionError(f"{len(errs)} startup check(s) failed — refusing to train. See errors above.")
+
+    logger.info("[checks] all startup checks passed:")
+    logger.info(f"[checks]   anchor file matches stem '{stem}'")
+    logger.info(f"[checks]   case-ID range [{min(uniq)},{max(uniq)}] within expected [{lo},{hi}]")
+    logger.info(f"[checks]   one X + one Y per case for all {len(uniq)} cases")
+    logger.info(f"[checks]   pairs = unique cases = stable-anchor cases = {len(pairs)}")
+    logger.info(f"[checks]   anchor coverage on filtered train set = 100.0%")
+    return coverage
 
 
 def parse_args():
@@ -79,8 +148,6 @@ def build_grpo_config_v2(cfg, args, resume_checkpoint):
 
     max_steps  = args.max_steps  if args.max_steps  is not None else cfg.get("max_steps", -1)
     save_steps = args.save_steps if args.save_steps is not None else cfg.get("save_steps", 200)
-    w_pair    = cfg.get("w_pair", 1.0)
-    w_neutral = cfg.get("w_neutral", 0.5)
 
     kwargs = dict(
         output_dir=args.output_dir,
@@ -100,8 +167,8 @@ def build_grpo_config_v2(cfg, args, resume_checkpoint):
         scale_rewards=cfg.get("scale_rewards", "none"),
         mask_truncated_completions=cfg.get("mask_truncated_completions", True),
         log_completions=cfg.get("log_completions", True),
-        # v2: two reward functions [r_pair, r_neutral]
-        reward_weights=[w_pair, w_neutral],
+        # v2-core: ONE gated paired reward (r_gated). No sub-weights.
+        reward_weights=[1.0],
         # keep X/Y pairs adjacent — pairing relies on the PairedRepeatSampler
         shuffle_dataset=cfg.get("shuffle_dataset", True),
         # Training — geometry controls generation_batch_size (see note above)
@@ -122,7 +189,7 @@ def build_grpo_config_v2(cfg, args, resume_checkpoint):
         use_vllm=cfg.get("use_vllm", False),
         resume_from_checkpoint=resume_checkpoint,
     )
-    return GRPOConfig(**filter_supported_config_kwargs(GRPOConfig, kwargs)), (w_pair, w_neutral)
+    return GRPOConfig(**filter_supported_config_kwargs(GRPOConfig, kwargs))
 
 
 def main():
@@ -152,36 +219,41 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(str(model_path), torch_dtype=torch.bfloat16)
 
-    # ── Dataset (delta-free) + anchor ────────────────────────────────────
-    logger.info("Building v2 dataset (no delta filtering)...")
+    # ── Anchor (load first — needed to FILTER the dataset) ───────────────
+    anchor_raw = json.load(open(anchor_file))
+    anchor = anchor_raw.get("anchors", anchor_raw)   # accept {"anchors": {...}} or flat
+    amap = {int(k): (v["pref"] if isinstance(v, dict) else v) for k, v in anchor.items()}
+    n_stable_anchors = sum(1 for v in amap.values() if v in ("X", "Y"))
+    logger.info(f"Loaded anchor {anchor_file.name}: {n_stable_anchors} stable / {len(amap)} entries")
+
+    # ── Dataset — FILTERED to stable-anchor cases only ───────────────────
+    logger.info("Building v2 dataset (filtered to stable anchors)...")
     train_ds = build_grpo_dataset_v2(
         goods_path=str(data_file),
         goods_json_path=str(goods_json),
         data_dir=str(resolve("data")),
+        anchor_map=amap,
     )
     train_ds = to_messages_format(train_ds)
 
-    anchor_raw = json.load(open(anchor_file))
-    anchor = anchor_raw.get("anchors", anchor_raw)   # accept {"anchors": {...}} or flat
-    amap = {int(k): (v["pref"] if isinstance(v, dict) else v) for k, v in anchor.items()}
-
     case_ids = [int(c) for c in train_ds["case_id"]]
     pairs = build_pairs_from_columns(case_ids, train_ds["perspective"])
-    uniq_cases = set(case_ids)
-    frozen = sum(1 for c in uniq_cases if amap.get(c) is not None)
-    coverage = frozen / max(len(uniq_cases), 1)
 
-    # ── GRPO config + reward funcs ───────────────────────────────────────
+    # ── HARD STARTUP CHECKS (fail before touching the GPU-hours) ─────────
+    coverage = run_startup_checks(stem, anchor_file, amap, train_ds, pairs,
+                                  data_dir=str(resolve("data")))
+
+    # ── GRPO config + single gated reward func ───────────────────────────
     resume_checkpoint = find_resume_checkpoint(args)
-    grpo_config, (w_pair, w_neutral) = build_grpo_config_v2(cfg, args, resume_checkpoint)
+    grpo_config = build_grpo_config_v2(cfg, args, resume_checkpoint)
     lora_config = build_lora_config(cfg)
-    reward_funcs = [make_r_pair_reward(), make_r_neutral_reward(anchor)]
+    reward_funcs = [make_r_gated_reward(anchor)]
 
     logger.info("=" * 64)
-    logger.info("reward=v2_core (R_pair + R_neutral)")
-    logger.info(f"reward_weights: R_pair={w_pair}, R_neutral={w_neutral}")
+    logger.info("reward=v2_core (single GATED paired reward: r_gated)")
+    logger.info("gated table: keep/trade-both=-1 | consistent-wrong-pref=0 | consistent-anchored=+1")
     logger.info(f"anchor file: {anchor_file.name}")
-    logger.info(f"anchor coverage on {stem}: {frozen}/{len(uniq_cases)} cases = {coverage:.1%}")
+    logger.info(f"anchor coverage on filtered train set: {len(pairs)}/{len(set(case_ids))} = {coverage:.1%}")
     logger.info(f"pairs (X/Y cases): {len(pairs)}  |  dataset rows: {len(train_ds)}")
     logger.info(f"GRPO: G={grpo_config.num_generations}, gen_batch={grpo_config.generation_batch_size}, "
                 f"temp={grpo_config.temperature}, β={grpo_config.beta}, "

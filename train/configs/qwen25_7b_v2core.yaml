@@ -1,8 +1,10 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# lambda-zero GRPO config — Reward Design v2 CORE (R_pair + R_neutral)
+# lambda-zero GRPO config — Reward Design v2 CORE (single GATED paired reward)
 # Used ONLY by train/grpo_train_v2.py. NOT interchangeable with qwen25_7b.yaml:
-# there is no delta_file here (v2 uses ownership consistency + frozen anchor),
-# and the batch geometry is set up for paired X/Y sampling.
+# there is no delta_file here (v2 uses ownership consistency GATED by the frozen
+# anchor), the dataset is filtered to stable-anchor cases, and the batch geometry
+# is set up for paired X/Y sampling.
+# Gated table: keep/trade-both = -1 | consistent-wrong-pref = 0 | consistent-anchored = +1
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Model ──────────────────────────────────────────────────────────────────
@@ -22,10 +24,10 @@ lora_target_modules:
   - up_proj
   - down_proj
 
-# ── Reward v2 (component weights; hyperparameters to ablate) ────────────────
-# Passed to GRPOConfig.reward_weights as [w_pair, w_neutral] in that order.
-w_pair: 1.0
-w_neutral: 0.5
+# ── Reward v2-core ──────────────────────────────────────────────────────────
+# Single gated paired reward (r_gated). No sub-weights: the anchor-direction
+# credit is GATED behind the ownership-consistency gate, not added to it.
+# reward_weights is fixed to [1.0] in grpo_train_v2.build_grpo_config_v2.
 
 # ── GRPO algorithm ─────────────────────────────────────────────────────────
 num_generations: 16              # G completions per PERSPECTIVE (X gets 16, Y gets 16)
