@@ -107,19 +107,32 @@ def test_gated_reward_closure():
     print("test_gated_reward_closure: OK")
 
 
-def test_gated_incomplete_pair():
+def test_gated_incomplete_pair_is_fatal():
     r_gated = make_r_gated_reward({"5": "X"})
-    # only X completions for case 5 → no pairing, 0.0, no crash, unpaired counted
+    # only X completions for case 5 → sampler is broken → MUST raise, not score 0
     completions = ["No", "Yes"]
     perspective = ["X", "X"]
     case_id = [5, 5]
+    try:
+        r_gated(completions=completions, perspective=perspective, case_id=case_id)
+        assert False, "expected RuntimeError on unpaired completions"
+    except RuntimeError as e:
+        assert "UNPAIRED" in str(e)
+    print("test_gated_incomplete_pair_is_fatal: OK")
+
+
+def test_gated_hard_mode():
+    r_gated = make_r_gated_reward({"7": "X"}, mode="hard")
+    # case 7 pref X, G=2: pair0 (No,Yes)→consistent+correct=+1; pair1 (Yes,No)→consistent-wrong=-1 (hard collapses 0→-1)
+    completions = ["No", "Yes", "Yes", "No"]
+    perspective = ["X", "X", "Y", "Y"]
+    case_id = [7, 7, 7, 7]
     metrics = {}
     r = r_gated(completions=completions, perspective=perspective, case_id=case_id,
                 log_metric=lambda k, v: metrics.__setitem__(k, v))
-    assert r == [0.0, 0.0], r
-    assert metrics["v2/pairs_scored"] == 0.0
-    assert metrics["v2/unpaired_completions"] == 2.0
-    print("test_gated_incomplete_pair: OK")
+    assert r == [1.0, -1.0, 1.0, -1.0], r        # shared within pair, no 0 level
+    assert metrics["v2/gated_zero_rate"] == 0.0  # hard mode never emits 0
+    print("test_gated_hard_mode: OK")
 
 
 # ── 3a. Incomplete pair on the reward side (missing perspective) ─────────────
@@ -197,7 +210,8 @@ if __name__ == "__main__":
     test_pair_all_cells_and_multi_case()
     test_neutral_reward()
     test_gated_reward_closure()
-    test_gated_incomplete_pair()
+    test_gated_incomplete_pair_is_fatal()
+    test_gated_hard_mode()
     test_reward_incomplete_pair()
     test_sampler_incomplete_batch_dropped()
     test_sampler_shuffle_keeps_pairs_whole()

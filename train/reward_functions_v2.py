@@ -103,23 +103,41 @@ GATED_WRONG_PREF = 0.0
 GATED_CORRECT = 1.0
 
 
-def r_gated(resp_x: str, resp_y: str, anchor_pref: Optional[str]) -> float:
+GATED_MODES = ("shaped", "hard")
+
+
+def r_gated(resp_x: str, resp_y: str, anchor_pref: Optional[str],
+            mode: str = "shaped") -> float:
     """Gated paired reward for one aligned (X-endowed, Y-endowed) completion pair.
 
     resp_x / resp_y are parsed answers ("Yes"/"No"/other). Returns a single float
     shared by both members of the pair (pair-level advantage).
+
+    mode:
+      "shaped" — three-level ladder: inconsistent/malformed = -1, consistent but
+                 wrong preferred good = 0, consistent + anchored good = +1. The
+                 consistency gate is the primary escape from the penalty region
+                 (this is what reduces λ); direction is the refinement (0 → +1).
+                 Three distinct levels also give richer within-group variance,
+                 which reduces zero-std advantage collapse (KNOWN_ISSUES #2).
+      "hard"   — binary: +1 iff consistent AND picks the anchored good, else -1.
+                 Directly optimizes the rational outcome; no intermediate credit.
     """
-    if resp_x not in ("Yes", "No") or resp_y not in ("Yes", "No"):
-        return GATED_UNPARSEABLE
-    if resp_x == resp_y:                       # keep-both (No,No) or trade-both (Yes,Yes)
-        return GATED_INCONSISTENT
+    if mode not in GATED_MODES:
+        raise ValueError(f"mode must be one of {GATED_MODES}, got {mode!r}")
+    parseable = resp_x in ("Yes", "No") and resp_y in ("Yes", "No")
+    consistent = parseable and resp_x != resp_y
     # Consistent: the pair selected the same good from both perspectives.
     #   (No, Yes) → X-persp keeps X, Y-persp trades for X → picked "X"
     #   (Yes, No) → X-persp trades for Y, Y-persp keeps Y → picked "Y"
-    picked = "X" if resp_x == "No" else "Y"
-    if anchor_pref is None:
-        return GATED_CORRECT                   # dead path on filtered set: gate only
-    return GATED_CORRECT if picked == anchor_pref else GATED_WRONG_PREF
+    correct = consistent and (anchor_pref is None or ("X" if resp_x == "No" else "Y") == anchor_pref)
+
+    if mode == "hard":
+        return GATED_CORRECT if correct else GATED_INCONSISTENT
+    # shaped
+    if not parseable or not consistent:
+        return GATED_INCONSISTENT              # malformed / keep-both / trade-both
+    return GATED_CORRECT if correct else GATED_WRONG_PREF
 
 
 # ── Weighted combination with active-weight renormalization ──────────────────
@@ -239,7 +257,7 @@ if __name__ == "__main__":
     assert abs(xr[0] - 1.0) < 1e-9   # only R_pair active → +1
     print("Ambiguous-anchor renormalization: OK")
 
-    # ---- GATED reward: full table (production reward) ----
+    # ---- GATED reward: SHAPED (three-level) table ----
     # anchor pref X: consistent-picks-X = +1, consistent-picks-Y = 0
     assert r_gated("No", "Yes", "X") == 1.0     # picked X, anchor X → correct
     assert r_gated("Yes", "No", "X") == 0.0     # picked Y, anchor X → wrong pref
@@ -258,6 +276,22 @@ if __name__ == "__main__":
     assert r_gated("No", "No", None) == -1.0    # inconsistent → -1
     # ladder is monotone: inconsistent < wrong-pref < correct
     assert GATED_INCONSISTENT < GATED_WRONG_PREF < GATED_CORRECT
-    print("Gated reward table: OK")
+    print("Gated reward (shaped) table: OK")
+
+    # ---- GATED reward: HARD (binary) table ----
+    assert r_gated("No", "Yes", "X", mode="hard") == 1.0    # consistent + correct → +1
+    assert r_gated("Yes", "No", "X", mode="hard") == -1.0   # consistent but wrong → -1 (no 0)
+    assert r_gated("No", "No", "X", mode="hard") == -1.0    # keep-both → -1
+    assert r_gated("Yes", "Yes", "Y", mode="hard") == -1.0  # trade-both → -1
+    assert r_gated("", "Yes", "X", mode="hard") == -1.0     # malformed → -1
+    assert r_gated("Yes", "No", "Y", mode="hard") == 1.0    # consistent + correct → +1
+    assert r_gated("No", "Yes", None, mode="hard") == 1.0   # no anchor → gate only
+    # hard mode collapses the 0 level onto -1
+    assert set(r_gated(a, b, "X", mode="hard") for a in ("Yes","No") for b in ("Yes","No")) == {-1.0, 1.0}
+    try:
+        r_gated("No", "Yes", "X", mode="bogus"); assert False
+    except ValueError:
+        pass
+    print("Gated reward (hard) table: OK")
 
     print("All v2-core reward checks passed.")

@@ -104,16 +104,21 @@ def make_r_pair_reward() -> Callable:
     return _reward
 
 
-def make_r_gated_reward(anchor: dict) -> Callable:
+def make_r_gated_reward(anchor: dict, mode: str = "shaped") -> Callable:
     """
     Production v2-core reward: ONE gated paired reward (replaces the additive
     r_pair + r_neutral). Groups the batch by case_id, pairs the g-th X-endowed
-    completion with the g-th Y-endowed completion, computes r_gated(rx, ry, pref)
-    (see reward_functions_v2.r_gated), and assigns that single scalar to BOTH
-    members of the pair. Unpaired leftovers get 0.0 (no signal, not a penalty).
+    completion with the g-th Y-endowed completion, computes r_gated(rx, ry, pref,
+    mode) (see reward_functions_v2.r_gated), and assigns that single scalar to
+    BOTH members of the pair.
+
+    UNPAIRED COMPLETIONS ARE FATAL. The PairedRepeatSampler guarantees every
+    generation batch holds only whole X/Y pairs, so a completion without its
+    partner means the sampler/geometry is broken and every downstream reward is
+    silently wrong — we raise instead of scoring it 0.0.
 
     `anchor` is the elicit_neutral_anchor.py output: {case_id: {"pref": "X"/"Y"/None}}
-    or a flat {case_id: "X"/"Y"/None}.
+    or a flat {case_id: "X"/"Y"/None}. `mode` is "shaped" or "hard" (see r_gated).
     """
     amap: dict[int, Optional[str]] = {}
     for k, v in anchor.items():
@@ -126,6 +131,19 @@ def make_r_gated_reward(anchor: dict) -> Callable:
             if persp in ("X", "Y"):
                 groups.setdefault(int(cid), {"X": [], "Y": []})[persp].append(idx)
 
+        # FATAL: any completion whose case/perspective has no aligned partner in
+        # this batch means the paired sampler failed — abort loudly.
+        bad = {cid: (len(g["X"]), len(g["Y"])) for cid, g in groups.items()
+               if len(g["X"]) != len(g["Y"])}
+        n_bad_persp = sum(1 for p in perspective if p not in ("X", "Y"))
+        if bad or n_bad_persp:
+            raise RuntimeError(
+                "r_gated: UNPAIRED completions in a generation batch — the paired "
+                f"sampler is broken. Cases with |X|!=|Y|: {dict(list(bad.items())[:8])}"
+                f"{' ...' if len(bad) > 8 else ''}; completions with bad perspective: "
+                f"{n_bad_persp}. Refusing to train on misaligned rewards."
+            )
+
         rewards = [0.0] * len(completions)
         paired = unpaired = 0
         consistent = keep_both = trade_both = 0
@@ -135,11 +153,10 @@ def make_r_gated_reward(anchor: dict) -> Callable:
         for cid, g in groups.items():
             pref = amap.get(int(cid))
             xs, ys = g["X"], g["Y"]
-            n = min(len(xs), len(ys))
-            unpaired += (len(xs) - n) + (len(ys) - n)
+            n = min(len(xs), len(ys))          # == len(xs) == len(ys) after the guard
             for k in range(n):
                 rx, ry = parsed[xs[k]], parsed[ys[k]]
-                rg = r_gated(rx, ry, pref)
+                rg = r_gated(rx, ry, pref, mode=mode)
                 rewards[xs[k]] = rewards[ys[k]] = rg
                 paired += 1
                 anchored_pairs += pref is not None

@@ -28,6 +28,15 @@ lora_target_modules:
 # Single gated paired reward (r_gated). No sub-weights: the anchor-direction
 # credit is GATED behind the ownership-consistency gate, not added to it.
 # reward_weights is fixed to [1.0] in grpo_train_v2.build_grpo_config_v2.
+#
+# reward_mode:
+#   shaped — three-level ladder (-1 inconsistent/malformed, 0 consistent-wrong-pref,
+#            +1 consistent-anchored). Consistency is the primary gate out of the
+#            penalty region (this reduces λ); direction refines 0→+1. Three levels
+#            also give richer within-group variance → less zero-std collapse.
+#   hard   — binary (+1 iff consistent AND anchored, else -1). Directly optimizes
+#            the rational outcome; no intermediate credit.
+reward_mode: shaped
 
 # ── GRPO algorithm ─────────────────────────────────────────────────────────
 num_generations: 16              # G completions per PERSPECTIVE (X gets 16, Y gets 16)
