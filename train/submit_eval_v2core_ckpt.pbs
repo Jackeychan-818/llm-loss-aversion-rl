@@ -1,0 +1,58 @@
+#!/bin/bash
+# ============================================================
+# PBS Job — v2-core held-out checkpoint sweep (one checkpoint)
+# Evaluates checkpoint-${CKPT} of grpo_v2core on FULL test_goods (global case_ids
+# 61-9950), then partitions results into a validation half (even case_ids,
+# SELECTION) and a frozen half (odd case_ids, CONFIRMATION) and estimates
+# Model A (NLS, T=1) lambda_hat/eta_hat + rational-choice-accuracy guardrails.
+#
+# Runs on gdev on a SEPARATE GPU allocation — does NOT touch the training job.
+#
+#   qsub -v CKPT=6600 train/submit_eval_v2core_ckpt.pbs
+# ============================================================
+#PBS -N lz-vsweep
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/vsweep_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/vsweep_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+: "${CKPT:?Must pass -v CKPT=<step> (e.g. 6600)}"
+ADAPTER="checkpoints/grpo_v2core/checkpoint-${CKPT}"
+MODEL_NAME="v2core-ckpt${CKPT}"
+
+echo "=== GPU Check ==="; nvidia-smi
+echo "Adapter: $ADAPTER   Model: $MODEL_NAME"
+if [[ ! -d "$ADAPTER" ]]; then echo "ERROR: adapter dir not found: $ADAPTER"; exit 1; fi
+
+# ---------- Eval on FULL test_goods (teacher-forced logprobs) ----------
+echo "=== Eval $MODEL_NAME on test_goods.json ==="
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --adapter_path "$ADAPTER" \
+    --model_name "$MODEL_NAME" \
+    --data_file data/test_goods.json \
+    --treatment baseline \
+    --output_root val_sweep \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee "logs/vsweep_${MODEL_NAME}.log"
+
+# ---------- Partition (val/frozen) + Model A NLS T=1 + guardrails ----------
+echo "=== Partition + estimate $MODEL_NAME ==="
+python eval/sweep_partition_estimate.py \
+    --feature val_sweep \
+    --model_name "$MODEL_NAME" \
+    --estimate "${ESTIMATE:-val}" \
+    2>&1 | tee -a "logs/vsweep_${MODEL_NAME}.log"
+
+echo "=== Done: $MODEL_NAME ==="
