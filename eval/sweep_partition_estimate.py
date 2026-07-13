@@ -85,9 +85,26 @@ def estimate(feature: str, model_name: str) -> dict:
 
 
 def guardrails(xrows: dict, yrows: dict, case_ids: list[int], anchor: dict) -> dict:
-    """Rational-choice accuracy + keep-both rate over cases WITH a stable anchor."""
-    consistent = keep_both = trade_both = correct = judged = 0
+    """Behavioral metrics over `case_ids`, split conditional vs unconditional.
+
+    Two DISTINCT anchor metrics (a correction — the old single 'rational_acc' was
+    conditional on consistency and so was misleadingly high for near-inconsistent
+    checkpoints, e.g. ckpt-200 = 0.98 at 1% consistency):
+
+      anchor_match_given_consistent = (consistent & anchor-correct) / (consistent & stable-anchor)
+            CONDITIONAL: among consistent pairs that have a stable anchor, how often
+            the chosen good matches the anchor. Says nothing about how often the
+            model is consistent at all.
+      joint_anchored_success = (consistent & anchor-correct) / (all stable-anchor cases)
+            UNCONDITIONAL: of every stable-anchor case, the fraction where the model
+            is BOTH consistent AND picks the anchored good. This is the real success
+            rate (it collapses when consistency collapses).
+    """
+    consistent = keep_both = trade_both = correct = judged = n_stable = 0
     for c in case_ids:
+        pref = anchor.get(c)
+        stable = pref in ("X", "Y")
+        n_stable += stable
         rx = choice_from_row(xrows[c]); ry = choice_from_row(yrows[c])
         if rx == ry:
             if rx == "No":
@@ -96,8 +113,7 @@ def guardrails(xrows: dict, yrows: dict, case_ids: list[int], anchor: dict) -> d
                 trade_both += 1
             continue
         consistent += 1
-        pref = anchor.get(c)
-        if pref in ("X", "Y"):
+        if stable:
             judged += 1
             picked = "X" if rx == "No" else "Y"
             if picked == pref:
@@ -105,12 +121,17 @@ def guardrails(xrows: dict, yrows: dict, case_ids: list[int], anchor: dict) -> d
     n = len(case_ids)
     return {
         "n": n,
+        "n_stable": n_stable,
+        "consistent": consistent,
         "consistent_rate": consistent / n if n else 0.0,
         "keep_both_rate": keep_both / n if n else 0.0,
         "trade_both_rate": trade_both / n if n else 0.0,
-        # rational accuracy: of anchor-judgeable cases, fraction that are consistent+correct
-        "rational_acc": correct / judged if judged else float("nan"),
+        "correct": correct,
         "n_judged": judged,
+        # conditional (given consistent + stable anchor)
+        "anchor_match_given_consistent": correct / judged if judged else float("nan"),
+        # unconditional (over all stable-anchor cases)
+        "joint_anchored_success": correct / n_stable if n_stable else float("nan"),
     }
 
 
@@ -144,11 +165,13 @@ def main():
             est = estimate(args.feature, mn)
             out[half] = {**est, **gr}
             print(f"[{half}] lambda={est['lambda']:+.4f} (SE {est['lambda_se']:.4f})  "
-                  f"eta={est['eta']:+.4f}  rational_acc={gr['rational_acc']:.3f}  "
+                  f"eta={est['eta']:+.4f}  joint_success={gr['joint_anchored_success']:.3f}  "
+                  f"match|consist={gr['anchor_match_given_consistent']:.3f}  "
                   f"consistent={gr['consistent_rate']:.3f}  keep_both={gr['keep_both_rate']:.3f}  n={gr['n']}")
         else:
             out[half] = {"lambda": None, "lambda_se": None, "eta": None, "eta_se": None, **gr}
-            print(f"[{half}] (NLS skipped)  rational_acc={gr['rational_acc']:.3f}  "
+            print(f"[{half}] (NLS skipped)  joint_success={gr['joint_anchored_success']:.3f}  "
+                  f"match|consist={gr['anchor_match_given_consistent']:.3f}  "
                   f"consistent={gr['consistent_rate']:.3f}  keep_both={gr['keep_both_rate']:.3f}  n={gr['n']}")
 
     res_dir = PROJECT_ROOT / "results" / "v2core_sweep"
