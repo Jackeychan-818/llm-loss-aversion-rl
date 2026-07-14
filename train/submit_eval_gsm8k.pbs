@@ -1,0 +1,126 @@
+#!/bin/bash
+# ============================================================
+# PBS Job — paired GSM8K evaluation: base vs Qwen-own-delta 8k
+#
+# Optional overrides:
+#   LIMIT=20                 smoke test (default: full 1,319)
+#   GSM8K_DATA_FILE=...      local CSV/JSONL; otherwise HF openai/gsm8k
+#   BATCH_SIZE=4             reduce if generation runs out of memory
+#   MAX_NEW_TOKENS=512       deterministic generation budget
+#   OVERWRITE=1              discard prior predictions and restart
+# ============================================================
+#PBS -N lz-gsm8k
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/gsm8k_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/gsm8k_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+export HF_HOME="${HF_HOME:-$PROJECT_DIR/.cache/huggingface}"
+mkdir -p "$HF_HOME"
+
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then
+    export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"
+fi
+
+MODEL="${MODEL:-models/Qwen2.5-7B-Instruct}"
+ADAPTER="${ADAPTER:-checkpoints/grpo_qwen_delta/checkpoint-8000}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-results/gsm8k}"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-512}"
+LIMIT="${LIMIT:-}"
+GSM8K_DATA_FILE="${GSM8K_DATA_FILE:-}"
+OVERWRITE="${OVERWRITE:-0}"
+
+mkdir -p logs "$OUTPUT_ROOT/base" "$OUTPUT_ROOT/qwen_delta_8000"
+
+if [[ ! -f "$MODEL/config.json" ]]; then
+    echo "ERROR: base model config not found: $MODEL/config.json" >&2
+    exit 1
+fi
+if [[ ! -f "$ADAPTER/adapter_config.json" ]]; then
+    echo "ERROR: adapter config not found: $ADAPTER/adapter_config.json" >&2
+    exit 1
+fi
+if [[ -n "$GSM8K_DATA_FILE" && ! -f "$GSM8K_DATA_FILE" ]]; then
+    echo "ERROR: GSM8K_DATA_FILE not found: $GSM8K_DATA_FILE" >&2
+    exit 1
+fi
+
+echo "=== GSM8K paired evaluation ==="
+echo "Started:        $(date)"
+echo "Model:          $MODEL"
+echo "Adapter:        $ADAPTER"
+echo "Data:           ${GSM8K_DATA_FILE:-Hugging Face openai/gsm8k test}"
+echo "Limit:          ${LIMIT:-full 1,319}"
+echo "Batch size:     $BATCH_SIZE"
+echo "Max new tokens: $MAX_NEW_TOKENS"
+nvidia-smi
+python -c "import torch, transformers, peft, datasets; print('torch', torch.__version__); print('transformers', transformers.__version__); print('peft', peft.__version__); print('datasets', datasets.__version__); print('GPU', torch.cuda.get_device_name(0))"
+
+DATA_ARGS=()
+if [[ -n "$GSM8K_DATA_FILE" ]]; then
+    DATA_ARGS+=(--data_file "$GSM8K_DATA_FILE")
+fi
+
+LIMIT_ARGS=()
+EXPECTED_COUNT=1319
+if [[ -n "$LIMIT" ]]; then
+    LIMIT_ARGS+=(--limit "$LIMIT")
+    EXPECTED_COUNT="$LIMIT"
+fi
+
+OVERWRITE_ARGS=()
+if [[ "$OVERWRITE" == "1" ]]; then
+    OVERWRITE_ARGS+=(--overwrite)
+fi
+
+echo "=== Validate dataset ==="
+python eval/run_gsm8k_local.py \
+    "${DATA_ARGS[@]}" \
+    --validate_data_only
+
+echo "=== Evaluate base model ==="
+python eval/run_gsm8k_local.py \
+    --model_path "$MODEL" \
+    "${DATA_ARGS[@]}" \
+    --output_dir "$OUTPUT_ROOT/base" \
+    --batch_size "$BATCH_SIZE" \
+    --max_new_tokens "$MAX_NEW_TOKENS" \
+    "${LIMIT_ARGS[@]}" \
+    "${OVERWRITE_ARGS[@]}" \
+    2>&1 | tee logs/gsm8k_base.log
+
+echo "=== Evaluate Qwen-own-delta checkpoint 8,000 ==="
+python eval/run_gsm8k_local.py \
+    --model_path "$MODEL" \
+    --adapter_path "$ADAPTER" \
+    "${DATA_ARGS[@]}" \
+    --output_dir "$OUTPUT_ROOT/qwen_delta_8000" \
+    --batch_size "$BATCH_SIZE" \
+    --max_new_tokens "$MAX_NEW_TOKENS" \
+    "${LIMIT_ARGS[@]}" \
+    "${OVERWRITE_ARGS[@]}" \
+    2>&1 | tee logs/gsm8k_qwen_delta_8000.log
+
+echo "=== Paired comparison ==="
+python eval/compare_gsm8k.py \
+    --base "$OUTPUT_ROOT/base/predictions.jsonl" \
+    --tuned "$OUTPUT_ROOT/qwen_delta_8000/predictions.jsonl" \
+    --output "$OUTPUT_ROOT/comparison.json" \
+    --require_count "$EXPECTED_COUNT" \
+    2>&1 | tee logs/gsm8k_comparison.log
+
+echo "Completed: $(date)"
