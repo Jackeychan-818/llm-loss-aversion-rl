@@ -122,10 +122,27 @@ The choice was also post-hoc: step 20,000 has the smaller absolute lambda
 (`|-0.083| < 0.111`) but a much worse `eta = 1.263`. Rejecting it is reasonable,
 but the joint rule was not written in advance.
 
-**Required action:** describe `test_goods` as validation, not final test. Freeze
-a checkpoint rule before new seeds, apply it mechanically, and evaluate the
-selected checkpoint on final data only after selection. The rule must consider
-lambda, eta, and consistency jointly.
+**Status (July 15, 2026): rule FROZEN — see `CHECKPOINT_PROTOCOL.md`.**
+
+The rule is now fixed in advance and applied mechanically by
+`eval/select_checkpoint.py` (no judgement at selection time): eligibility
+requires `consistency >= 0.50` and finite non-zero SEs; the primary criterion is
+`min d = sqrt(lambda^2 + eta^2)` (the joint distance from the rational ideal, so
+lambda alone cannot be bought by loading rigidity onto eta); tie-breaks are
+higher consistency, then the earliest checkpoint.
+
+Applied post hoc to the completed run it reproduces the original choice —
+step 8,000 wins with `d = 0.516`, and step 20,000 (smallest |lambda| = 0.083 but
+`eta = 1.263`) is demoted to *last* with `d = 1.266`. This shows the frozen rule
+agrees with the judgement already made, but does NOT retroactively make 8,000 a
+pre-registered choice, and does not remove the selection-on-validation bias in
+its `lambda = 0.111`.
+
+Artifact: `results/checkpoint_selection/qwen_delta_seed0.json`.
+
+**Remaining action:** describe `test_goods` as validation, not final test
+(done in `training_overview.tex`), and apply the frozen rule to each new seed,
+opening the frozen final suite only after selection.
 
 ### 5. Training-seed replication
 
@@ -140,16 +157,11 @@ plus their mean and variation.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
-The checkpoint curve and OOD tables are attributed to
-`training_overview_merged.tex`, **but that file does not exist in this
-repository** (absent from the working tree, never committed on any branch).
-That evidence therefore has no canonical home — see `PAPER_SOURCES.md`.
-The canonical paper source is `training_overview.tex`; the merged file must
-be either committed and folded into it, or its reference removed and the
-tables regenerated from tracked artifacts. In addition, the raw
-checkpoint/OOD X/Y predictions,
-NLS output directories, run manifests, adapter/checkpoint checksums, and final
-table-generation artifacts are not tracked in the repository.
+The canonical paper source is `training_overview.tex` (see
+`PAPER_SOURCES.md`); paper tables must be generated from tracked
+artifacts. Today the raw checkpoint/OOD X/Y predictions,
+NLS output directories, run manifests, adapter/checkpoint checksums, and
+final table-generation artifacts are not tracked in the repository.
 
 **Required action:** archive the raw outputs and metadata, add exact
 reproduction commands, and generate paper tables from tracked artifacts.
