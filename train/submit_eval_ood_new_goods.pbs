@@ -99,7 +99,7 @@ run_eval() {
         --model_name "$model_name" \
         --feature "$OUTPUT_ROOT" \
         --robust_model 1 \
-        --temperature 1 \
+        --link-scale 1 \
         2>&1 | tee "logs/${log_stem}_estimate.log"
 }
 

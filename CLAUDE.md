@@ -293,7 +293,28 @@ delta_consensus_v3.json ──────────────────�
 5. **TRL's `GRPOTrainer` is the training library.** Check TRL docs for the exact API — it evolves fast.
 6. **Dynamic sampling is critical** — 99% of base outputs are "No", so many G=16 batches may be all-identical → zero advantage → zero gradient. Recent plots show high zero-std filtering; treat training reward as a diagnostic and select checkpoints by held-out structural λ̂. See KNOWN_ISSUES.md items #3-4.
 7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.
-8. **T=1 for NLS estimation** — T=0 causes zero Jacobian → NLS can't converge → returns degenerate λ̂=0 with zero SEs. Always use T=1 for Style A models with logprobs.
+8. **T is the structural LINK SCALE — not a sampling temperature.** Two different
+   things are easily conflated; keep them apart:
+   - **LLM decoding**: deterministic greedy (`do_sample=False` in `run_qwen_local.py`);
+     the Yes/No choice is read from teacher-forced logprobs. Nothing is sampled.
+   - **Estimator T**: the scale in the structural link `P(Yes) = 1/(1+exp(-z/T))`
+     (`_calculate_y_hat` in `core_exp_refactored.py`). A property of the econometric
+     model only.
+
+   **Model A (NLS) requires T > 0 — use T=1** for Style A models with logprobs. At T=0
+   the link becomes the step `1(z>0)` → zero Jacobian → NLS can't converge → degenerate
+   λ̂=0 with zero SEs. The T=0 / binary maximum-score regime belongs to **Model B (SMS,
+   `--robust_model 2`)**. `estimate_qwen_checkpoint.py` now hard-errors on Model A + T≤0.
+
+   **CLI**: the option is `--link-scale`; `--temperature` is a DEPRECATED alias kept so
+   existing NSCC scripts keep working (the old name wrongly implied sampling).
+
+   **Approved paper wording:**
+   > "Evaluation used deterministic greedy decoding (`do_sample=False`), equivalent to
+   > the zero-temperature decoding limit. Model A used structural link scale T=1."
+
+   (Decoding temperature is *inactive* under greedy decoding, not numerically set to 0 —
+   do not write "temperature=0 was used" or "Model A NLS at T=0".)
 9. **The prompts in train/ must match eval/ exactly** — `prompt_builder.py` replicates `generate_prompt()` from `run_all_models.py`. If you change one, change both.
 10. **On NSCC, always `module purge` first** — stale modules cause conflicts. Load `pytorch/2.6.0-py3-cu11.8` fresh (cu12.6 is too new for the gdev/g1 driver).
 11. **`everyday_goods_full.json` must be a real file on NSCC** — it's a symlink locally pointing to `../Loss_Aversion/`. Copy the actual file when deploying to NSCC.

@@ -56,7 +56,7 @@ echo "=== NLS estimation for $MODEL_NAME ==="
 python eval/estimate_qwen_checkpoint.py \
     --model_name "$MODEL_NAME" \
     --feature baseline \
-    --temperature 1 \
+    --link-scale 1 \
     2>&1 | tee "logs/estimate_${MODEL_NAME}.log"
 
 echo "=== Done: $MODEL_NAME ==="

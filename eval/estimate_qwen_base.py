@@ -41,7 +41,8 @@ print("=" * 60)
 model.initialize_parameters()
 
 # ==========================================
-# MODEL A: NLS Estimation (T=0, WITH logprobs)
+# MODEL A: NLS Estimation (structural link scale T=1, WITH logprobs)
+# NOTE: T is the link scale, not a sampling temperature; decoding is greedy.
 # ==========================================
 print("=" * 60)
 print(f"Running NLS Estimation for {MODEL_NAME}")

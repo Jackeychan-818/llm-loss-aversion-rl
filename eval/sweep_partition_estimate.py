@@ -68,7 +68,7 @@ def estimate(feature: str, model_name: str) -> dict:
     """Run Model A NLS T=1 via the vetted CLI, parse lambda/eta from the CSV."""
     r = subprocess.run(
         [sys.executable, str(PROJECT_ROOT / "eval" / "estimate_qwen_checkpoint.py"),
-         "--feature", feature, "--model_name", model_name, "--temperature", "1"],
+         "--feature", feature, "--model_name", model_name, "--link-scale", "1"],
         capture_output=True, text=True, cwd=str(PROJECT_ROOT),
     )
     if r.returncode != 0:
