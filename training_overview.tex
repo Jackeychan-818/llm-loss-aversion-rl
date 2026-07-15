@@ -349,16 +349,27 @@ temperature; evaluation decoding remains greedy ($T_{\mathrm{dec}}=0$).
 \centering
 \begin{tabular}{lcccc}
 \toprule
- & \multicolumn{2}{c}{Before GRPO} & \multicolumn{2}{c}{After GRPO} \\
+ & \multicolumn{2}{c}{$\lambda$ (loss aversion)} & \multicolumn{2}{c}{$\eta$ (status-quo)} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-Parameter & Estimate & SE & Estimate & SE \\
+Model & Estimate & SE & Estimate & SE \\
 \midrule
-$\lambda$ (loss aversion)  & 11.75 & 1.22 & \textbf{0.177} & 0.005 \\
-$\eta$ (status-quo bias)   &  1.52 & 0.09 & \textbf{$-$0.048} & 0.024 \\
+Base Qwen-7B (historical, \emph{unmatched}) & 11.75 & 1.22 & 1.52 & 0.09 \\
+\midrule
+Qwen-own $\tilde{\delta}$, step 8{,}000 (\textbf{primary}) & \textbf{0.111} & 0.014 & 0.504 & 0.029 \\
+Frontier-consensus $\tilde{\delta}$ (reward-source ablation) & 0.177 & 0.005 & $-$0.048 & 0.024 \\
 \bottomrule
 \end{tabular}
-\caption{Structural parameter estimates before and after GRPO fine-tuning.
-Human benchmark: $\lambda \approx 2.25$ \citep{tversky1992advances}.}
+\caption{Structural estimates (Model A NLS, link scale $T=1$) on
+\texttt{test\_goods}. \textbf{Both post-training rows are validation-only, not
+untouched final-test results}: \texttt{test\_goods} informed both the Qwen-own
+reward construction and checkpoint selection. The base row is a
+\emph{historical, unmatched} reference---it used a Together-hosted Turbo
+endpoint, 9{,}950 cases, and top-five first-token probabilities, whereas the
+post-training rows use local weights, 9{,}890 cases, and teacher-forced
+sequence scores; a matched local-base rerun is pending, so the before/after
+difference must not yet be read as a causal training effect. The two reward
+sources trade off rather than dominate: Qwen-own attains lower $\lambda$,
+consensus attains lower $|\eta|$.}
 \end{table}
 
 \begin{table}[h]
@@ -405,11 +416,35 @@ such as flavor, freshness, or scent. A separate 50-good OOD suite may be
 reported as external-validity evidence; no additional OOD run is required for
 the core configuration-generalization claim.
 
-$\hat{\lambda}_{\text{after}} = 0.177$ is \textbf{well below the human
-benchmark} of $\lambda \approx 2.25$ and is expected to be lower than any
-frontier model measured in Phase 0. This confirms the project's core
-thesis: a 7B model fine-tuned with GRPO on a rationality-based reward can
-achieve lower loss aversion than frontier models 10--100$\times$ its size.
+\subsection{Claims We Do Not Make}
+
+The primary model attains $\hat{\lambda} = 0.111$ (SE $0.014$), close to the
+ownership-neutral target $\lambda = 0$. We deliberately stop short of three
+comparisons that the current evidence cannot support.
+
+\textbf{We do not claim superiority over human loss aversion.} The commonly
+cited $\lambda \approx 2.25$ \citep{tversky1992advances} is estimated from a
+different prospect-theory task under a different parameterization; here the
+endowed-good multiplier is $1 + \lambda$. The two quantities are not on a
+common scale, so ``below the human benchmark'' would be a category error rather
+than a finding.
+
+\textbf{We do not claim superiority over frontier models.} The Phase-0 frontier
+estimates have not been harmonized with ours across model endpoints, sample
+sizes, or probability scorers. Until a harmonized comparison is run, any
+frontier ranking would confound the intervention with measurement differences.
+
+\textbf{We do not yet claim a causal before/after reduction.} The historical
+base estimate is not matched to the post-training evaluation pipeline (see the
+Results table), and a matched local-base rerun is pending.
+
+Accordingly the claim we make is narrower and matched to the evidence: relative
+to the ownership-neutral target $\lambda = 0$, post-training with a frozen,
+model-specific pseudo-utility substantially reduces measured endowment
+dependence on held-out attribute configurations, and retains low loss aversion
+on goods excluded from fine-tuning---reported jointly with $\eta$, choice
+consistency, and preference preservation, since $\lambda$ alone can be
+misleading when $\eta$ absorbs choice rigidity.
 
 % =============================================================================
 \begin{thebibliography}{9}
