@@ -5,9 +5,21 @@
 
 ## What This Project Is
 
-**lambda-zero** is a reinforcement learning research project testing whether a small open-source model can be trained to reduce loss aversion below frontier-model and human benchmarks.
+**lambda-zero** is a reinforcement learning research project testing whether a
+small open-source model can be trained to reduce ownership-dependent choice
+behaviour while preserving its own estimated preference ordering.
 
-The project fine-tunes **Qwen2.5-7B-Instruct** with **GRPO** using a rationality-based reward. The main held-out attribute-configuration result is large: structural estimation moved Qwen from **λ̂_before = 11.75** to **λ̂_after = 0.177**, a **98.5% reduction**.
+The primary paper model fine-tunes **Qwen2.5-7B-Instruct** with **GRPO** using
+Qwen's own estimated utility differences. Checkpoint 8,000 is the current
+selected candidate. Its `test_goods` estimate is **λ̂ = 0.111**, **η̂ = 0.504**;
+because that set was used for checkpoint selection, this is a validation
+result. The separately frozen OOD evaluation reported in the current draft is
+**λ̂ = 0.226**, **η̂ = 0.790**, with **49.46%** choice consistency, pending
+archival of the underlying raw artifacts. The frontier-consensus-delta model
+is now the reward-source ablation rather than the main output.
+
+See `PAPER_READINESS.md` for the authoritative distinction between completed,
+validation-only, claimed-but-unarchived, and still-required evidence.
 
 ---
 
@@ -36,7 +48,10 @@ where λ is loss aversion, η is status-quo bias, and U is estimated from item/a
 
 ### Baseline Qwen2.5-7B-Instruct
 
-Estimated from the baseline treatment with Model A NLS, `T=1`.
+Estimated from the baseline treatment with Model A NLS, `T=1`. This is a
+historical Together-hosted baseline. It used a different endpoint, sample, and
+probability scorer from the local adapter evaluation, so the exact local base
+checkpoint must be rerun before this is used as the causal before/after value.
 
 | Parameter | Estimate | Std. Error |
 |---|---:|---:|
@@ -51,7 +66,24 @@ Raw choice fractions show the base model almost never trades:
 | tie | 0.00 | 0.00 | 0.00 |
 | No | 0.45 | 0.00 | 99.07 |
 
-### GRPO Fine-Tuned Qwen2.5-7B-Instruct
+### Primary: Qwen-Own-Delta GRPO
+
+The economic motivation is agent-specific utility: the main experiment asks
+whether post-training can remove the effect of ownership while retaining
+Qwen's own estimated ranking, rather than imposing a ranking aggregated from
+other models.
+
+| Evaluation role | λ̂ | η̂ | Consistency | Interpretation |
+|---|---:|---:|---:|---|
+| ID `test_goods` | **0.111** | **0.504** | pending archived table | Validation/checkpoint-selection result for step 8,000 |
+| New-goods OOD | **0.226** | **0.790** | **49.46%** | Intended final evaluation; raw artifacts still need archival |
+
+The current Qwen-own delta was fitted from endowed base responses that include
+`test_goods` and come from a model that says No approximately 99% of the time.
+The paper must therefore validate this pseudo-utility against frozen
+ownership-free Qwen preferences and treat `test_goods` as validation.
+
+### Ablation: Frontier-Consensus-Delta GRPO
 
 Evaluation on held-out attribute configurations in `test_goods.json` using `eval/run_qwen_local.py` and the Model A estimators.
 
@@ -69,7 +101,11 @@ Baseline-treatment raw choice fractions after GRPO:
 | tie | 0.02 | 0.00 | 0.07 |
 | No | 47.34 | 0.09 | 7.84 |
 
-Interpretation: the fine-tuned model is no longer dominated by the `(No, No)` status-quo pattern. The post-training λ estimates are below the usual human benchmark around λ ≈ 2-2.5.
+Interpretation: the consensus-delta model is no longer dominated by the
+`(No, No)` status-quo pattern. It is a completed reward-source reference, not
+the primary paper output. Human and frontier-superiority comparisons are not
+currently treated as established because the estimands and evaluation
+pipelines have not been harmonized.
 
 ### Held-Out Split and Attribute Sensitivity
 
@@ -95,11 +131,13 @@ both statistically and practically important:
 These diagnostics show that the learned policy remains sensitive to ordinal
 attribute quality rather than collapsing to a constant response. The effects
 refer to generic 3×3 ordinal profiles, not separate named semantic attributes.
-The current split is sufficient for the core within-benchmark paper claim. The
-existing 50-good OOD suite is separate external-validity evidence rather than a
-prerequisite for that claim; no additional OOD run is required by this
-analysis. Full methods and reproducibility details are in
-`ATTRIBUTE_EFFECTS.md` and `eval/analyze_attribute_effects.py`.
+The current split is sufficient for the narrow within-benchmark configuration
+claim. For the primary Qwen-own-delta run, however, `test_goods` is validation
+because its responses informed reward construction and its estimates informed
+checkpoint selection. A separately frozen evaluation is therefore important
+for the full-paper claim. Full methods and reproducibility details are in
+`ATTRIBUTE_EFFECTS.md`, `eval/analyze_attribute_effects.py`, and
+`PAPER_READINESS.md`.
 
 ---
 
@@ -108,13 +146,13 @@ analysis. Full methods and reproducibility details are in
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
-| 1. Small-model baseline | ✅ Done | Qwen λ̂_before = 11.75 |
-| 2. Reward design | ✅ Done | Utility-weighted reward using consensus δ̃ v3 |
-| 3. GRPO training | ✅ Done | Main LoRA checkpoint and NSCC training pipeline |
-| 4. Post-training evaluation | ✅ Done | Baseline/debias/forced estimates and held-out attribute-sensitivity analysis |
-| 5. Cross-model comparison | ⏳ Next | Qwen before/after vs frontier models |
-| 6. Ablations | 🟡 Current | Qwen-delta reward run, checkpoint selection, training-health audit |
-| 7. Paper writeup | ⏳ | NeurIPS workshop / ICML full-paper path |
+| 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer comparison pending |
+| 2. Qwen-own reward design | 🟡 Needs validation | Primary pseudo-utility exists; ownership-free preference validation and leakage-clean construction pending |
+| 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds still required |
+| 4. Primary-model evaluation | 🟡 Partially complete | ID validation and claimed OOD tables exist; raw OOD/checkpoint artifacts must be archived |
+| 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID results committed; reported OOD artifacts need archival |
+| 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
+| 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
 
@@ -135,13 +173,15 @@ See `HISTORY.md` for the chronological project history.
 
 ---
 
-## Reward Function
+## Reward Function and Paper Roles
 
-The main run uses a utility-weighted rationality reward from `data/deltas/delta_consensus_v3.json`, a consensus δ̃ from six frontier models.
+The primary model uses Qwen's own estimated utility differences from
+`data/deltas/delta_qwen_base.json`. The consensus file from six frontier models
+uses the same reward form as a reward-source ablation.
 
 ```python
 def reward(response, perspective, delta):
-    # delta = U_X - U_Y from frontier consensus
+    # delta = model-specific or consensus pseudo-utility U_X - U_Y
     if perspective == "X":
         rational = "No" if delta > 0 else "Yes"
     else:
@@ -149,9 +189,14 @@ def reward(response, perspective, delta):
     return abs(delta) if response == rational else -abs(delta)
 ```
 
-The pure symmetry reward was rejected because a model that always says "No" from both perspectives can appear symmetric while still being economically irrational.
+The pure same-token symmetry reward was rejected because the meaning of Yes/No
+reverses with the endowed good. A model that always says No keeps whichever
+good it owns and is therefore ownership-dependent.
 
-The current ablation retrains from scratch with Qwen-7B's own NLS utility differences from `data/deltas/delta_qwen_base.json`.
+The economic reason for making Qwen-own delta primary is that utility is
+agent-specific. This advantage is conditional on demonstrating that Qwen's
+utility estimate is identified and agrees with ownership-free Qwen choices.
+Neither reward source should be called objective cardinal ground truth.
 
 ---
 
@@ -161,10 +206,10 @@ The current ablation retrains from scratch with Qwen-7B's own NLS utility differ
 - Fine-tuning: LoRA rank 16 with TRL `GRPOTrainer`.
 - Main training data: `data/remaining_goods.json`.
 - Evaluation data: `data/test_goods.json`.
-- Main reward data: `data/deltas/delta_consensus_v3.json`.
-- Ablation reward data: `data/deltas/delta_qwen_base.json`.
-- Main training config: `train/configs/qwen25_7b.yaml`.
-- Qwen-delta config: `train/configs/qwen25_7b_qwen_delta.yaml`.
+- Primary reward data: `data/deltas/delta_qwen_base.json`.
+- Reward-source ablation data: `data/deltas/delta_consensus_v3.json`.
+- Primary Qwen-own-delta config: `train/configs/qwen25_7b_qwen_delta.yaml`.
+- Consensus-delta ablation config: `train/configs/qwen25_7b.yaml`.
 - vLLM-free eval script: `eval/run_qwen_local.py`.
 - Monitoring: `monitor.sh`.
 - Plotting: `plot_training.py`.
@@ -184,13 +229,18 @@ Key main-run hyperparameters:
 
 ## Remaining Work
 
-- Compare λ̂_after against the 9 frontier-model baselines from `loss_aversion/`.
-- Finish and evaluate the Qwen-delta ablation.
-- Select and justify final checkpoint(s).
-- Audit training-health plots: recent plots show high zero-std/DAPO filtering and weak reward trend, so checkpoint choice should not rely on training reward alone.
-- Run ablations for reward source, KL β, learning rate, and LoRA rank.
-- Optionally report the existing 50-good OOD suite as separate external-validity evidence; no additional OOD run is required for the core within-benchmark claim.
-- Build paper figures and write the workshop submission.
+1. Rerun the exact local base model with the post-training evaluator.
+2. Archive and reproduce the Qwen-own checkpoint sweep and OOD results.
+3. Validate Qwen-own delta against ownership-free Qwen preferences.
+4. Freeze a joint lambda/eta/consistency checkpoint-selection rule.
+5. Run at least three Qwen-own-delta training seeds.
+6. Add matched SFT and sign-only GRPO baselines; keep consensus as the
+   reward-source ablation.
+7. Add pair/good-aware structural robustness, estimator recovery, and
+   GSM8K/IFEval capability checks.
+8. Retain frontier or human comparisons only if their protocols and estimands
+   are made comparable.
+9. Rewrite the full paper around the Qwen-own-delta primary result.
 
 ---
 
@@ -202,3 +252,7 @@ Key main-run hyperparameters:
 4. Keep train prompts aligned with eval prompts.
 5. Prefer LoRA over full fine-tuning because the memory budget is a single A100.
 6. vLLM is not required for the working NSCC path; plain HF generation/evaluation is the stable path.
+7. Treat `test_goods.json` as validation for Qwen-own-delta reporting: it
+   informed both the pseudo-utility construction and checkpoint selection.
+8. Report lambda and eta jointly with direct consistency/keep-both/trade-both
+   outcomes; do not select or rank models on lambda alone.

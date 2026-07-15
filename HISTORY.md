@@ -17,23 +17,38 @@ This file combines the recent git commits into a project-level history, so the r
 | Jul 3, 2026 | `b511e53` | Added full held-out Phase 4 evaluation results and PBS eval scripts. | Phase 4 result: `lambda_after = 0.177` with SE `0.005`, a 98.5% reduction from `11.75`. |
 | Jul 7, 2026 | `c643617` | Added debias and forced treatment results, Qwen-delta ablation data/config, and training docs. | Treatment robustness looks strong: baseline `0.177`, debias `0.205`, forced `0.173`. Qwen-own-delta reward became the active ablation. |
 | Jul 9, 2026 | `f2a8710` | Added `monitor.sh`, `plot_training.py`, and log append fixes in PBS scripts. | Training-health monitoring became easier and log history is preserved across job restarts. |
+| Jul 15, 2026 | Working-tree paper decision | Made Qwen-own-delta checkpoint 8,000 the primary paper model and the frontier-consensus model the reward-source ablation; documented selection-on-test, reward leakage, matched-base, seed, inference, capability, and reproducibility risks. | `test_goods` is validation for the primary model; the separately frozen evaluation is intended to carry final claims after artifacts are archived. |
 
 ## Current Research Snapshot
 
-- Baseline Qwen2.5-7B-Instruct: `lambda_before = 11.7519` (SE `1.2219`), `eta = 1.5178` (SE `0.0852`).
-- GRPO Qwen2.5-7B-Instruct LoRA: `lambda_after = 0.1765` (SE `0.0050`), `eta = -0.0477` (SE `0.0240`).
+- Primary paper model: Qwen-own-delta GRPO, checkpoint 8,000.
+- Primary ID validation result: `lambda = 0.111`, `eta = 0.504`. It is not an
+  untouched final-test estimate because `test_goods` was used for checkpoint
+  selection.
+- Primary OOD result reported in the draft: `lambda = 0.226`, `eta = 0.790`,
+  consistency `49.46%`; raw outputs and estimator artifacts must be archived.
+- Reward-source ablation: consensus-delta GRPO, ID `lambda = 0.1765`,
+  `eta = -0.0477`; reported OOD `lambda = 0.395`, `eta = 0.502`, consistency
+  `64.89%`.
+- Historical Together-hosted base: `lambda = 11.7519`, `eta = 1.5178`; a
+  matched exact-local-base evaluation remains required.
 - Held-out evaluation used 9,890 attribute configurations from `test_goods.json`; there are zero repeated prompts/configurations across train and test, while the 100 goods and 4,945 goods pairs are shared.
-- Reduction in loss aversion: approximately 98.5%.
 - Held-out attribute profiles are jointly significant under a leave-one-good-out jackknife (χ²(8) = 756.05, p < 10^-150), explain 48.8% of within-pair/perspective variation, and flip at least one perspective's answer for 42.18% of goods pairs.
-- Project scope decision: the current split supports the core within-benchmark configuration-generalization claim; the existing 50-good OOD suite is separate external-validity evidence, and no additional OOD run is required for the core claim.
-- The result is below the human benchmark usually cited around `lambda ~= 2.25`.
-- Debias and forced treatments are also below the human benchmark: `0.205` and `0.173`.
-- Current ablation: retraining with Qwen-7B's own NLS delta file, `data/deltas/delta_qwen_base.json`.
+- The split supports configuration generalization, but `test_goods` is
+  validation for Qwen-own delta because it informed reward construction and
+  checkpoint selection.
+- Human and frontier-superiority claims are paused pending comparable tasks,
+  estimands, model endpoints, samples, scorers, and estimators.
 
 ## Remaining Work
 
-- Cross-model comparison against the frontier-model baseline.
-- Ablations for reward source, beta/KL strength, learning rate, and checkpoint selection.
-- Optional reporting of the existing 50-good OOD suite as separate external-validity evidence.
-- Paper figures and writeup.
-- Training-health audit: recent convergence plots suggest high DAPO filtering and weak reward improvement despite the strong final structural result, so checkpoint selection and held-out validation should be treated carefully.
+- Rerun the exact local base checkpoint with the adapter evaluation pipeline.
+- Archive all Qwen-own checkpoint-sweep and OOD raw/model/estimator artifacts.
+- Validate Qwen-own pseudo-utility against ownership-free Qwen preferences.
+- Freeze a joint lambda/eta/consistency checkpoint-selection rule and run at
+  least three seeds.
+- Add matched SFT and sign-only GRPO baselines, robust inference and estimator
+  recovery, plus GSM8K/IFEval capability checks.
+- Use consensus delta as the reward-source ablation and rewrite the paper around
+  Qwen-own delta. Full ordering and claim restrictions are in
+  `PAPER_READINESS.md`.

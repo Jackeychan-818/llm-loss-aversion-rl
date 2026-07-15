@@ -4,30 +4,44 @@ Fine-tuning Qwen2.5-7B-Instruct with GRPO to reduce measured loss aversion in an
 
 ## Headline Results
 
-- Baseline Qwen2.5-7B: λ̂_before = **11.75** (SE = 1.22)
-- GRPO LoRA, baseline treatment: λ̂_after = **0.177** (SE = 0.005)
-- GRPO LoRA, debias treatment: λ̂ = **0.205**
-- GRPO LoRA, forced treatment: λ̂ = **0.173**
-- Main reduction: **98.5%** on held-out attribute configurations in `test_goods.json`
+- **Primary paper model:** Qwen-own-delta GRPO, checkpoint 8,000.
+- Primary-model validation: λ̂ = **0.111**, η̂ = **0.504** on
+  `test_goods.json`. This set was used for checkpoint selection, so 0.111 is a
+  validation result rather than untouched final-test performance.
+- Primary-model OOD result reported in the current draft: λ̂ = **0.226**,
+  η̂ = **0.790**, consistency = **49.46%**. Raw outputs and estimator artifacts
+  still need to be archived for paper-ready reproducibility.
+- **Reward-source ablation:** frontier-consensus-delta GRPO, with ID
+  λ̂ = **0.177** (SE = 0.005), η̂ = **-0.048** and reported OOD
+  λ̂ = **0.395**, η̂ = **0.502**, consistency = **64.89%**.
+- Historical Together-hosted base Qwen: λ̂ = **11.75** (SE = 1.22). A matched
+  evaluation of the exact local base checkpoint with the post-training scorer
+  is still required before using this as the causal before/after baseline.
 - Attribute profiles explain **48.8%** of within-pair/perspective variation
 - Changing the held-out configuration flips at least one answer for **42.2%** of goods pairs
 
-Training and compositional evaluation contain no repeated prompts or exact
-configurations. They use the same 100 goods and 4,945 goods pairs, with 10
-configurations per pair used for training and two disjoint configurations
-reserved for evaluation. This supports within-benchmark configuration
-generalization; it is not by itself an unseen-goods claim. See
-`ATTRIBUTE_EFFECTS.md` for the complete analysis.
+Training and evaluation contain no repeated prompts or exact configurations.
+They use the same 100 goods and 4,945 goods pairs, with 10 configurations per
+pair used for training and two disjoint configurations reserved for evaluation.
+This supports within-benchmark configuration generalization; it is not an
+unseen-goods claim. Because Qwen-own reward construction and checkpoint
+selection used information from `test_goods`, the paper treats this set as
+validation and retains a separately frozen evaluation for final claims. See
+`ATTRIBUTE_EFFECTS.md` for the split analysis and `PAPER_READINESS.md` for the
+full methodological audit.
 
 ## Current Work
 
-- Qwen-delta reward ablation using `data/deltas/delta_qwen_base.json`
-- Checkpoint/training-health audit using `monitor.sh` and `plot_training.py`
-- Cross-model comparison against the frontier-model baseline
-- Follow-up reward design based on paired ownership consistency, neutral
-  preference anchors, valid Pareto cases, and ordinal attribute monotonicity
+- Rerun the exact local base checkpoint on the same 9,890 rows and scorer.
+- Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
+  artifacts.
+- Validate Qwen-own delta against frozen ownership-free Qwen preferences.
+- Freeze the checkpoint-selection rule and run at least three Qwen-own-delta
+  training seeds.
+- Add matched SFT and sign-only GRPO baselines; retain consensus delta as the
+  reward-source ablation.
+- Add robust structural inference and GSM8K/IFEval capability checks.
 
-See `PROJECT_OVERVIEW.md` for the research narrative,
-`ATTRIBUTE_EFFECTS.md` for the held-out configuration analysis,
-`REWARD_DESIGN_V2.md` for the proposed non-cardinal reward design, and
-`HISTORY.md` for the commit-by-commit project history.
+See `PAPER_READINESS.md` for the authoritative blocker list,
+`PROJECT_OVERVIEW.md` for the research narrative, and `HISTORY.md` for the
+commit-by-commit project history.

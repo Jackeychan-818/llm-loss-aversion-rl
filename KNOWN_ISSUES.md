@@ -1,24 +1,66 @@
 # Known Issues & Open Questions — lambda-zero
 
-A running log of problems encountered, potential risks, and things to verify before they become bugs.
+A running log of problems encountered, potential risks, and things to verify
+before they become bugs. `PAPER_READINESS.md` is the authoritative prioritized
+summary for the current full-paper plan.
+
+## Current Paper Direction — July 15, 2026
+
+- **Primary model:** Qwen-own-delta GRPO, with checkpoint 8,000 as the current
+  selected candidate.
+- **Reward-source ablation:** frontier-consensus-delta GRPO.
+- **Primary validation estimate:** Qwen-own-delta step 8,000 has
+  `lambda = 0.111`, `eta = 0.504` on `test_goods.json`. Because this dataset
+  was used to select the checkpoint, 0.111 is a validation result, not
+  untouched final-test performance.
+- **Intended final result:** the separately frozen new-goods evaluation. The
+  current draft reports Qwen-own-delta OOD `lambda = 0.226`, `eta = 0.790`,
+  and consistency `49.46%`, but the raw outputs and estimator artifacts must
+  be archived before this is paper-ready.
+- **Economic rationale:** use Qwen's own estimated preference ordering rather
+  than imposing the preferences of frontier models. Both reward sources remain
+  pseudo-utility signals, not objective cardinal ground truth.
 
 ---
 
 ## Critical — Must resolve before paper claims
 
 ### 1. Are δ̃ values reliable?
-**Status:** ✅ Resolved (April 2026)
+**Status:** Reopened for the primary Qwen-own-delta claim (July 2026)
 
-**Finding:** Qwen-7B's own δ̃ values are unreliable — α/β estimates are all near zero because the model says No 99% of the time, giving NLS no variation to learn from. δ̃ values reflected reference category geometry, not real preferences.
+**Finding:** Qwen-7B says No in approximately 99% of endowed prompts, so its
+item and attribute utilities may be weakly identified. The agent-specific
+utility motivation is economically defensible, but it needs direct validation.
 
-**Solution:** Use consensus δ̃ from 6 frontier models (v3: GPT-4o, GPT-5, GPT-5.2, Gemini, Llama-70B, DeepSeek-R1). Excluded Claude (0.05% Yes rate, degenerate δ̃ in thousands), Apertus-70B (0.5% Yes rate), and GPT-3.5 (2.8% Yes rate). 64% of cases have unanimous sign agreement across all 6 models. File: `data/deltas/delta_consensus_v3.json`.
+**Action needed:** validate Qwen-own delta against frozen ownership-free Qwen
+preferences under multiple paraphrases and both display orders. Report sign
+agreement, confidence, and retained coverage.
 
 ### 2. Which δ̃ source to use?
-**Status:** ✅ Resolved (April 2026)
+**Status:** ✅ Paper-role decision updated (July 15, 2026)
 
-**Decision:** Use `delta_consensus_v3.json` (mean δ̃ from 6 strong frontier models) with Option A — include all cases, even those where models disagree on sign. The |δ̃| weighting in the reward function naturally downweights ambiguous cases (small |mean δ̃| → small reward magnitude → small gradient).
+**Decision:** Use `delta_qwen_base.json` for the primary model because economic
+utility is agent-specific. Use `delta_consensus_v3.json` as the reward-source
+ablation/reference.
 
-DeepSeek-R1 standalone δ̃ also saved as `data/deltas/delta_deepseek.json` for potential ablation. Qwen's own NLS delta is now saved as `data/deltas/delta_qwen_base.json` for the active ablation.
+This role decision does not resolve issue 1 or the indirect leakage in issue 9.
+The paper must report the trade-off honestly: Qwen-own delta currently has
+lower estimated lambda, while consensus has lower eta and higher OOD
+consistency.
+
+### 2A. Full-paper blockers not captured by the original issue numbering
+
+**Status:** Open; see `PAPER_READINESS.md` for full specifications.
+
+- Rerun the exact local base with the same 9,890 rows and local scorer as the
+  adapters.
+- Treat `test_goods` as validation because it informed Qwen-own reward
+  construction and checkpoint selection.
+- Freeze a joint lambda/eta/consistency checkpoint-selection rule.
+- Run at least three Qwen-own-delta training seeds.
+- Archive raw checkpoint and OOD outputs, estimator artifacts, checkpoint
+  identities/checksums, and reproduction commands.
+- Add matched SFT and preferably sign-only GRPO baselines.
 
 ### 3. Training-health interpretation
 **Status:** Open after full run and new convergence plots (July 2026)
@@ -115,10 +157,12 @@ changes for 42.18% of goods pairs. Full details are in
 The Qwen-delta ablation has an additional indirect leakage path: Qwen's base utility table was fitted from 9,950 baseline cases (60 trial + 9,890 test), then used to construct rewards for `remaining_goods.json`. The adapter never sees the exact test prompts during GRPO, but test responses informed the utility model that generated its training reward. Results on `test_goods.json` should therefore be described as checkpoint-selection/compositional results rather than a final untouched test.
 
 **Decision:**
-- Use `test_goods.json` for the paper's core held-out configuration result.
-- Describe it as within-benchmark configuration generalization, not unseen-goods transfer.
-- No additional OOD run is required to support that core claim.
-- If the existing 50-good OOD suite/results are retained, report them separately as external-validity evidence and do not use them for checkpoint selection.
+- Use `test_goods.json` as validation for the primary Qwen-own-delta model.
+- Describe it as within-benchmark configuration generalization, not
+  unseen-goods transfer.
+- Use a separately frozen suite for final primary-model claims.
+- Do not use the new-goods OOD suite for checkpoint selection, and archive its
+  raw outputs before presenting it as paper-ready evidence.
 
 ### 10. KL penalty β = 0.04 — calibration
 **Status:** Assumed reasonable
@@ -156,11 +200,12 @@ The utility-based reward assumes δ̃ definitively determines which good is bett
 See item 5 above. ✅ Fixed by setting T=1.
 
 ### δ̃ reliability
-See items 1 and 2 above. ✅ Resolved by using frontier model consensus δ̃ (v3).
+The old resolution by consensus is retained as historical context. It is
+superseded for the primary Qwen-own-delta paper direction; see items 1 and 2.
 
 ### vLLM dependency on NSCC
 vLLM was disabled after compatible versions failed on NSCC. The working path uses plain HF generation and `eval/run_qwen_local.py`; keep vLLM as optional future acceleration only.
 
 ---
 
-*Last updated: July 9, 2026*
+*Last updated: July 15, 2026*

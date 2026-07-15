@@ -5,10 +5,14 @@
 ## Project Decision
 
 The existing `remaining_goods.json` / `test_goods.json` split is sufficient for
-the paper's core **within-benchmark** claim. A separate 50-good OOD suite exists
-for external-validity analysis, but no additional OOD run is required to report
-the current held-out result. The paper must not interpret the compositional
-split itself as evidence of zero-shot transfer to unseen goods or categories.
+the narrow **within-benchmark configuration-generalization** claim. It is not,
+however, an untouched final test for the primary Qwen-own-delta model: base
+responses from this set informed the Qwen-own pseudo-utility, and seven
+checkpoint estimates from this set were inspected before selecting step 8,000.
+Accordingly, the paper treats `test_goods` as validation for the primary model
+and retains a separately frozen evaluation for final generalization claims.
+The split itself must not be interpreted as evidence of transfer to goods or
+categories excluded from fine-tuning. See `PAPER_READINESS.md`.
 
 ## What Is Held Out
 
@@ -105,6 +109,12 @@ Recommended wording:
 > pairs. These results demonstrate within-benchmark generalization to unseen
 > configurations of familiar goods and pairs; they do not establish transfer
 > to unseen goods or categories.
+
+For Qwen-own-delta reporting, append:
+
+> Because these cases informed pseudo-utility construction and checkpoint
+> selection, we use this split as validation rather than as the untouched final
+> test. Final generalization is assessed on a separately frozen suite.
 
 ## Reproduction
 

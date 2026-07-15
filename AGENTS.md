@@ -10,10 +10,23 @@ This file gives Codex context about this project so it can help effectively with
 
 The project builds on a separate behavioral-economics baseline repo, `loss_aversion/`, which estimates **λ** (loss aversion coefficient) across frontier LLMs. This repo asks whether targeted RL can make a 7B model less loss-averse than much larger models.
 
-### Thesis in one sentence
-A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10-100x its size.
+### Authoritative paper direction
 
-> **Status (July 15, 2026):** Main GRPO result is complete. Qwen moved from λ̂_before = 11.75 to λ̂_after = 0.177 on held-out attribute configurations. Debias and forced treatments are also low. Attribute-sensitivity analysis confirms that the held-out configuration changes are statistically and practically large. Phase 6 Qwen-delta ablation and training-health checks are current.
+The primary paper model is now **Qwen-own-delta GRPO**, checkpoint 8,000. The
+frontier-consensus-delta model is the reward-source ablation. The 8k
+`test_goods` estimate (`lambda = 0.111`, `eta = 0.504`) is validation-only
+because this set informed reward construction and checkpoint selection. See
+`PAPER_READINESS.md` before making paper claims; it overrides older role and
+readiness descriptions elsewhere in this file.
+
+### Thesis in one sentence
+A 7B model can be post-trained to reduce ownership-dependent choice while
+preserving its own estimated preference ordering.
+
+> **Status (July 15, 2026):** One Qwen-own-delta run is complete and checkpoint
+> 8,000 is the selected candidate. Matched-base evaluation, pseudo-utility
+> validation, frozen final evaluation, seed replication, matched baselines, and
+> raw-artifact archival remain required for a full paper.
 
 ---
 
@@ -21,12 +34,16 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 
 | Model / treatment | λ̂ | η̂ | Notes |
 |---|---:|---:|---|
-| Qwen-7B base, baseline | 11.75 | 1.52 | Pre-training result, Model A NLS, T=1 |
-| Qwen-7B-GRPO, baseline | 0.177 | -0.048 | Main held-out result |
+| Historical Together-hosted Qwen base | 11.75 | 1.52 | Not yet matched to the local post-training evaluator |
+| Qwen-own-delta GRPO, step 8k ID | 0.111 | 0.504 | Primary-model validation; selected on `test_goods` |
+| Qwen-own-delta GRPO, step 8k OOD | 0.226 | 0.790 | Intended final evidence; raw artifacts pending |
+| Consensus-delta GRPO, baseline | 0.177 | -0.048 | Reward-source ablation/reference |
 | Qwen-7B-GRPO, debias | 0.205 | 0.090 | Treatment robustness |
 | Qwen-7B-GRPO, forced | 0.173 | -0.379 | Treatment robustness |
 
-Human benchmark is usually cited around λ ≈ 2-2.5, so the current post-GRPO estimate is far below human-level loss aversion. Treat this as strong but still requiring cross-model comparison, checkpoint selection, and ablations.
+Do not use the historical human or frontier comparisons as headline claims
+until tasks, estimands, endpoints, samples, scorers, and estimators are
+harmonized. Report lambda and eta jointly with direct choice outcomes.
 
 ### Held-Out Attribute-Configuration Result
 
@@ -79,13 +96,13 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
-| 1. Small-model baseline | ✅ Done | λ̂_before = 11.75 |
-| 2. Reward design | ✅ Done | Utility-weighted reward using consensus δ̃ v3 |
-| 3. GRPO training | ✅ Done | Main LoRA checkpoint, NSCC pipeline |
-| 4. Post-training evaluation | ✅ Done | λ̂_after = 0.177; debias/forced and attribute-sensitivity results |
-| 5. Cross-model comparison | ⏳ Next | Leaderboard vs frontier models |
-| 6. Ablations | 🟡 Current | Qwen-delta reward run, checkpoint/training-health analysis |
-| 7. Paper writeup | ⏳ | Workshop/full-paper materials |
+| 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer result pending |
+| 2. Qwen-own reward design | 🟡 Needs validation | Primary pseudo-utility exists; ownership-free validation and leakage-clean construction pending |
+| 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
+| 4. Primary-model evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |
+| 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
+| 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
+| 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
 
@@ -98,8 +115,8 @@ lambda-zero/
 │   ├── test_goods.json
 │   ├── remaining_goods.json
 │   └── deltas/
-│       ├── delta_consensus_v3.json       # Main frontier-consensus reward signal
-│       ├── delta_qwen_base.json          # Qwen-own-delta ablation reward
+│       ├── delta_consensus_v3.json       # Frontier-consensus ablation reward
+│       ├── delta_qwen_base.json          # Primary Qwen-own pseudo-utility reward
 │       └── build_delta_qwen_base.py
 ├── eval/
 │   ├── run_all_models.py
@@ -134,9 +151,11 @@ lambda-zero/
 
 ---
 
-## Reward Function
+## Reward Function and Paper Roles
 
-Main run uses a utility-weighted reward from `data/deltas/delta_consensus_v3.json`.
+The primary run uses Qwen's own pseudo-utility from
+`data/deltas/delta_qwen_base.json`. The completed consensus-delta run uses the
+same reward form as a reward-source ablation.
 
 ```python
 if perspective == "X":
@@ -146,18 +165,20 @@ else:
 return abs(delta) if response == rational else -abs(delta)
 ```
 
-The pure symmetry reward was rejected because an always-`No` model can be symmetric while still irrational. Qwen-own-delta reward is now an ablation using `data/deltas/delta_qwen_base.json`.
+The pure symmetry reward was rejected because an always-`No` model can be
+symmetric while still ownership-dependent. Neither delta source should be
+described as objective cardinal ground truth.
 
 ---
 
 ## Common Tasks
 
-### Train main GRPO
+### Train consensus-delta ablation
 ```bash
 python train/grpo_train.py --config train/configs/qwen25_7b.yaml --mode train
 ```
 
-### Train Qwen-delta ablation
+### Train primary Qwen-own-delta GRPO
 ```bash
 qsub train/submit_train_glong_qwen_delta.pbs
 ```

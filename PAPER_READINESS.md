@@ -1,0 +1,218 @@
+# Full-Paper Readiness and Current Methodological Risks
+
+*Last updated: July 15, 2026*
+
+This document is the authoritative summary of the current paper direction,
+which results are final versus validation-only, and which methodological
+problems must be addressed before making full-paper claims.
+
+## Current Paper Decision
+
+- **Primary model:** Qwen2.5-7B trained with Qwen's own estimated utility
+  differences (`data/deltas/delta_qwen_base.json`), with checkpoint 8,000 as
+  the current selected candidate.
+- **Reward-source ablation:** the completed frontier-consensus-delta model
+  (`data/deltas/delta_consensus_v3.json`).
+- **Economic motivation:** utility is agent-specific. The main experiment asks
+  whether post-training can remove ownership dependence while preserving
+  Qwen's own estimated preference ordering, rather than imposing a preference
+  ordering aggregated from other models.
+- **Terminology:** both Qwen-own delta and frontier-consensus delta are
+  pseudo-utility signals, not objective cardinal ground truth over
+  heterogeneous goods.
+
+Reward V2 remains a follow-up design unless and until it has completed,
+replicated results. It should not compete with the completed Qwen-own-delta
+story in the main paper without such evidence.
+
+## Current Result Roles
+
+| Model/result | Role in paper | Current interpretation |
+|---|---|---|
+| Qwen-own delta, step 8,000: ID lambda = 0.111, eta = 0.504 | Primary-model validation result | `test_goods.json` was used for checkpoint selection; 0.111 is not an untouched final-test estimate. |
+| Qwen-own delta, step 8,000: OOD lambda = 0.226, eta = 0.790, consistency = 49.46% | Intended final generalization result | May carry the final claim only after raw outputs, estimator artifacts, checkpoint identity, and reproduction commands are archived and the suite's frozen status is documented. |
+| Consensus-delta: ID lambda = 0.177, eta = -0.048 | Reward-source ablation/reference | Completed and committed, but its historical pre/post comparison still needs a matched local-base rerun. |
+| Consensus-delta: OOD lambda = 0.395, eta = 0.502, consistency = 64.89% | Reward-source ablation on OOD | Shows a trade-off: higher lambda than Qwen-own delta, but lower eta and stronger consistency. Raw OOD artifacts must also be archived. |
+| Historical base Qwen: lambda = 11.75, eta = 1.52 | Historical baseline, not yet a matched causal baseline | It used a Together-hosted Turbo endpoint, 9,950 cases, and a different probability scorer from the local post-training evaluation. |
+
+The paper must not claim that Qwen-own delta dominates consensus on every
+dimension. It currently has lower estimated lambda, whereas consensus has
+lower eta and higher OOD consistency.
+
+## Priority 0: Must Resolve for the Main Claims
+
+### 1. Matched local base evaluation
+
+The current `lambda_before = 11.75` and post-training estimates are not a
+strictly matched before/after comparison. The former used Together's
+`Qwen/Qwen2.5-7B-Instruct-Turbo`, 9,950 cases, and top-five first-token
+probabilities. The post-training evaluator uses a local
+`models/Qwen2.5-7B-Instruct` checkpoint, 9,890 cases, and exact normalized
+teacher-forced Yes/No sequence scores.
+
+**Required action:** evaluate the exact local base checkpoint without an
+adapter on the same 9,890 `test_goods.json` rows with `eval/run_qwen_local.py`,
+then estimate it with the same structural code used for the adapter.
+
+### 2. Reliability of Qwen's own pseudo-utility
+
+The agent-specific utility motivation is economically defensible, but base
+Qwen says No in approximately 99% of endowed prompts. This limited choice
+variation may weakly identify its item and attribute utilities.
+
+**Required action:** validate the sign and stability of Qwen-own delta against
+frozen ownership-free Qwen preferences elicited under multiple paraphrases and
+both display orders. Report agreement, confidence, and retained coverage.
+Human validation on a stratified subset would further strengthen the claim.
+
+### 3. Indirect leakage in Qwen-own delta construction
+
+The Qwen utility table used to build `delta_qwen_base.json` was estimated from
+9,950 base cases containing the 60 trial and 9,890 `test_goods` cases. Those
+fitted utilities then generated rewards for `remaining_goods.json`. Exact test
+prompts were not used in GRPO, but test responses informed the training reward
+oracle.
+
+**Consequence:** `test_goods.json` is not a fully untouched final test for the
+current Qwen-own-delta run.
+
+**Required action for the current run:** treat `test_goods` as validation and
+use a separately frozen evaluation suite for final claims. **Required action
+for a clean rerun:** construct the Qwen-own reward from training-only base
+responses or training-only frozen ownership-free preferences.
+
+### 4. Checkpoint selection on `test_goods`
+
+Seven Qwen-own-delta checkpoints were evaluated on `test_goods`, and step 8,000
+was selected after inspecting lambda and eta. Its `lambda = 0.111` is therefore
+a validation result and may be optimistically selected.
+
+The choice was also post-hoc: step 20,000 has the smaller absolute lambda
+(`|-0.083| < 0.111`) but a much worse `eta = 1.263`. Rejecting it is reasonable,
+but the joint rule was not written in advance.
+
+**Required action:** describe `test_goods` as validation, not final test. Freeze
+a checkpoint rule before new seeds, apply it mechanically, and evaluate the
+selected checkpoint on final data only after selection. The rule must consider
+lambda, eta, and consistency jointly.
+
+### 5. Training-seed replication
+
+The Qwen-own-delta checkpoint curve is highly non-monotonic, and only one
+training run currently supports the main result. Conditional NLS standard
+errors do not measure this training variation.
+
+**Required action:** run at least three independent Qwen-own-delta seeds under
+one fixed training and checkpoint-selection protocol. Report seed-level
+lambda, eta, consistency, target agreement, and final-evaluation performance,
+plus their mean and variation.
+
+### 6. Archive the claimed checkpoint and OOD evidence
+
+The checkpoint curve and OOD tables are currently recorded in
+`training_overview_merged.tex`, but the raw checkpoint/OOD X/Y predictions,
+NLS output directories, run manifests, adapter/checkpoint checksums, and final
+table-generation artifacts are not tracked in the repository.
+
+**Required action:** archive the raw outputs and metadata, add exact
+reproduction commands, and generate paper tables from tracked artifacts.
+
+## Priority 1: Needed for a Competitive Full Paper
+
+### 7. Matched optimization baselines and reward ablations
+
+Because every training prompt has a binary target, reviewers will ask whether
+ordinary supervised LoRA fine-tuning is sufficient.
+
+**Required comparisons:**
+
+1. exact local base Qwen;
+2. Qwen-own-delta supervised fine-tuning on the same prompts/targets;
+3. Qwen-own-delta GRPO;
+4. frontier-consensus-delta GRPO as the reward-source ablation; and
+5. preferably sign-only flat-reward GRPO to test whether delta magnitude adds
+   value.
+
+### 8. Predeclare the primary outcome and report the full behavior
+
+The paper targets lambda, but lambda alone can be misleading when eta absorbs
+choice rigidity. The current Qwen-own and consensus models illustrate a real
+trade-off.
+
+**Recommended hierarchy:**
+
+1. primary outcome: lambda;
+2. constraint/secondary structural outcome: eta;
+3. direct outcomes: consistent choice, keep-both, trade-both, and target
+   agreement; and
+4. preference-preservation outcome: agreement with frozen ownership-free Qwen
+   preferences.
+
+### 9. Stronger structural inference
+
+The current Model A standard errors come from SciPy `curve_fit` and do not
+fully reflect repeated perspectives, goods pairs, shared goods, or training
+randomness.
+
+**Required action:** add pair-aware resampling, leave-one-good-out robustness,
+and intervals across training seeds. Run estimator-recovery simulations with
+known lambda and eta, and always interpret both parameters jointly.
+
+### 10. General-capability retention
+
+The current evidence does not show that training preserved general abilities.
+
+**Required action:** compare the exact base and selected Qwen-own-delta model
+on GSM8K and at least one instruction-following/general benchmark such as
+IFEval.
+
+### 11. Cross-model and human claims
+
+Do not currently claim that the model is lower than every frontier model or
+below humans. Frontier results have not been harmonized across model endpoints,
+samples, probability scorers, and estimators. The commonly cited human value
+around 2.25 also comes from a different prospect-theory task, while this
+project parameterizes the endowed-good multiplier as `1 + lambda`.
+
+**Required action:** either run a harmonized frontier comparison and matched
+human experiment, or narrow the paper to reductions relative to an exactly
+matched local base and the ownership-neutral target `lambda = 0`.
+
+## What Is Not Currently a Major Problem
+
+- Training and `test_goods` contain zero repeated exact prompts and zero
+  repeated exact attribute configurations.
+- The shared 100 goods and 4,945 pairs make `test_goods` a valid
+  within-benchmark configuration holdout when described precisely.
+- Attribute configurations have strong joint effects, substantial explanatory
+  power, and change at least one hard response for 42.18% of pairs.
+- The learned policy is not a constant Yes/No rule.
+
+These facts support configuration generalization. They do not remove the need
+for a separately frozen final evaluation because the current Qwen-own reward
+and checkpoint selection used information from `test_goods`.
+
+## Recommended Paper Claim
+
+> We estimate a frozen, model-specific preference ordering for Qwen and use it
+> as a pseudo-utility signal for post-training. The selected model substantially
+> reduces measured endowment dependence on held-out attribute configurations
+> and retains low loss aversion on goods excluded from fine-tuning. We report
+> loss aversion, status-quo bias, choice consistency, and preference preservation
+> jointly.
+
+This wording remains conditional on resolving the matched-base, seed,
+final-evaluation, and reproducibility issues above.
+
+## Execution Order
+
+1. Rerun the exact local base with the local post-training evaluator.
+2. Archive and reproduce all Qwen-own-delta checkpoint and OOD artifacts.
+3. Validate Qwen-own delta against ownership-free Qwen preferences.
+4. Freeze the checkpoint-selection rule and primary/secondary outcomes.
+5. Run at least three Qwen-own-delta training seeds.
+6. Train the matched SFT and flat-reward baselines.
+7. Add robust structural inference and estimator-recovery checks.
+8. Run GSM8K and IFEval or an equivalent capability pair.
+9. Rewrite the paper with Qwen-own delta as primary and consensus delta as the
+   reward-source ablation.

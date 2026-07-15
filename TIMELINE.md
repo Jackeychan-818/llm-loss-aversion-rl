@@ -1,6 +1,8 @@
 # Project Timeline — lambda-zero
 
-**Goal:** Fine-tune Qwen2.5-7B-Instruct with GRPO to reduce loss aversion (λ → 0) below frontier models, and publish at a top ML venue.
+**Goal:** Fine-tune Qwen2.5-7B-Instruct with GRPO to reduce
+ownership-dependent choice behaviour while preserving Qwen's own estimated
+preferences, and publish the result at a top AI/ML venue.
 
 **Strategy:** NeurIPS 2026 workshop paper (early results) → ICML 2027 main track (full paper)
 
@@ -10,13 +12,15 @@
 
 | Period | Phase | Goal | Status |
 |---|---|---|---|
-| Apr 14, 2026 | Phase 1 — Small-model baseline | λ̂_before = **11.75** (SE = 1.22) | ✅ Done |
-| Apr 27, 2026 | Phase 2 — Reward function design | Utility-weighted reward using frontier consensus δ̃ v3 | ✅ Done |
+| Apr 14, 2026 | Phase 1 — Small-model baseline | Historical λ̂_before = **11.75**; matched local rerun required | 🟡 |
+| Apr 27, 2026 | Phase 2 — Consensus reward design | Utility-weighted frontier consensus δ̃ v3 | ✅ Reference/ablation |
 | Apr–Jun 2026 | Phase 3 — GRPO training | LoRA fine-tuning on Qwen2.5-7B; NSCC resume/eval path hardened | ✅ Done |
 | Jul 3–15, 2026 | Phase 4 — Post-training evaluation | λ̂_after = **0.177** (SE = 0.005), 98.5% reduction; held-out attribute sensitivity confirmed | ✅ Done |
 | Jul 7, 2026 | Treatment robustness | Debias λ̂ = 0.205; forced λ̂ = 0.173 | ✅ Done |
-| Jul 2026 | Phase 6 — Ablations | Qwen-delta reward, checkpoint selection, β/LR; 50-good OOD suite separate | 🟡 Running |
-| Jul 2026 | Phase 5 — Cross-model comparison | Qwen-7B before/after vs frontier models | ⏳ Next |
+| Jul 2026 | Primary-model decision | Qwen-own-delta step 8k primary; consensus delta reward-source ablation | ✅ Decided |
+| Jul 2026 | Qwen-own evaluation | ID λ̂ = 0.111 is validation; reported OOD λ̂ = 0.226 pending artifact archival | 🟡 |
+| Jul 2026 | Full-paper validation | Matched base, delta validation, fixed selection rule, ≥3 seeds, SFT, robust inference, capability checks | ⏳ Next |
+| Jul 2026 | Cross-model comparison | Retain only under harmonized protocols | ⏳ Optional to claim scope |
 | Aug 2026 onward | Phase 7 — Paper writeup | Workshop paper, then full paper | ⏳ |
 
 ---
@@ -64,7 +68,10 @@
 | ICML 2027 acceptance notification | ~Apr 2027 |
 | ICML 2027 Conference | ~Jul 2027 |
 
-**What to submit:** Complete paper — full results, ablations, cross-model comparison, paper figures from `notebooks/compare_lambdas.ipynb`.
+**What to submit:** Complete Qwen-own-delta paper with a matched local base,
+three or more seeds, matched SFT/sign-only baselines, consensus reward-source
+ablation, frozen final evaluation, robust inference, capability retention, and
+reproducible raw artifacts. See `PAPER_READINESS.md`.
 
 ---
 
@@ -80,10 +87,15 @@
 
 - Workshop papers at NeurIPS are non-archival — submitting there does **not** prevent ICML 2027 submission.
 - Confirm the specific workshop's non-archival policy before submitting.
-- Human benchmark for comparison: λ ≈ 2–2.5 (Kahneman & Tversky, 1979).
-- Qwen-7B baseline: λ̂_before = 11.75 — roughly 5× human level.
-- GRPO result: λ̂_after = 0.177 on baseline treatment, with debias and forced treatments also below the human benchmark.
+- Qwen-own-delta step 8k is the primary paper model; consensus delta is the
+  reward-source ablation.
+- Do not use the historical human or frontier comparisons as headline claims
+  until tasks, estimands, model endpoints, samples, scorers, and estimators are
+  comparable.
 - Train and test contain no repeated prompts or exact configurations. The held-out attribute profiles explain 48.8% of within-pair/perspective variation and change at least one answer for 42.18% of goods pairs.
-- The core claim is within-benchmark generalization to held-out configurations of familiar goods and pairs. The existing 50-good OOD suite is separate external-validity evidence; no additional OOD run is required for the core claim.
+- The attribute split supports within-benchmark configuration generalization.
+  For Qwen-own delta, `test_goods` is validation because it informed reward
+  construction and checkpoint selection; a separately frozen evaluation is
+  needed for final claims.
 
 *Last updated: July 15, 2026*
