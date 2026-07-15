@@ -140,8 +140,14 @@ plus their mean and variation.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
-The checkpoint curve and OOD tables are currently recorded in
-`training_overview_merged.tex`, but the raw checkpoint/OOD X/Y predictions,
+The checkpoint curve and OOD tables are attributed to
+`training_overview_merged.tex`, **but that file does not exist in this
+repository** (absent from the working tree, never committed on any branch).
+That evidence therefore has no canonical home — see `PAPER_SOURCES.md`.
+The canonical paper source is `training_overview.tex`; the merged file must
+be either committed and folded into it, or its reference removed and the
+tables regenerated from tracked artifacts. In addition, the raw
+checkpoint/OOD X/Y predictions,
 NLS output directories, run manifests, adapter/checkpoint checksums, and final
 table-generation artifacts are not tracked in the repository.
 

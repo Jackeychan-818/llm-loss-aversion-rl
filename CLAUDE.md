@@ -9,6 +9,9 @@ This file gives Claude Code context about this project so it can help effectivel
 > construction and checkpoint selection. Read `PAPER_READINESS.md` before
 > relying on older “main run,” “ablation,” or paper-readiness descriptions
 > below.
+>
+> **Canonical paper source:** `training_overview.tex` (see `PAPER_SOURCES.md`).
+> PDFs/slides are derived — regenerate, never hand-edit.
 
 ---
 
@@ -41,7 +44,6 @@ open.**
 
 ### Active
 - Matched exact-local-base evaluation with the post-training scorer.
-- Ownership-free validation of Qwen's pseudo-utility.
 - Frozen checkpoint rule and at least three Qwen-own-delta seeds.
 - Raw checkpoint/OOD artifact archival, matched SFT/sign-only baselines,
   robust inference, and capability-retention tests.
@@ -89,7 +91,7 @@ Estimation methods (in `core_exp_refactored.py`):
 |---|---|---|
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
 | 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer result pending |
-| 2. Qwen-own reward design | 🟡 Needs validation | Primary pseudo-utility exists; ownership-free validation pending |
+| 2. Qwen-own reward design | ✅ Validated | δ̃ vs frozen ownership-free anchor: 71.1% test / 70.8% train sign agreement (85.5% at \|δ̃\|>1.0); α 91.9% / β 100% significant. `eval/validate_qwen_delta_anchor.py` |
 | 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
 | 4. Primary evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
@@ -148,8 +150,7 @@ lambda-zero/
 ├── forced/Qwen-7B-GRPO/              # λ̂_after results (forced treatment)
 ├── checkpoints/grpo_20260427_1724/   # Consensus-delta reference checkpoints
 ├── checkpoints/grpo_qwen_delta/      # Primary Qwen-own-delta checkpoints
-├── notebooks/
-│   └── compare_lambdas.ipynb         # Final comparison figure
+│  (notebooks/compare_lambdas.ipynb: referenced historically, does NOT exist)
 │
 ├── everyday_goods_full.json          # Master goods reference (item names, attributes, values)
 ├── CLAUDE.md                         # ← this file

@@ -1,3 +1,23 @@
+% =============================================================================
+% CANONICAL PAPER SOURCE — training_overview.tex
+%
+% This file is the SINGLE SOURCE OF TRUTH for the paper. See PAPER_SOURCES.md.
+%
+%   * Every PDF/slide deck is DERIVED: regenerate from this file. Never hand-edit
+%     a derived artifact, and never let one carry a number this file does not.
+%   * Model roles are fixed here and must match PAPER_READINESS.md:
+%       PRIMARY  = Qwen-own delta, GRPO step 8,000  (lambda=0.111, eta=0.504)
+%       ABLATION = frontier-consensus delta          (lambda=0.177, eta=-0.048)
+%     Both test_goods estimates are VALIDATION-ONLY (that set informed reward
+%     construction and checkpoint selection). The 11.75 base row is a historical,
+%     UNMATCHED reference until the matched local-base rerun lands.
+%   * Do NOT reintroduce: superiority over the human 2.25 benchmark (different
+%     task/parameterization), superiority over frontier models (unharmonized),
+%     or a causal before/after claim. See "Claims We Do Not Make".
+%
+% If you find another .tex/PDF/deck asserting different numbers or model roles,
+% that artifact is stale — regenerate or archive it; do not edit it in place.
+% =============================================================================
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath, amssymb, amsthm}

@@ -34,3 +34,15 @@ models/
 # Misc
 .Rhistory
 *.docx
+
+# LaTeX build outputs — derived from the canonical training_overview.tex.
+# Regenerate; never hand-edit or commit. See PAPER_SOURCES.md.
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+*.out
+training_overview.pdf
