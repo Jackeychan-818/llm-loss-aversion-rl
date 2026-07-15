@@ -67,8 +67,8 @@ give up whatever it holds.
 % =============================================================================
 \section{Dataset}
 
-The full dataset contains 59,400 paired trade scenarios. We split them as
-follows:
+The full dataset contains 59,400 paired trade scenarios over 100 goods and
+4,950 unordered goods pairs. We split them as follows:
 
 \begin{table}[h]
 \centering
@@ -77,13 +77,21 @@ follows:
 File & Cases & Case IDs & Purpose \\
 \midrule
 \texttt{trial\_goods.json}     & 60     & 1--60         & Sanity checks \\
-\texttt{test\_goods.json}      & 9,890  & 61--9,950     & Held-out evaluation \\
+\texttt{test\_goods.json}      & 9,890  & 61--9,950     & Held-out configurations \\
 \texttt{remaining\_goods.json} & 49,450 & 9,951--59,400 & GRPO training \\
 \bottomrule
 \end{tabular}
 \caption{Dataset split. The model is trained only on \texttt{remaining\_goods.json};
-$\hat{\lambda}_{\text{after}}$ is estimated on the held-out test set.}
+$\hat{\lambda}_{\text{after}}$ is estimated on disjoint attribute configurations
+from \texttt{test\_goods.json}.}
 \end{table}
+
+Training and compositional evaluation use the same 100 goods and the same
+4,945 non-trial goods pairs. For each pair, \texttt{remaining\_goods.json}
+provides ten attribute configurations and \texttt{test\_goods.json} reserves
+two different configurations. There are no repeated indexed configurations or
+generated prompt strings across the two files. Thus, the evaluation holds out
+exact questions/configurations, not goods or pair identities.
 
 Each scenario involves two goods described by up to four attributes drawn from
 \texttt{everyday\_goods\_full.json} (the master item catalogue). Attributes
@@ -274,17 +282,25 @@ gradient step carries a meaningful signal.
 
 \subsection{Scoring Method}
 
-After training, the fine-tuned model is evaluated on the held-out
-\texttt{test\_goods.json} (9,890 cases, unseen during training). For each
-case and each perspective (X and Y), we use teacher-forced log-probability
-scoring:
+After training, the fine-tuned model is evaluated on
+\texttt{test\_goods.json}: 9,890 exact attribute configurations that were not
+used for training, constructed from familiar goods and goods pairs. For each
+case and each perspective (X and Y), hard responses are generated greedily
+(\texttt{do\_sample=False}), corresponding to decoding temperature
+$T_{\mathrm{dec}}=0$. The structural estimates do not use sampled response
+frequencies. Instead, we deterministically score the candidate continuations
+``Yes'' and ``No'' under the model's native, unscaled logits:
 \begin{equation}
-    P(\text{Yes} \mid \text{prompt}) \propto
-    \exp\!\left(\log p_\theta(\text{``Yes''} \mid \text{prompt})\right)
+    P_\theta(\text{Yes}\mid x,\{\text{Yes},\text{No}\})
+    =
+    \frac{\exp(s_{\text{Yes}})}
+    {\exp(s_{\text{Yes}})+\exp(s_{\text{No}})},
+    \qquad
+    s_a=\sum_t \log p_\theta(a_t\mid x,a_{<t}).
 \end{equation}
 This gives exact normalized probabilities for ``Yes'' and ``No'' without
-sampling noise, matching the format used for the pre-training baseline
-($\hat{\lambda}_{\text{before}}$).
+sampling noise or temperature rescaling, matching the log-probability format
+used for the pre-training baseline ($\hat{\lambda}_{\text{before}}$).
 
 \subsection{Structural Estimation}
 
@@ -294,7 +310,10 @@ Choice probabilities are fed into the Model A (NLS) structural estimator from
     z_i = (1 + \lambda)\,e^{U_{X_i}} - e^{U_{Y_i}} + \eta + \varepsilon_i
 \end{equation}
 jointly over all cases, with item and attribute fixed effects absorbing
-heterogeneity across goods.
+heterogeneity across goods. In the implementation, the estimator is invoked
+with \texttt{T=1} to retain the continuous probabilities and use the normalized
+logistic link. This internal estimator flag is not the model's decoding
+temperature; evaluation decoding remains greedy ($T_{\mathrm{dec}}=0$).
 
 % =============================================================================
 \section{Results}
@@ -332,6 +351,32 @@ better, i.e., the model keeps $X$ from the X-perspective and trades for $X$
 from the Y-perspective. A $\sim$47--48\% rate in this cell, close to the
 expected $\sim$50\% given balanced goods, confirms near-rational behaviour.}
 \end{table}
+
+\subsection{Attribute sensitivity on the held-out configurations}
+
+We test whether the disjoint attribute configurations produce substantively
+different decisions. For each goods pair and endowment perspective, we first
+difference the two held-out configurations. This removes pair-by-perspective
+fixed factors and leaves eight endowed-minus-offered indicators for the
+non-reference $3\times3$ ordinal attribute profiles. The profiles jointly
+predict the change in $P(\mathrm{No})$ under pair-clustered inference
+($\chi^2(8)=5{,}097.22$, $p<10^{-1000}$). A more conservative
+leave-one-good-out jackknife gives $\chi^2(8)=756.05$ and $p<10^{-150}$;
+the smallest absolute jackknife $z$-statistic is 11.23.
+
+The effect is practically large. Attribute profiles explain 48.8\% of the
+within-pair, within-perspective variation. Changing the reserved configuration
+flips the X-perspective response for 34.07\% of pairs and the Y-perspective
+response for 34.24\%; at least one response flips for 42.18\% of pairs. In a
+complementary levels regression with item-difference fixed effects, adding the
+attribute profiles reduces five-fold pair-grouped prediction error by 47.43\%.
+These diagnostics rule out a constant Yes/No policy and support
+within-benchmark generalization to unseen configurations. They do not test
+zero-shot transfer to unseen goods or categories. The coefficients represent
+generic ordinal profiles rather than separately identified semantic attributes
+such as flavor, freshness, or scent. A separate 50-good OOD suite may be
+reported as external-validity evidence; no additional OOD run is required for
+the core configuration-generalization claim.
 
 $\hat{\lambda}_{\text{after}} = 0.177$ is \textbf{well below the human
 benchmark} of $\lambda \approx 2.25$ and is expected to be lower than any

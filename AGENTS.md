@@ -13,7 +13,7 @@ The project builds on a separate behavioral-economics baseline repo, `loss_avers
 ### Thesis in one sentence
 A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10-100x its size.
 
-> **Status (July 9, 2026):** Main GRPO result is complete. Qwen moved from λ̂_before = 11.75 to λ̂_after = 0.177 on held-out baseline evaluation. Debias and forced treatments are also low. Phase 6 Qwen-delta ablation and training-health checks are current.
+> **Status (July 15, 2026):** Main GRPO result is complete. Qwen moved from λ̂_before = 11.75 to λ̂_after = 0.177 on held-out attribute configurations. Debias and forced treatments are also low. Attribute-sensitivity analysis confirms that the held-out configuration changes are statistically and practically large. Phase 6 Qwen-delta ablation and training-health checks are current.
 
 ---
 
@@ -27,6 +27,29 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 | Qwen-7B-GRPO, forced | 0.173 | -0.379 | Treatment robustness |
 
 Human benchmark is usually cited around λ ≈ 2-2.5, so the current post-GRPO estimate is far below human-level loss aversion. Treat this as strong but still requiring cross-model comparison, checkpoint selection, and ablations.
+
+### Held-Out Attribute-Configuration Result
+
+Training and evaluation have zero repeated prompts and zero repeated exact
+configurations. They share the same 100 goods and 4,945 unordered goods pairs;
+training uses 10 configurations per pair and evaluation reserves two disjoint
+configurations. This is a within-benchmark configuration holdout, not an
+unseen-goods split.
+
+On the 9,890 held-out configurations:
+
+- Pair-clustered joint attribute test: χ²(8) = 5,097.22, p < 10^-1000.
+- Leave-one-good-out joint test: χ²(8) = 756.05, p < 10^-150.
+- Attribute profiles explain 48.8% of within-pair/perspective variation.
+- At least one perspective's binary answer flips for 42.18% of goods pairs.
+- Adding attributes reduces pair-grouped cross-validation MSE by 47.43%.
+
+These are effects of generic 3×3 ordinal attribute profiles, not separate
+semantic attributes such as flavor or scent. The current split is sufficient
+for the core within-benchmark paper claim. A separate 50-good OOD suite exists
+for external-validity analysis; no additional OOD run is required by the
+attribute result. Do not treat the compositional split itself as unseen-goods
+evidence. See `ATTRIBUTE_EFFECTS.md` and `eval/analyze_attribute_effects.py`.
 
 ---
 
@@ -59,7 +82,7 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | 1. Small-model baseline | ✅ Done | λ̂_before = 11.75 |
 | 2. Reward design | ✅ Done | Utility-weighted reward using consensus δ̃ v3 |
 | 3. GRPO training | ✅ Done | Main LoRA checkpoint, NSCC pipeline |
-| 4. Post-training evaluation | ✅ Done | λ̂_after = 0.177; debias/forced treatment results |
+| 4. Post-training evaluation | ✅ Done | λ̂_after = 0.177; debias/forced and attribute-sensitivity results |
 | 5. Cross-model comparison | ⏳ Next | Leaderboard vs frontier models |
 | 6. Ablations | 🟡 Current | Qwen-delta reward run, checkpoint/training-health analysis |
 | 7. Paper writeup | ⏳ | Workshop/full-paper materials |
@@ -85,6 +108,7 @@ lambda-zero/
 │   ├── estimate_qwen_grpo.py
 │   ├── estimate_qwen_grpo_debias.py
 │   ├── estimate_qwen_grpo_forced.py
+│   ├── analyze_attribute_effects.py      # Held-out attribute-sensitivity diagnostics
 │   └── core_exp_refactored.py            # Shared structural estimator
 ├── train/
 │   ├── grpo_train.py
@@ -101,6 +125,7 @@ lambda-zero/
 ├── forced/Qwen-7B-GRPO/
 ├── monitor.sh
 ├── plot_training.py
+├── ATTRIBUTE_EFFECTS.md
 ├── HISTORY.md
 ├── PROJECT_OVERVIEW.md
 ├── TIMELINE.md
@@ -168,7 +193,8 @@ python plot_training.py logs/<training-log>.out
 5. **Prefer LoRA over full fine-tuning** because the memory budget is a single A100.
 6. **vLLM is optional, not the working dependency.** NSCC-compatible vLLM failed; the working path uses plain HF generation/evaluation.
 7. **Do not select checkpoints from training reward alone.** Recent plots show high zero-std/DAPO filtering, weak reward trend, and nontrivial KL drift; validate with held-out structural λ̂.
+8. **Describe `test_goods.json` precisely.** It holds out exact attribute configurations/questions, while goods and goods-pair identities are shared with training. The separate 50-good OOD suite is external-validity evidence, not part of this split.
 
 ---
 
-*Last updated: July 9, 2026*
+*Last updated: July 15, 2026*

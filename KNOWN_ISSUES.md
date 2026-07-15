@@ -99,18 +99,26 @@ Rank 16 is standard for 7B models, but this task may require very specific behav
 ## Low — Monitor during evaluation
 
 ### 9. Generalization beyond training goods
-**Status:** `test_goods.json` is an in-distribution compositional holdout, not a novel-goods holdout. A separate 50-good OOD suite is now available in `data/ood_new_goods_50.json` and `data/ood_new_goods_50_test.json`.
-**Risk:** Medium — the model may learn item-, pair-, or attribute-specific policies rather than a general reduction in loss aversion.
+**Status:** ✅ Resolved for the core within-benchmark claim (July 15, 2026). `test_goods.json` is an in-distribution compositional holdout, not a novel-goods holdout. A separate 50-good OOD suite is available for optional external-validity analysis in `data/ood_new_goods_50.json` and `data/ood_new_goods_50_test.json`.
+**Risk:** Low for the core configuration-generalization claim; external validity to unseen goods remains a separate question.
 
 An exact split audit found no duplicated `(goods pair, attribute configuration)` cases between `remaining_goods.json` and `test_goods.json`. However, both files use exactly the same 100 goods, the same 4,945 goods pairs, and the same global set of 81 attribute codes. For every shared pair, training contains 10 configurations and test contains 2 different configurations. The current test therefore measures interpolation to unseen configurations of familiar goods pairs, not generalization to new goods or attributes.
 
+The held-out attribute changes are substantively meaningful. A paired
+within-pair analysis rejects the joint null of no attribute differentiation
+under both pair-clustered inference (χ²(8) = 5,097.22) and a leave-one-good-out
+jackknife (χ²(8) = 756.05). Attribute profiles explain 48.8% of within-pair,
+within-perspective variation, and at least one perspective's binary answer
+changes for 42.18% of goods pairs. Full details are in
+`ATTRIBUTE_EFFECTS.md`.
+
 The Qwen-delta ablation has an additional indirect leakage path: Qwen's base utility table was fitted from 9,950 baseline cases (60 trial + 9,890 test), then used to construct rewards for `remaining_goods.json`. The adapter never sees the exact test prompts during GRPO, but test responses informed the utility model that generated its training reward. Results on `test_goods.json` should therefore be described as checkpoint-selection/compositional results rather than a final untouched test.
 
-**Action needed:**
-- Keep `test_goods.json` as the ID/compositional checkpoint-selection set.
-- Freeze checkpoint choice before running the OOD suite; never use OOD results for tuning or checkpoint selection.
-- Evaluate base Qwen, consensus-GRPO, and the selected Qwen-delta checkpoint on the same 50-good OOD suite.
-- Report ID/compositional and OOD estimates separately, including both λ̂ and η̂.
+**Decision:**
+- Use `test_goods.json` for the paper's core held-out configuration result.
+- Describe it as within-benchmark configuration generalization, not unseen-goods transfer.
+- No additional OOD run is required to support that core claim.
+- If the existing 50-good OOD suite/results are retained, report them separately as external-validity evidence and do not use them for checkpoint selection.
 
 ### 10. KL penalty β = 0.04 — calibration
 **Status:** Assumed reasonable

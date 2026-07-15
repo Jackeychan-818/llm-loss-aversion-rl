@@ -22,8 +22,10 @@ This file combines the recent git commits into a project-level history, so the r
 
 - Baseline Qwen2.5-7B-Instruct: `lambda_before = 11.7519` (SE `1.2219`), `eta = 1.5178` (SE `0.0852`).
 - GRPO Qwen2.5-7B-Instruct LoRA: `lambda_after = 0.1765` (SE `0.0050`), `eta = -0.0477` (SE `0.0240`).
-- Held-out evaluation used `test_goods.json` with 9,890 cases.
+- Held-out evaluation used 9,890 attribute configurations from `test_goods.json`; there are zero repeated prompts/configurations across train and test, while the 100 goods and 4,945 goods pairs are shared.
 - Reduction in loss aversion: approximately 98.5%.
+- Held-out attribute profiles are jointly significant under a leave-one-good-out jackknife (χ²(8) = 756.05, p < 10^-150), explain 48.8% of within-pair/perspective variation, and flip at least one perspective's answer for 42.18% of goods pairs.
+- Project scope decision: the current split supports the core within-benchmark configuration-generalization claim; the existing 50-good OOD suite is separate external-validity evidence, and no additional OOD run is required for the core claim.
 - The result is below the human benchmark usually cited around `lambda ~= 2.25`.
 - Debias and forced treatments are also below the human benchmark: `0.205` and `0.173`.
 - Current ablation: retraining with Qwen-7B's own NLS delta file, `data/deltas/delta_qwen_base.json`.
@@ -31,6 +33,7 @@ This file combines the recent git commits into a project-level history, so the r
 ## Remaining Work
 
 - Cross-model comparison against the frontier-model baseline.
-- Ablations for reward source, beta/KL strength, learning rate, checkpoint selection, and generalization.
+- Ablations for reward source, beta/KL strength, learning rate, and checkpoint selection.
+- Optional reporting of the existing 50-good OOD suite as separate external-validity evidence.
 - Paper figures and writeup.
 - Training-health audit: recent convergence plots suggest high DAPO filtering and weak reward improvement despite the strong final structural result, so checkpoint selection and held-out validation should be treated carefully.
