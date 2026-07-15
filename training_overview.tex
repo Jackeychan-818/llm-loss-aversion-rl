@@ -109,17 +109,44 @@ $\delta = U_X - U_Y$, where $U_X$ and $U_Y$ are the latent utilities of goods
 $X$ and $Y$ respectively. A positive $\delta$ means $X$ is genuinely better;
 negative means $Y$ is better.
 
-We cannot estimate $\delta$ from Qwen-7B's own responses because the base
-model says ``No'' 99\% of the time---its choices carry almost no information
-about which good is actually better. Its utility estimates are therefore
-unreliable.
+\subsection{Estimating $\tilde{\delta}$ from Qwen's Own Responses (Primary)}
 
-\subsection{Estimating $\tilde{\delta}$ from Frontier Models}
+Utility is agent-specific, so our primary signal is Qwen's \emph{own} estimated
+preference ordering: we ask whether post-training can remove ownership
+dependence while preserving the model's own ordering, rather than imposing an
+ordering aggregated from other models. Both signals are pseudo-utilities, not
+objective cardinal ground truth over heterogeneous goods.
 
-Instead, we estimate $\delta$ from six frontier models that actually trade at
-reasonable rates: GPT-4o, GPT-5, GPT-5.2, Gemini 1.5 Pro, Llama-70B, and
-DeepSeek-R1. (Claude, Apertus-70B, and GPT-3.5 are excluded due to $<$5\%
-Yes-rates, making their utility estimates similarly unreliable.)
+A natural objection is that base Qwen answers ``No'' to roughly 99\% of endowed
+prompts, which might leave its utilities weakly identified. Identification
+survives because we score with \emph{log-probabilities} at link scale
+$T=1$ rather than binary choices: $P(\text{Yes})=0.08$ and $P(\text{Yes})=0.28$
+both decode to ``No'' but carry substantially different information about
+relative utility. Under a binary ($T=0$) encoding the low trade rate genuinely
+would flatten $\tilde{\delta}$ into noise; under the continuous encoding it does
+not. Empirically, the item and attribute coefficients are well identified
+(91.9\% of $\alpha$ and 100\% of $\beta$ significant; median $|t|$ of 9.6 and
+27.5), and $\tilde{\delta}$ is well spread (sd $0.94$; only 1.6\% near zero).
+
+As an independent check, we compare $\operatorname{sign}(\tilde{\delta})$ with
+Qwen's \emph{frozen ownership-free} preferences, elicited over multiple
+paraphrases and both display orders. The two signals are derived independently,
+and they agree on 71.1\% of held-out cases (70.8\% on training cases) against a
+50\% chance baseline. Agreement increases with magnitude---85.5\% when
+$|\tilde{\delta}|>1.0$ versus 63.6\% when $|\tilde{\delta}|\le 0.5$---and since
+the reward is weighted by $|\tilde{\delta}|$, it is loudest precisely where the
+signal is most trustworthy.
+
+\subsection{Reward-Source Ablation: $\tilde{\delta}$ from Frontier Models}
+
+As a reward-source ablation, we also estimate $\delta$ from six frontier models
+that trade at reasonable rates: GPT-4o, GPT-5, GPT-5.2, Gemini 1.5 Pro,
+Llama-70B, and DeepSeek-R1. (Claude, Apertus-70B, and GPT-3.5 are excluded due
+to $<$5\% Yes-rates, which leaves their utility estimates poorly identified.)
+This variant imposes an externally aggregated preference ordering and serves to
+isolate the contribution of the reward's source. We do not claim the Qwen-own
+signal dominates it on every axis: it attains lower $\hat{\lambda}$, whereas the
+consensus signal attains lower $\hat{\eta}$ and higher OOD consistency.
 
 For each frontier model $m$, we run the structural NLS estimation
 (Model A) and obtain item- and attribute-level coefficients

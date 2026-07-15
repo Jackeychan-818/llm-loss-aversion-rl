@@ -178,7 +178,34 @@ lambda-zero/
 
 **Ground truth source:** `data/deltas/delta_consensus_v3.json` — mean δ̃ across GPT-4o, GPT-5, GPT-5.2, Gemini, Llama-70B, DeepSeek-R1 (excluded Claude, Apertus-70B, GPT-3.5 due to <5% Yes rates making their utility estimates unreliable).
 
-**Why not Qwen-7B's own δ̃?** Qwen says No 99% of the time → NLS can't learn meaningful α/β → δ̃ values reflect reference category geometry, not real preferences. Frontier models that actually trade produce reliable utility estimates.
+**Why Qwen-7B's own δ̃ IS usable (corrected July 15, 2026).** An earlier version of
+this file claimed Qwen's own δ̃ was unreliable — "NLS can't learn meaningful α/β →
+δ̃ reflects reference category geometry, not real preferences." **That claim is
+empirically false and has been retracted.** It also contradicted the current paper
+direction, in which Qwen-own δ̃ is the PRIMARY reward (see `PAPER_READINESS.md`).
+
+Measured on `baseline/Qwen-7B/Model_1/` and `data/deltas/delta_qwen_base.json`:
+
+| check | value |
+|---|---|
+| α (item FE) identified | 99/99 non-zero SE, median \|t\| = 9.6, **91.9% significant** |
+| β (attr FE) identified | 8/8 non-zero SE, median \|t\| = 27.5, **100% significant** |
+| δ̃ spread | sd = 0.94, range [−4.06, +3.91], only **1.6%** near-zero, 46.9% positive |
+| δ̃ sign vs frozen ownership-free anchor | **71.1%** (test) / **70.8%** (remaining), chance = 50% |
+| … restricted to \|δ̃\| > 1.0 | **85.5%** / 85.3% |
+
+**Why the 99% No rate does NOT destroy identification:** utilities are estimated
+from **logprobs at link scale T=1**, not binary choices. P(Yes)=0.08 vs 0.28 both
+argmax to "No" but carry rich continuous information about relative utility. Under
+a T=0 / binary encoding the 99% No rate genuinely *would* flatten δ̃ into noise —
+so the old objection is only valid for the estimator we don't use (see note #8).
+
+**Reward calibration bonus:** agreement with the independent ownership-free anchor
+rises with |δ̃| (85% at |δ̃|>1.0 vs 64% at |δ̃|≤0.5), and the reward weights by |δ̃| —
+so it is loudest exactly where the signal is most trustworthy.
+
+Reproduce with: `python eval/validate_qwen_delta_anchor.py`
+(→ `results/qwen_delta_anchor_validation.json`).
 
 **Reward formula:**
 ```python
@@ -303,7 +330,14 @@ delta_consensus_v3.json ──────────────────�
 1. **Don't touch `core_exp_refactored.py` without care** — it's the shared econ estimation engine. Bugs propagate into both my results and my coauthor's.
 2. **The `run_all_models.py` has heavy checkpoint logic** — don't casually delete `loss_aversion_X.json` / `loss_aversion_Y.json` or the `completed_index.json`.
 3. **Prefer LoRA over full fine-tuning** — memory budget is a single A100 40GB.
-4. **The reward function uses consensus δ̃ from 6 frontier models** (`data/deltas/delta_consensus_v3.json`). Do NOT use Qwen-7B's own δ̃ — its utility estimates are unreliable due to 99% No rate.
+4. **The PRIMARY reward is Qwen's own δ̃** (`data/deltas/delta_qwen_base.json`);
+   frontier-consensus δ̃ (`data/deltas/delta_consensus_v3.json`) is the
+   **reward-source ablation**. The old instruction here ("Do NOT use Qwen-7B's own
+   δ̃ — unreliable due to 99% No rate") is **retracted**: α/β are well identified
+   (91.9% / 100% significant) and δ̃ agrees with Qwen's frozen ownership-free
+   preferences 71% of the time (85% when |δ̃|>1.0). See §Reward function and
+   `PAPER_READINESS.md`. Do not claim Qwen-own δ̃ dominates consensus on every
+   axis — it has lower λ̂ but consensus has lower η̂ and higher OOD consistency.
 5. **TRL's `GRPOTrainer` is the training library.** Check TRL docs for the exact API — it evolves fast.
 6. **Dynamic sampling is critical** — 99% of base outputs are "No", so many G=16 batches may be all-identical → zero advantage → zero gradient. Recent plots show high zero-std filtering; treat training reward as a diagnostic and select checkpoints by held-out structural λ̂. See KNOWN_ISSUES.md items #3-4.
 7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.

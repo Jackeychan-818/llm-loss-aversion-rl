@@ -60,10 +60,41 @@ The agent-specific utility motivation is economically defensible, but base
 Qwen says No in approximately 99% of endowed prompts. This limited choice
 variation may weakly identify its item and attribute utilities.
 
-**Required action:** validate the sign and stability of Qwen-own delta against
-frozen ownership-free Qwen preferences elicited under multiple paraphrases and
-both display orders. Report agreement, confidence, and retained coverage.
-Human validation on a stratified subset would further strengthen the claim.
+**Status (July 15, 2026): largely RESOLVED — evidence below.**
+
+*Identification.* The low trade rate does not flatten the utilities because
+scoring uses log-probabilities at link scale `T=1`, not binary choices:
+`P(Yes)=0.08` and `P(Yes)=0.28` both decode to "No" but differ substantially.
+(Under a `T=0`/binary encoding the objection would be valid — see CLAUDE.md #8.)
+Measured on `baseline/Qwen-7B/Model_1/`:
+
+| check | value |
+|---|---|
+| α (item FE) | 99/99 non-zero SE, median \|t\| = 9.6, 91.9% significant |
+| β (attr FE) | 8/8 non-zero SE, median \|t\| = 27.5, 100% significant |
+| δ̃ spread | sd = 0.94, range [−4.06, +3.91], 1.6% near-zero, 46.9% positive |
+
+*Ownership-free validation (the required action).* `sign(δ̃)` vs Qwen's frozen
+ownership-free preferences (multiple paraphrases, both display orders):
+
+| split | n compared | sign agreement |
+|---|---|---|
+| test_goods | 6,184 | **71.1%** |
+| remaining_goods | 30,757 | **70.8%** |
+
+By magnitude (test / remaining): |δ̃|>1.0 → **85.5% / 85.3%**;
+0.5<|δ̃|≤1.0 → 67.9% / 70.0%; |δ̃|≤0.5 → 63.6% / 62.3%. Chance = 50%.
+
+Agreement rises with |δ̃|, and the reward is weighted by |δ̃| — so it is loudest
+exactly where the signal is most trustworthy. Retained coverage: stable anchors
+exist for 6,184/9,890 test and 30,757/49,450 training configurations (~62%).
+
+Reproduce: `python eval/validate_qwen_delta_anchor.py`
+→ `results/qwen_delta_anchor_validation.json`.
+
+**Remaining action:** human validation on a stratified subset would further
+strengthen the claim. Note the anchor and δ̃ are both Qwen-derived, so this is
+convergent validity across two elicitation framings, not external ground truth.
 
 ### 3. Indirect leakage in Qwen-own delta construction
 
@@ -160,11 +191,30 @@ known lambda and eta, and always interpret both parameters jointly.
 
 ### 10. General-capability retention
 
-The current evidence does not show that training preserved general abilities.
+**Status: GSM8K DONE (matched); IFEval outstanding.**
 
-**Required action:** compare the exact base and selected Qwen-own-delta model
-on GSM8K and at least one instruction-following/general benchmark such as
-IFEval.
+The GSM8K half of this item is complete and uses the *exact local base*
+(`models/Qwen2.5-7B-Instruct`, no adapter) vs the selected Qwen-own-delta
+checkpoint 8,000, scored by one harness on all 1,319 test problems, 8-shot CoT,
+greedy decoding, 100% answer-parse rate on both sides:
+
+| model | accuracy |
+|---|---|
+| exact local base | **86.88%** (1146/1319) |
+| Qwen-own-delta step 8,000 | **85.90%** (1133/1319) |
+
+Paired: Δ = **−0.99 pp**, bootstrap 95% CI **[−2.12, +0.15] pp**, McNemar exact
+**p = 0.111**, discordant 35 base-only vs 22 tuned-only → `no_clear_change`.
+Fair statement: no statistically significant degradation; at most a ~1–2 pp
+effect indistinguishable from noise. Do NOT write "identical" — the point
+estimate is a small negative drift and the CI leans negative.
+
+Artifacts: `results/gsm8k/{base,qwen_delta_8000}/summary.json`,
+`results/gsm8k/comparison.json`. Reproduce:
+`qsub -v GSM8K_DATA_FILE=data/gsm8k_full.csv train/submit_eval_gsm8k.pbs`.
+
+**Required action:** add at least one instruction-following/general benchmark
+such as IFEval to complete the pair.
 
 ### 11. Cross-model and human claims
 
