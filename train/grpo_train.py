@@ -69,6 +69,12 @@ def parse_args() -> argparse.Namespace:
                    help="Override max_steps (use 100 for sanity check)")
     p.add_argument("--save_steps",      type=int, default=None)
     p.add_argument("--eval_steps",      type=int, default=None)
+    p.add_argument("--seed",            type=int, default=None,
+                   help="Training seed (RNG init, data order, rollout sampling). REQUIRED to "
+                        "differ across replication runs: TrainingArguments defaults to seed=42, "
+                        "so runs launched without this are NOT independent seeds — they "
+                        "reproduce the same trajectory and would fake a replication. "
+                        "Overrides `seed` in the YAML config.")
     p.add_argument("--resume_from_checkpoint", default=None,
                    help="Checkpoint path to resume from, or 'auto' to use the latest checkpoint")
     return p.parse_args()
@@ -152,8 +158,20 @@ def build_grpo_config(cfg: dict, args: argparse.Namespace, resume_checkpoint: Op
     save_steps = args.save_steps if args.save_steps is not None else cfg.get("save_steps", 200)
     eval_steps = args.eval_steps if args.eval_steps is not None else cfg.get("eval_steps", 200)
 
+    # Seed. TrainingArguments defaults to seed=42, so a run launched without an
+    # explicit seed silently reuses the same RNG stream as every other run: same
+    # weight init, same data order, same rollout sampling. Replication seeds MUST
+    # pass distinct --seed values or they are not independent runs.
+    seed = args.seed if args.seed is not None else cfg.get("seed", 42)
+    # data_seed defaults to None in TrainingArguments, which falls back to `seed`
+    # for the sampler; set it explicitly so the data order provably varies too.
+    data_seed = cfg.get("data_seed", seed)
+    logger.info(f"Training seed: {seed} (data_seed={data_seed})")
+
     kwargs = dict(
         output_dir=args.output_dir,
+        seed=seed,
+        data_seed=data_seed,
         # GRPO algorithm
         num_generations=cfg.get("num_generations", 16),
         temperature=cfg.get("temperature", 1.5),

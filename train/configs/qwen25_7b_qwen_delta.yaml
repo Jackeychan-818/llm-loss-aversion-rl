@@ -70,3 +70,10 @@ vllm_max_model_length:
 delta_file: data/deltas/delta_qwen_base.json   # ablation: Qwen-7B's own NLS utilities
 goods_file: everyday_goods_full.json
 treatment: baseline
+
+# ── Replication ─────────────────────────────────────────────────────────────
+# TrainingArguments defaults to seed=42. Runs launched WITHOUT an explicit,
+# DISTINCT seed are not independent replications — they reproduce the same
+# trajectory (same init, data order, rollout sampling) and would fake a
+# replication. Override per run: --seed / -v SEED=...
+seed: 42

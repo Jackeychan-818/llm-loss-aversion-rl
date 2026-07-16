@@ -34,11 +34,18 @@ echo "=== Starting GRPO ablation: Qwen-delta ==="
 echo "Start time: $(date)"
 cd "$PROJECT_DIR"
 
-OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/grpo_qwen_delta}"
+SEED="${SEED:-42}"
+# Per-seed output dir by default so replication runs cannot overwrite each other.
+if [[ "$SEED" == "42" ]]; then
+    OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/grpo_qwen_delta}"
+else
+    OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/grpo_qwen_delta_seed${SEED}}"
+fi
 RESUME_FROM_CHECKPOINT="${RESUME_FROM_CHECKPOINT:-auto}"
 mkdir -p "$OUTPUT_DIR"
 
 echo "Output dir: $OUTPUT_DIR"
+echo "SEED: $SEED"
 echo "Resume from checkpoint: $RESUME_FROM_CHECKPOINT"
 
 python train/grpo_train.py \
@@ -46,11 +53,12 @@ python train/grpo_train.py \
     --mode train \
     --data_file data/remaining_goods.json \
     --output_dir "$OUTPUT_DIR" \
+    --seed "$SEED" \
     --save_steps 200 \
     --eval_steps 200 \
     --eval_data_file data/trial_goods.json \
     --resume_from_checkpoint "$RESUME_FROM_CHECKPOINT" \
-    2>&1 | tee -a logs/train_qd_run.log
+    2>&1 | tee -a "logs/train_qd_seed${SEED}_run.log"
 
 echo "=== Qwen-delta training complete ==="
 echo "End time: $(date)"

@@ -169,10 +169,35 @@ The Qwen-own-delta checkpoint curve is highly non-monotonic, and only one
 training run currently supports the main result. Conditional NLS standard
 errors do not measure this training variation.
 
+**BLOCKER FOUND AND FIXED (July 15, 2026) — read before launching seeds.**
+`grpo_train.py` had no seed handling at all: no `--seed`, no config key, nothing
+passed to `GRPOConfig`. `TrainingArguments.seed` defaults to **42**, so *every*
+run silently shared one RNG stream (same init, same data order, same rollout
+sampling). Launching "seed 2" and "seed 3" as the code stood would have produced
+near-identical trajectories, suspiciously consistent lambdas, and a **fake
+replication measuring GPU non-determinism rather than training variance** — a
+result that looks like strong evidence and is worthless.
+
+Fixed: `--seed` (CLI, overrides config) is now threaded into
+`GRPOConfig(seed=..., data_seed=...)`, `seed: 42` is declared in
+`train/configs/qwen25_7b_qwen_delta.yaml`, and
+`train/submit_train_glong_qwen_delta.pbs` takes `-v SEED=...`, writes to a
+per-seed output dir (`checkpoints/grpo_qwen_delta_seed<N>`) and a per-seed log.
+Each run logs `Training seed: <N>` so the seed is auditable afterwards.
+
+**The completed run therefore used seed=42.** It is the exploratory run; new
+seeds must use different values (e.g. 1, 2, 3).
+
 **Required action:** run at least three independent Qwen-own-delta seeds under
 one fixed training and checkpoint-selection protocol. Report seed-level
 lambda, eta, consistency, target agreement, and final-evaluation performance,
 plus their mean and variation.
+
+**Pre-register the success criterion BEFORE launching** (otherwise the read-out
+is another post-hoc judgement): each seed must reduce lambda far below the
+matched base (lambda = 7.637) without degenerate choice behaviour or material
+capability loss. Seeds are NOT required to reproduce lambda = 0.111 exactly.
+Report every seed, not only the best.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
