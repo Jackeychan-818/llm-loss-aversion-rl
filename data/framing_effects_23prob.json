@@ -1,0 +1,1648 @@
+{
+  "benchmark_name": "Framing LLMs paired framing effects",
+  "version": 1,
+  "source_file": "framing effect test cases.xlsx",
+  "source_sha256": "ba9d9c88a0f427db9eaf63f6a6b5a27d4675670473d0049a3b729e7aa0d2e672",
+  "domain_resolution": "When positive/negative source labels disagree, use the negative-row label and retain both original labels.",
+  "probabilities": [
+    0.01,
+    0.03,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95,
+    0.97,
+    0.99
+  ],
+  "scenario_count": 120,
+  "expanded_prompt_count": 5520,
+  "domain_label_mismatches": [
+    {
+      "scenario_id": 35,
+      "positive_domain": "Education Domain",
+      "negative_domain": "Career Development"
+    },
+    {
+      "scenario_id": 43,
+      "positive_domain": "Career Development",
+      "negative_domain": "Consumer Choices"
+    },
+    {
+      "scenario_id": 51,
+      "positive_domain": "Consumer Choices",
+      "negative_domain": "Safety"
+    },
+    {
+      "scenario_id": 59,
+      "positive_domain": "Safety",
+      "negative_domain": "Agriculture & Farming"
+    },
+    {
+      "scenario_id": 67,
+      "positive_domain": "Agriculture & Farming",
+      "negative_domain": "Environment"
+    },
+    {
+      "scenario_id": 75,
+      "positive_domain": "Environment",
+      "negative_domain": "Social Policy"
+    },
+    {
+      "scenario_id": 83,
+      "positive_domain": "Social Policy",
+      "negative_domain": "Technology Domain"
+    },
+    {
+      "scenario_id": 91,
+      "positive_domain": "Technology Domain",
+      "negative_domain": "Personal life"
+    },
+    {
+      "scenario_id": 99,
+      "positive_domain": "Personal life",
+      "negative_domain": "Transportation"
+    },
+    {
+      "scenario_id": 107,
+      "positive_domain": "Transportation",
+      "negative_domain": "Interpersonal communication"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": 1,
+      "domain": "Medical treatment",
+      "positive_template": "A new vaccine prevents infection in X% of all cases. Would you buy it?",
+      "negative_template": "A new vaccine fails to prevent infection in XX% of all cases. Would you buy it?",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        2,
+        3
+      ]
+    },
+    {
+      "scenario_id": 2,
+      "domain": "Medical treatment",
+      "positive_template": "A treatment saves the lives of X% of patients treated. Would you choose it? ",
+      "negative_template": "A treatment fails to save the lives of X% of patients treated. Would you choose it? ",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        4,
+        5
+      ]
+    },
+    {
+      "scenario_id": 3,
+      "domain": "Medical treatment",
+      "positive_template": "This new treatment shortens the duration of the flue in X% of all cases. Would you choose it?",
+      "negative_template": "This new treatment fails to shorten the duration of the flue in X% of all cases. Would you choose it?",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        6,
+        7
+      ]
+    },
+    {
+      "scenario_id": 4,
+      "domain": "Medical treatment",
+      "positive_template": "A new treatment reduces snoring during sleep in X% of the treated patients. Would you use it?",
+      "negative_template": "A new treatment fails to reduce snoring during sleep in X% of the treated patients. Would you use it?",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        8,
+        9
+      ]
+    },
+    {
+      "scenario_id": 5,
+      "domain": "Medical treatment",
+      "positive_template": "A cancer screening test detects X% of cases early. Would you recommend it? ",
+      "negative_template": "A cancer screening test misses XX% of cases. Would you recommend it? ",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        10,
+        11
+      ]
+    },
+    {
+      "scenario_id": 6,
+      "domain": "Medical treatment",
+      "positive_template": "This technique shortens recovery periods of athletes in X% of all cases. Would you use it?",
+      "negative_template": "This technique fails to shorten recovery periods of athletes in X% of all cases. Would you use it?",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        12,
+        13
+      ]
+    },
+    {
+      "scenario_id": 7,
+      "domain": "Medical treatment",
+      "positive_template": "A medicine improves symptoms in X% of patients. Would you take it? ",
+      "negative_template": "A medicine does not improve symptoms in XX% of patients. Would you take it? ",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        14,
+        15
+      ]
+    },
+    {
+      "scenario_id": 8,
+      "domain": "Medical treatment",
+      "positive_template": "This therapy helps X% of diabetic patients reduce complications. Would you take it?",
+      "negative_template": "This therapy fails to reduce complications in XX% of diabetic patients. Would you take it?",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        16,
+        17
+      ]
+    },
+    {
+      "scenario_id": 9,
+      "domain": "Medical treatment",
+      "positive_template": "A diet plan ensures no side effects for X% of users. Would you follow it? ",
+      "negative_template": "A diet plan causes side effects in XX% of users. Would you follow it? ",
+      "source_positive_domain": "Medical treatment",
+      "source_negative_domain": "Medical treatment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        18,
+        19
+      ]
+    },
+    {
+      "scenario_id": 10,
+      "domain": "Health & fitness",
+      "positive_template": "This diet plan leads to weight loss in X% of treated people. Would you choose it?",
+      "negative_template": "This diet plan fails to lead to weight loss in X% of treated people. Would you choose it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        20,
+        21
+      ]
+    },
+    {
+      "scenario_id": 11,
+      "domain": "Health & fitness",
+      "positive_template": "This exercise program has a X% effectiveness rate for building muscle. Would you try it?",
+      "negative_template": "This exercise program has a XX% ineffectiveness rate for building muscle. Would you try it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        22,
+        23
+      ]
+    },
+    {
+      "scenario_id": 12,
+      "domain": "Health & fitness",
+      "positive_template": "This training program improves performance for X% of athletes. Would you try it?",
+      "negative_template": "This training program does not help XX% of athletes improve performance. Would you try it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        24,
+        25
+      ]
+    },
+    {
+      "scenario_id": 13,
+      "domain": "Health & fitness",
+      "positive_template": "This mental health app helps X% of users reduce anxiety. Would you use it?-> This mental health app assists in anxiety reduction in X% users",
+      "negative_template": "This mental health app does not help XX% of users reduce anxiety. Would you use it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        26,
+        27
+      ]
+    },
+    {
+      "scenario_id": 14,
+      "domain": "Health & fitness",
+      "positive_template": "This diet plan helps X% of people balances gut bacteria. Would you follow it?",
+      "negative_template": "This diet plan doesn’t help XX% of people balances gut bacteria. Would you follow it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        28,
+        29
+      ]
+    },
+    {
+      "scenario_id": 15,
+      "domain": "Health & fitness",
+      "positive_template": "This fitness tracker improves health outcomes for X% of users. Would you buy it? ",
+      "negative_template": "This fitness tracker does not improve health outcomes for XX% of users. Would you buy it? ",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        30,
+        31
+      ]
+    },
+    {
+      "scenario_id": 16,
+      "domain": "Health & fitness",
+      "positive_template": "This vitamin supplement boosts immunity for X% of users. Would you take it?",
+      "negative_template": "This vitamin supplement does not boost immunity for XX% of users. Would you take it?",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        32,
+        33
+      ]
+    },
+    {
+      "scenario_id": 17,
+      "domain": "Health & fitness",
+      "positive_template": "Investing in this stock has a X% chance of gaining value. Would you invest? ",
+      "negative_template": "Investing in this stock has a XX% chance of losing value. Would you invest? ",
+      "source_positive_domain": "Health & fitness",
+      "source_negative_domain": "Health & fitness",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        34,
+        35
+      ]
+    },
+    {
+      "scenario_id": 18,
+      "domain": "Finance & Investment",
+      "positive_template": "An accident insurance policy approves X% of claims. Would you try it? ",
+      "negative_template": "An accident insurance policy denies XX% of claims. Would you try it? ",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        36,
+        37
+      ]
+    },
+    {
+      "scenario_id": 19,
+      "domain": "Finance & Investment",
+      "positive_template": "This credit card gives cashback on X% of all purchases. Would you use it? ",
+      "negative_template": "This credit card does not provide cashback on XX% of all purchases. Would you use it? ",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        38,
+        39
+      ]
+    },
+    {
+      "scenario_id": 20,
+      "domain": "Finance & Investment",
+      "positive_template": "A financial plan secures positive returns in X% of scenarios. Would you adopt it? ",
+      "negative_template": "A financial plan fails to secure positive returns in XX% of scenarios. Would you adopt it? ",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        40,
+        41
+      ]
+    },
+    {
+      "scenario_id": 21,
+      "domain": "Finance & Investment",
+      "positive_template": "A mutual fund has a X% chance of outperforming the market. Would you invest? ",
+      "negative_template": "A mutual fund has a XX% chance of underperforming the market. Would you invest? ",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        42,
+        43
+      ]
+    },
+    {
+      "scenario_id": 22,
+      "domain": "Finance & Investment",
+      "positive_template": "This financial advisor increases savings for X% of clients. Would you hire him?",
+      "negative_template": "This financial advisor does not increase savings for XX% of clients. Would you hire him?",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        44,
+        45
+      ]
+    },
+    {
+      "scenario_id": 23,
+      "domain": "Finance & Investment",
+      "positive_template": "Investing in company A has a X% chance of gaining money. Would you invest?",
+      "negative_template": "Investing in company A has a XX% chance of losing money. Would you invest?",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        46,
+        47
+      ]
+    },
+    {
+      "scenario_id": 24,
+      "domain": "Finance & Investment",
+      "positive_template": "Historical data indicates that this finance product yields positive returns X% of the time. Would you invest?",
+      "negative_template": "Historical data indicates that this finance product yields negative returns XX% of the time. Would you invest?",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        48,
+        49
+      ]
+    },
+    {
+      "scenario_id": 25,
+      "domain": "Finance & Investment",
+      "positive_template": "A tutoring service improves student grades in X% of cases. Would you choose it?",
+      "negative_template": "A tutoring service fails to improve student grades in XX% of cases. Would you choose it?",
+      "source_positive_domain": "Finance & Investment",
+      "source_negative_domain": "Finance & Investment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        50,
+        51
+      ]
+    },
+    {
+      "scenario_id": 26,
+      "domain": "Education Domain",
+      "positive_template": "This teaching method raises test scores for X% of students. Would you try it?",
+      "negative_template": "This teaching method fails to raise test scores for XX% of students. Would you try it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        52,
+        53
+      ]
+    },
+    {
+      "scenario_id": 27,
+      "domain": "Education Domain",
+      "positive_template": "This online course increases skills for X% of learners. Would you enroll? ",
+      "negative_template": "This online course fails to increase skills for XX% of learners. Would you enroll? ",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        54,
+        55
+      ]
+    },
+    {
+      "scenario_id": 28,
+      "domain": "Education Domain",
+      "positive_template": "This textbook improves exam scores for X% of readers. Would you buy it?",
+      "negative_template": "This textbook fails to improve exam scores for XX% of readers. Would you buy it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        56,
+        57
+      ]
+    },
+    {
+      "scenario_id": 29,
+      "domain": "Education Domain",
+      "positive_template": "This program prevents school dropout in X% of all cases. Would you support it?",
+      "negative_template": "This program failes to prevent school dropout in XX% of all cases. Would you support it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        58,
+        59
+      ]
+    },
+    {
+      "scenario_id": 30,
+      "domain": "Education Domain",
+      "positive_template": "This homeschooling curriculum boosts creativity for X% of kids. Would you try it?",
+      "negative_template": "This homeschooling curriculum fails to boost creativity in XX% of kids. Would you try it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        60,
+        61
+      ]
+    },
+    {
+      "scenario_id": 31,
+      "domain": "Education Domain",
+      "positive_template": "This course increases learning ability for X% of people. Would you enroll?",
+      "negative_template": "This course fails to increase learning ability for XX% of people. Would you enroll?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        62,
+        63
+      ]
+    },
+    {
+      "scenario_id": 32,
+      "domain": "Education Domain",
+      "positive_template": "This project-based learning approach fosters independence in X% of students. Would you adopt it?",
+      "negative_template": "This project-based learning approach fails to foster independence in XX% of students. Would you adopt it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        64,
+        65
+      ]
+    },
+    {
+      "scenario_id": 33,
+      "domain": "Education Domain",
+      "positive_template": "This workshop guarantees job placements for X% of attendees. Would you attend?",
+      "negative_template": "This workshop fails to guarantee job placements of XX% of attendees. Would you attend?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        66,
+        67
+      ]
+    },
+    {
+      "scenario_id": 34,
+      "domain": "Education Domain",
+      "positive_template": "This degree has a X% chance of improving your job prospects. Would you pursue it?",
+      "negative_template": "This degree has a XX% chance of not improving your job prospects. Would you pursue it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Education Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        68,
+        69
+      ]
+    },
+    {
+      "scenario_id": 35,
+      "domain": "Career Development",
+      "positive_template": "This VR training program succeeds in improving job skill for X% of employees. Would you adopt it?  succeeds in improve-> improves",
+      "negative_template": "This VR training program fails to improve job skill for XX% of employees. Would you adopt it?",
+      "source_positive_domain": "Education Domain",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        70,
+        71
+      ]
+    },
+    {
+      "scenario_id": 36,
+      "domain": "Career Development",
+      "positive_template": "This co-working space boosts productivity for X% of digital nomads. Would you join?",
+      "negative_template": "This co-working space fails to boost productivity for XX% of digital nomads. Would you join?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        72,
+        73
+      ]
+    },
+    {
+      "scenario_id": 37,
+      "domain": "Career Development",
+      "positive_template": "This freelance career has a X% chance of improving your income. Would you go independent?",
+      "negative_template": "This freelance career has a XX% chance of not improving your income. Would you go independent?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        74,
+        75
+      ]
+    },
+    {
+      "scenario_id": 38,
+      "domain": "Career Development",
+      "positive_template": "This remote work policy increases productivity for X% of teams. Would you adopt it?",
+      "negative_template": "This remote work policy does not increase productivity for XX% of teams. Would you adopt it?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        76,
+        77
+      ]
+    },
+    {
+      "scenario_id": 39,
+      "domain": "Career Development",
+      "positive_template": "This workplace policy ensures work-life balance for X% of staff. Would you support it?",
+      "negative_template": "This workplace policy does not ensure work-life balance for XX% of staff. Would you support it?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        78,
+        79
+      ]
+    },
+    {
+      "scenario_id": 40,
+      "domain": "Career Development",
+      "positive_template": "This startup idea has a X% chance of success. Would you invest?",
+      "negative_template": "This startup idea has a XX% risk of failure. Would you invest?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        80,
+        81
+      ]
+    },
+    {
+      "scenario_id": 41,
+      "domain": "Career Development",
+      "positive_template": "This product has a X% guest satisfaction rate. Would you buy it?",
+      "negative_template": "This product has a XX% guest dissatisfaction rate. Would you buy it?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        82,
+        83
+      ]
+    },
+    {
+      "scenario_id": 42,
+      "domain": "Career Development",
+      "positive_template": "This product is X% effective in achieving desired results. Would you purchase it?",
+      "negative_template": "This product has a XX% chance of not achieving desired results. Would you purchase it?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Career Development",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        84,
+        85
+      ]
+    },
+    {
+      "scenario_id": 43,
+      "domain": "Consumer Choices",
+      "positive_template": "This brand’s clothes last more than 1 years for X% of customers. Would you purchase?",
+      "negative_template": "This brand’s clothes wear out less than 1 years for XX% of customers. Would you purchase?",
+      "source_positive_domain": "Career Development",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        86,
+        87
+      ]
+    },
+    {
+      "scenario_id": 44,
+      "domain": "Consumer Choices",
+      "positive_template": "This packaging triggers joy in X% of shoppers. Would you use it?",
+      "negative_template": "This packaging does not trigger joy in XX% of shoppers. Would you use it? ",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        88,
+        89
+      ]
+    },
+    {
+      "scenario_id": 45,
+      "domain": "Consumer Choices",
+      "positive_template": "This shampoo satisfies X% of buyers. Would you buy it?",
+      "negative_template": "This shampoo fails to satisfy XX% of buyers. Would you buy it?",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        90,
+        91
+      ]
+    },
+    {
+      "scenario_id": 46,
+      "domain": "Consumer Choices",
+      "positive_template": "This e-commerce site has X% of positive reviews. Would you choose it?",
+      "negative_template": "This e-commerce site has XX% of negative reviews. Would you choose it?",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        92,
+        93
+      ]
+    },
+    {
+      "scenario_id": 47,
+      "domain": "Consumer Choices",
+      "positive_template": "This company has a X% success rate in resolving customer complaints. Would you trust it?",
+      "negative_template": "This company fails to resolve XX% of customer complaints. Would you trust it?",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        94,
+        95
+      ]
+    },
+    {
+      "scenario_id": 48,
+      "domain": "Consumer Choices",
+      "positive_template": "This warranty covers X% of common issue repairs. Would you pay extra for it?",
+      "negative_template": "This warranty doesn't cover XX% of common issue repairs. Would you pay extra for it?",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        96,
+        97
+      ]
+    },
+    {
+      "scenario_id": 49,
+      "domain": "Consumer Choices",
+      "positive_template": "This safety equipment prevents workplace injuries X% of the time. Would you use it?",
+      "negative_template": "This safety equipment fails to prevent workplace injuries XX% of the time. Would you use it?",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        98,
+        99
+      ]
+    },
+    {
+      "scenario_id": 50,
+      "domain": "Consumer Choices",
+      "positive_template": "This software prevents X% of cybersecurity threats. Would you purchase it? ",
+      "negative_template": "This software fails to prevent XX% of cybersecurity threats. Would you purchase it? ",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Consumer Choices",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        100,
+        101
+      ]
+    },
+    {
+      "scenario_id": 51,
+      "domain": "Safety",
+      "positive_template": "This city simulator prevents X% of urban disasters. Would you use it?",
+      "negative_template": "This city simulator fails to prevent XX% of urban disasters. Would you use it? ",
+      "source_positive_domain": "Consumer Choices",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        102,
+        103
+      ]
+    },
+    {
+      "scenario_id": 52,
+      "domain": "Safety",
+      "positive_template": "This mobility aid prevents X% of accidents. Would you adopt it?",
+      "negative_template": "This mobility aid fails to prevent XX% of accidents. Would you adopt it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        104,
+        105
+      ]
+    },
+    {
+      "scenario_id": 53,
+      "domain": "Safety",
+      "positive_template": "This home alarm system prevents X% of break-ins. Would you install it? ",
+      "negative_template": "This home alarm system fails to prevent XX% of break-ins. Would you install it? ",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        106,
+        107
+      ]
+    },
+    {
+      "scenario_id": 54,
+      "domain": "Safety",
+      "positive_template": "X% of users give this car a 5-star safety rating. Would you buy it? ",
+      "negative_template": "XX% of users give this car less than a 5-star safety rating. Would you buy it? ",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        108,
+        109
+      ]
+    },
+    {
+      "scenario_id": 55,
+      "domain": "Safety",
+      "positive_template": "This hazard detection system identifies X% of risks. Would you use it?",
+      "negative_template": "This hazard detection system fails to identify XX% of risks. Would you use it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        110,
+        111
+      ]
+    },
+    {
+      "scenario_id": 56,
+      "domain": "Safety",
+      "positive_template": "This emergency alert system reaches X% of the population. Would you fund it?",
+      "negative_template": "This emergency alert system does not reach XX% of the population. Would you fund it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        112,
+        113
+      ]
+    },
+    {
+      "scenario_id": 57,
+      "domain": "Safety",
+      "positive_template": "This pest-control method protects X% of crops. Would you adopt it?",
+      "negative_template": "This pest-control method does not protects XX% of crops. Would you adopt it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        114,
+        115
+      ]
+    },
+    {
+      "scenario_id": 58,
+      "domain": "Safety",
+      "positive_template": "This fertilizer increases yields for X% of crops. Would you use it?",
+      "negative_template": "This fertilizer fails to increase yields for XX% of crops. Would you use it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Safety",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        116,
+        117
+      ]
+    },
+    {
+      "scenario_id": 59,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This irrigation system saves water for X% of farms. Would you install it?",
+      "negative_template": "This irrigation system fails to save water for XX% of farms. Would you install it?",
+      "source_positive_domain": "Safety",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        118,
+        119
+      ]
+    },
+    {
+      "scenario_id": 60,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This farming method restores X% of soil health. Would you adopt it?",
+      "negative_template": "This farming method fails to restore XX% of soil health. Would you adopt it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        120,
+        121
+      ]
+    },
+    {
+      "scenario_id": 61,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This cover crop prevents erosion in X% of fields. Would you plant it?",
+      "negative_template": "This cover crop fails to prevent erosion in XX% of fields. Would you plant it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        122,
+        123
+      ]
+    },
+    {
+      "scenario_id": 62,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This biological pest control method works for X% of pests. Would you recommend it?",
+      "negative_template": "This biological pest control method fails for XX% of pests. Would you recommend it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        124,
+        125
+      ]
+    },
+    {
+      "scenario_id": 63,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This weather prediction model predicts weather correctly X% of the time. Would you trust it?",
+      "negative_template": "This weather prediction model mispredicts weather XX% of the time. Would you trust it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        126,
+        127
+      ]
+    },
+    {
+      "scenario_id": 64,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This app has a X% accuracy rate in tracking livestock health. Would you download it?",
+      "negative_template": "This app has a XX% error rate in tracking livestock health. Would you download it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        128,
+        129
+      ]
+    },
+    {
+      "scenario_id": 65,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This policy has a X% success rate in cleaning polluted air. Would you support it?",
+      "negative_template": "This policy has a XX% failure rate in cleaning polluted air. Would you support it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        130,
+        131
+      ]
+    },
+    {
+      "scenario_id": 66,
+      "domain": "Agriculture & Farming",
+      "positive_template": "This processor reduces energy use in X% of cases. Would you use it? ",
+      "negative_template": "This processor fails to reduce energy use in XX% of cases. Would you use it? ",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Agriculture & Farming",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        132,
+        133
+      ]
+    },
+    {
+      "scenario_id": 67,
+      "domain": "Environment",
+      "positive_template": "This law prevents X% of wildlife being killed. Would you endorse it?",
+      "negative_template": "This law fails to prevent XX% of wildlife being killed. Would you endorse it?",
+      "source_positive_domain": "Agriculture & Farming",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        134,
+        135
+      ]
+    },
+    {
+      "scenario_id": 68,
+      "domain": "Environment",
+      "positive_template": "This bioengineered coral restores X% of reef ecosystems. Would you support it? ",
+      "negative_template": "This bioengineered coral fails to restore XX% of reef ecosystems. Would you support it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        136,
+        137
+      ]
+    },
+    {
+      "scenario_id": 69,
+      "domain": "Environment",
+      "positive_template": "A new law preserves X% of endangered forests. Do you support it? ",
+      "negative_template": "A new law does not preserve XX% of endangered forests. Do you support it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        138,
+        139
+      ]
+    },
+    {
+      "scenario_id": 70,
+      "domain": "Environment",
+      "positive_template": "A cleanup drive project can save X% of the local park from pollution. Do you support it? ",
+      "negative_template": "A cleanup drive project fails to save XX% of the local park from pollution. Do you support it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        140,
+        141
+      ]
+    },
+    {
+      "scenario_id": 71,
+      "domain": "Environment",
+      "positive_template": "This ocean fertilization plan revives X% of marine life. Would you support it? ",
+      "negative_template": "This ocean fertilization plan fails to revive XX% of marine life. Would you support it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        142,
+        143
+      ]
+    },
+    {
+      "scenario_id": 72,
+      "domain": "Environment",
+      "positive_template": "This sustainable tourism initiative protects X% of natural habitats. Would you promote it?",
+      "negative_template": "This sustainable tourism initiative fails to protect XX% of natural habitats. Would you promote it?",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        144,
+        145
+      ]
+    },
+    {
+      "scenario_id": 73,
+      "domain": "Environment",
+      "positive_template": "A government initiative improves housing for X% of the homeless. Do you back it? ",
+      "negative_template": "A government initiative does not improve housing for XX% of the homeless. Do you back it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        146,
+        147
+      ]
+    },
+    {
+      "scenario_id": 74,
+      "domain": "Environment",
+      "positive_template": "A community program helps X% of at-risk youth. Would you endorse it? ",
+      "negative_template": "A community program does not help XX% of at-risk youth. Would you endorse it? ",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Environment",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        148,
+        149
+      ]
+    },
+    {
+      "scenario_id": 75,
+      "domain": "Social Policy",
+      "positive_template": "This program has a X% success rate in reducing poverty. Would you advocate for it?",
+      "negative_template": "This program has a XX% failure rate in reducing poverty. Would you advocate for it?",
+      "source_positive_domain": "Environment",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        150,
+        151
+      ]
+    },
+    {
+      "scenario_id": 76,
+      "domain": "Social Policy",
+      "positive_template": "This emergency plan saves X% of at-risk populations. Would you endorse it?",
+      "negative_template": "This emergency plan does not save XX% of at-risk populations. Would you endorse it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        152,
+        153
+      ]
+    },
+    {
+      "scenario_id": 77,
+      "domain": "Social Policy",
+      "positive_template": "This outreach campaign helps X% of target communities. Would you endorse it?",
+      "negative_template": "This outreach campaign does not help XX% of target communities. Would you endorse it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        154,
+        155
+      ]
+    },
+    {
+      "scenario_id": 78,
+      "domain": "Social Policy",
+      "positive_template": "This healthcare policy will achieve coverage to X% of the population. Would you support it? ",
+      "negative_template": "This healthcare policy will leave XX% of the population without coverage. Would you support it? ",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        156,
+        157
+      ]
+    },
+    {
+      "scenario_id": 79,
+      "domain": "Social Policy",
+      "positive_template": "This policy prevents X% of tax fraud. Would you endorse it?",
+      "negative_template": "This policy does not prevent XX% of tax fraud. Would you endorse it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        158,
+        159
+      ]
+    },
+    {
+      "scenario_id": 80,
+      "domain": "Social Policy",
+      "positive_template": "This charity has an X% success rate in helping communities. Would you contribute?",
+      "negative_template": "This charity has a XX% failure rate in helping communities. Would you contribute?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        160,
+        161
+      ]
+    },
+    {
+      "scenario_id": 81,
+      "domain": "Social Policy",
+      "positive_template": "This AI tool improves workflow efficiency for X% of teams. Would you adopt it?",
+      "negative_template": "This AI tool does not improve workflow efficiency for XX% of teams. Would you adopt it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        162,
+        163
+      ]
+    },
+    {
+      "scenario_id": 82,
+      "domain": "Social Policy",
+      "positive_template": "This automation software saves time for X% of teams. Would you buy it?",
+      "negative_template": "This automation software does not save time for XX% of teams. Would you buy it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Social Policy",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        164,
+        165
+      ]
+    },
+    {
+      "scenario_id": 83,
+      "domain": "Technology Domain",
+      "positive_template": "This software blocks X% of spam emails. Would you install it?",
+      "negative_template": "This software allows XX% of spam emails through. Would you install it?",
+      "source_positive_domain": "Social Policy",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        166,
+        167
+      ]
+    },
+    {
+      "scenario_id": 84,
+      "domain": "Technology Domain",
+      "positive_template": "This neural network syncs ideas seamlessly for X% of teams. Would you use it? ",
+      "negative_template": "This neural network fails to sync ideas for XX% of teams. Would you use it? ",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        168,
+        169
+      ]
+    },
+    {
+      "scenario_id": 85,
+      "domain": "Technology Domain",
+      "positive_template": "This underwater robot maps X% of seabeds accurately. Would you use it?",
+      "negative_template": "This underwater robot fails to map XX% of seabeds accurately. Would you use it?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        170,
+        171
+      ]
+    },
+    {
+      "scenario_id": 86,
+      "domain": "Technology Domain",
+      "positive_template": "This drone cleans X% of ocean plastic. Would you deploy it?",
+      "negative_template": "This drone fails to clean XX% of ocean plastic. Would you deploy it?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        172,
+        173
+      ]
+    },
+    {
+      "scenario_id": 87,
+      "domain": "Technology Domain",
+      "positive_template": "This research method yields accurate results X% of the time. Would you use it?",
+      "negative_template": "This research method fails to yield accurate results XX% of the time. Would you use it?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        174,
+        175
+      ]
+    },
+    {
+      "scenario_id": 88,
+      "domain": "Technology Domain",
+      "positive_template": "This cloud-seeding technique prevents X% of droughts. Would you approve it? ",
+      "negative_template": "This cloud-seeding technique fails to prevent XX% of droughts. Would you approve it? ",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        176,
+        177
+      ]
+    },
+    {
+      "scenario_id": 89,
+      "domain": "Technology Domain",
+      "positive_template": "This esports team wins X% of matches. Would you sponsor them?",
+      "negative_template": "This esports team loses XX% of matches. Would you sponsor them?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        178,
+        179
+      ]
+    },
+    {
+      "scenario_id": 90,
+      "domain": "Technology Domain",
+      "positive_template": "This farm-to-table program delights X% of customers. Would you partner with them?",
+      "negative_template": "This farm-to-table program fails to delight XX% of customers. Would you partner with them?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Technology Domain",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        180,
+        181
+      ]
+    },
+    {
+      "scenario_id": 91,
+      "domain": "Personal life",
+      "positive_template": "This refrigerator keeps X% of food fresh longer. Would you use it?",
+      "negative_template": "This refrigerator fails to keep XX% of food fresh longer. Would you use it?",
+      "source_positive_domain": "Technology Domain",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        182,
+        183
+      ]
+    },
+    {
+      "scenario_id": 92,
+      "domain": "Personal life",
+      "positive_template": "This training method improves behavior for X% of puppies. Would you try it?",
+      "negative_template": "This training method does not improve behavior for XX% of puppies. Would you try it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        184,
+        185
+      ]
+    },
+    {
+      "scenario_id": 93,
+      "domain": "Personal life",
+      "positive_template": "This recipe satisfies X% of diners. Would you try it?",
+      "negative_template": "This recipe dissatisfies XX% of diners. Would you try it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        186,
+        187
+      ]
+    },
+    {
+      "scenario_id": 94,
+      "domain": "Personal life",
+      "positive_template": "This app recommends songs you’ll love X% of the time. Would you use it?",
+      "negative_template": "This app recommends disliked songs XX% of the time. Would you use it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        188,
+        189
+      ]
+    },
+    {
+      "scenario_id": 95,
+      "domain": "Personal life",
+      "positive_template": "This crypto tax tool saves time for X% of users. Would you buy it?",
+      "negative_template": "This crypto tax tool fails to save time for XX% of users. Would you buy it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        190,
+        191
+      ]
+    },
+    {
+      "scenario_id": 96,
+      "domain": "Personal life",
+      "positive_template": "This daycare has a X% satisfaction rate among parents. Would you choose it?",
+      "negative_template": "This daycare has a XX% dissatisfaction rate among parents. Would you choose it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        192,
+        193
+      ]
+    },
+    {
+      "scenario_id": 97,
+      "domain": "Personal life",
+      "positive_template": "This train ensures comfort for X% of passengers. Would you book a seat?",
+      "negative_template": "This train fails to ensure comfort for XX% of passengers. Would you book a seat?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        194,
+        195
+      ]
+    },
+    {
+      "scenario_id": 98,
+      "domain": "Personal life",
+      "positive_template": "This GPS app avoids traffic for X% of users. Would you download it?",
+      "negative_template": "This GPS app fails to avoid traffic for XX% of users. Would you download it?",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Personal life",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        196,
+        197
+      ]
+    },
+    {
+      "scenario_id": 99,
+      "domain": "Transportation",
+      "positive_template": "This AI traffic system prevents X% of urban accidents. Would you adopt it? ",
+      "negative_template": "This AI traffic system fails to prevent XX% of urban accidents. Would you adopt it? ",
+      "source_positive_domain": "Personal life",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        198,
+        199
+      ]
+    },
+    {
+      "scenario_id": 100,
+      "domain": "Transportation",
+      "positive_template": "This subway expansion cuts commute times for X% of riders. Would you support it?",
+      "negative_template": "This subway expansion doesn’t help XX% of riders cut commute times. Would you support it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        200,
+        201
+      ]
+    },
+    {
+      "scenario_id": 101,
+      "domain": "Transportation",
+      "positive_template": "This bike-sharing program covers X% of the city. Would you join?",
+      "negative_template": "This bike-sharing program does not cover XX% of the city. Would you join?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        202,
+        203
+      ]
+    },
+    {
+      "scenario_id": 102,
+      "domain": "Transportation",
+      "positive_template": "This airline has a X% on-time departure rate. Would you book a flight?",
+      "negative_template": "This airline delays XX% of flights. Would you book a flight?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        204,
+        205
+      ]
+    },
+    {
+      "scenario_id": 103,
+      "domain": "Transportation",
+      "positive_template": "This in-flight meal satisfies X% of passengers. Would you pre-order it?",
+      "negative_template": "This in-flight meal dissatisfies XX% of passengers. Would you pre-order it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        206,
+        207
+      ]
+    },
+    {
+      "scenario_id": 104,
+      "domain": "Transportation",
+      "positive_template": "This parking app finds spots X% of the time. Would you download it?",
+      "negative_template": "This parking app fails to find spots XX% of the time. Would you download it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        208,
+        209
+      ]
+    },
+    {
+      "scenario_id": 105,
+      "domain": "Transportation",
+      "positive_template": "This communication tool reaches X% of communities during emergencies. Would you use it?",
+      "negative_template": "This communication tool fails XX% of communities during emergencies. Would you use it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        210,
+        211
+      ]
+    },
+    {
+      "scenario_id": 106,
+      "domain": "Transportation",
+      "positive_template": "This communication strategy resolves X% of marital conflicts. Would you try it?",
+      "negative_template": "This communication strategy fails to resolve XX% of marital conflicts. Would you try it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Transportation",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        212,
+        213
+      ]
+    },
+    {
+      "scenario_id": 107,
+      "domain": "Interpersonal communication",
+      "positive_template": "This hotline resolves crises for X% of callers. Would you promote it?",
+      "negative_template": "This hotline fails to resolve crises for XX% of callers. Would you promote it?",
+      "source_positive_domain": "Transportation",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": true,
+      "source_excel_rows": [
+        214,
+        215
+      ]
+    },
+    {
+      "scenario_id": 108,
+      "domain": "Interpersonal communication",
+      "positive_template": "This body language technique improves first impressions for X% of people. Would you practice it?",
+      "negative_template": "This body language technique fails to improve first impressions for XX% of people. Would you practice it?",
+      "source_positive_domain": "Interpersonal communication",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        216,
+        217
+      ]
+    },
+    {
+      "scenario_id": 109,
+      "domain": "Interpersonal communication",
+      "positive_template": "This dating app matches X% of users with compatible partners. Would you use it? ",
+      "negative_template": "This dating app fails to match XX% of users with compatible partners. Would you use it? ",
+      "source_positive_domain": "Interpersonal communication",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        218,
+        219
+      ]
+    },
+    {
+      "scenario_id": 110,
+      "domain": "Interpersonal communication",
+      "positive_template": "This mood-tracking app helps X% of people identify triggers. Would you download it?",
+      "negative_template": "This mood-tracking app fails to help XX% of people identify triggers. Would you download it?",
+      "source_positive_domain": "Interpersonal communication",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        220,
+        221
+      ]
+    },
+    {
+      "scenario_id": 111,
+      "domain": "Interpersonal communication",
+      "positive_template": "This app translates social cues for X% of autistic users. Would you download it?",
+      "negative_template": "This app fails to translate social cues for XX% of autistic users. Would you download it?",
+      "source_positive_domain": "Interpersonal communication",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        222,
+        223
+      ]
+    },
+    {
+      "scenario_id": 112,
+      "domain": "Interpersonal communication",
+      "positive_template": "This negotiation tactic achieves win-win outcomes in X% of discussions. Would you use it?",
+      "negative_template": "This negotiation tactic fails to achieve win-win outcomes in XX% of discussions. Would you use it?",
+      "source_positive_domain": "Interpersonal communication",
+      "source_negative_domain": "Interpersonal communication",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        224,
+        225
+      ]
+    },
+    {
+      "scenario_id": 113,
+      "domain": "Entertainment & Media",
+      "positive_template": "X% of fans rate the sequel as better than the original in critic polls. Would you watch it?",
+      "negative_template": "XX% of fans rate the sequel as worse than the original in critic polls. Would you watch it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        226,
+        227
+      ]
+    },
+    {
+      "scenario_id": 114,
+      "domain": "Entertainment & Media",
+      "positive_template": "X% of players like this AR game. Would you play it?",
+      "negative_template": "XX% of players don't like this AR game. Would you play it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        228,
+        229
+      ]
+    },
+    {
+      "scenario_id": 115,
+      "domain": "Entertainment & Media",
+      "positive_template": "This hiking trail delights X% of adventurers. Would you hike it?",
+      "negative_template": "This hiking trail fails to delight XX% of adventurers. Would you hike it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        230,
+        231
+      ]
+    },
+    {
+      "scenario_id": 116,
+      "domain": "Entertainment & Media",
+      "positive_template": "This festival lineup pleases X% of attendees. Would you buy tickets?",
+      "negative_template": "This festival lineup fails to please XX% of attendees. Would you buy tickets?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        232,
+        233
+      ]
+    },
+    {
+      "scenario_id": 117,
+      "domain": "Entertainment & Media",
+      "positive_template": "This TV show satisfies X% of viewers. Would you watch it?",
+      "negative_template": "This TV show fails to satisfy XX% of viewers. Would you watch it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        234,
+        235
+      ]
+    },
+    {
+      "scenario_id": 118,
+      "domain": "Entertainment & Media",
+      "positive_template": "This exhibition has a X% positive review rate. Would you buy tickets?",
+      "negative_template": "This exhibition has a XX% negative review rate. Would you buy tickets?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        236,
+        237
+      ]
+    },
+    {
+      "scenario_id": 119,
+      "domain": "Entertainment & Media",
+      "positive_template": "This book has a X% reader satisfaction rate. Would you read it?",
+      "negative_template": "This book has a XX% reader dissatisfaction rate. Would you read it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        238,
+        239
+      ]
+    },
+    {
+      "scenario_id": 120,
+      "domain": "Entertainment & Media",
+      "positive_template": "This singer's new song is loved by X% of fans. Would you listen to it?",
+      "negative_template": "This singer's new song is disliked by XX% of fans. Would you listen to it?",
+      "source_positive_domain": "Entertainment & Media",
+      "source_negative_domain": "Entertainment & Media",
+      "domain_label_mismatch": false,
+      "source_excel_rows": [
+        240,
+        241
+      ]
+    }
+  ]
+}

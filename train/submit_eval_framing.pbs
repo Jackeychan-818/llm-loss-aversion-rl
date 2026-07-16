@@ -1,0 +1,83 @@
+#!/bin/bash
+# ============================================================
+# PBS Job — matched local-base and Qwen-own-delta framing eval
+#
+# Full run:
+#   qsub train/submit_eval_framing.pbs
+#
+# Smoke run (10 scenarios x 5 probabilities x 2 frames):
+#   qsub -v LIMIT_SCENARIOS=10,PROBABILITY_SUBSET=0.10:0.30:0.50:0.70:0.90 \
+#     train/submit_eval_framing.pbs
+#
+# Override the selected adapter if its archived path differs:
+#   qsub -v ADAPTER_PATH=checkpoints/grpo_qwen_delta/checkpoint-8000 \
+#     train/submit_eval_framing.pbs
+# ============================================================
+#PBS -N lz-framing
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/framing_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/framing_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+CUDA_COMPAT_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -n 1 || true)"
+if [[ -n "$CUDA_COMPAT_LIB" ]]; then
+    export LD_LIBRARY_PATH="$CUDA_COMPAT_LIB:${LD_LIBRARY_PATH:-}"
+fi
+
+MODEL_PATH="${MODEL_PATH:-models/Qwen2.5-7B-Instruct}"
+ADAPTER_PATH="${ADAPTER_PATH:-checkpoints/grpo_qwen_delta/checkpoint-8000}"
+DATA_FILE="${DATA_FILE:-data/framing_effects_23prob.json}"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-framing}"
+
+EXTRA_ARGS=()
+if [[ -n "${LIMIT_SCENARIOS:-}" ]]; then
+    EXTRA_ARGS+=(--limit_scenarios "$LIMIT_SCENARIOS")
+fi
+if [[ -n "${PROBABILITY_SUBSET:-}" ]]; then
+    EXTRA_ARGS+=(--probability_subset "$PROBABILITY_SUBSET")
+fi
+
+echo "=== GPU check ==="
+nvidia-smi
+python -c "import torch; print(f'CUDA: {torch.cuda.get_device_name(0)}')"
+
+echo "=== Matched local base framing evaluation ==="
+python eval/run_framing_local.py \
+    --model_path "$MODEL_PATH" \
+    --model_name Qwen-7B-Base \
+    --data_file "$DATA_FILE" \
+    --output_root "$OUTPUT_ROOT" \
+    --prompt_style single_word \
+    --batch_size "$BATCH_SIZE" \
+    --yes \
+    "${EXTRA_ARGS[@]}" \
+    2>&1 | tee logs/framing_base_run.log
+
+echo "=== Qwen-own-delta step-8000 framing evaluation ==="
+python eval/run_framing_local.py \
+    --model_path "$MODEL_PATH" \
+    --adapter_path "$ADAPTER_PATH" \
+    --model_name Qwen-7B-GRPO-step8000 \
+    --data_file "$DATA_FILE" \
+    --output_root "$OUTPUT_ROOT" \
+    --prompt_style single_word \
+    --compare_to "$OUTPUT_ROOT/Qwen-7B-Base/single_word/predictions.json" \
+    --batch_size "$BATCH_SIZE" \
+    --yes \
+    "${EXTRA_ARGS[@]}" \
+    2>&1 | tee logs/framing_grpo_step8000_run.log
+
+echo "=== Framing evaluation complete ==="
