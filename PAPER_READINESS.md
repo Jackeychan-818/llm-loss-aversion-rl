@@ -33,7 +33,8 @@ story in the main paper without such evidence.
 | Qwen-own delta, step 8,000: OOD lambda = 0.226, eta = 0.790, consistency = 49.46% | Intended final generalization result | May carry the final claim only after raw outputs, estimator artifacts, checkpoint identity, and reproduction commands are archived and the suite's frozen status is documented. |
 | Consensus-delta: ID lambda = 0.177, eta = -0.048 | Reward-source ablation/reference | Completed and committed, but its historical pre/post comparison still needs a matched local-base rerun. |
 | Consensus-delta: OOD lambda = 0.395, eta = 0.502, consistency = 64.89% | Reward-source ablation on OOD | Shows a trade-off: higher lambda than Qwen-own delta, but lower eta and stronger consistency. Raw OOD artifacts must also be archived. |
-| Historical base Qwen: lambda = 11.75, eta = 1.52 | Historical baseline, not yet a matched causal baseline | It used a Together-hosted Turbo endpoint, 9,950 cases, and a different probability scorer from the local post-training evaluation. |
+| **Matched local base: lambda = 7.637 (SE 0.627), eta = 1.007** | **Causal baseline — use this** | Exact local weights, same 9,890 rows, same teacher-forced scorer, same estimator. Behaviour: keep-both 99.13%, consistency 0.87%. |
+| Historical base Qwen: lambda = 11.75, eta = 1.52 | Superseded — do not use for before/after | Together Turbo endpoint, 9,950 cases, top-5 first-token probs. Inflated ~54% vs the matched base by pipeline mismatch, not training. |
 
 The paper must not claim that Qwen-own delta dominates consensus on every
 dimension. It currently has lower estimated lambda, whereas consensus has
@@ -50,9 +51,27 @@ probabilities. The post-training evaluator uses a local
 `models/Qwen2.5-7B-Instruct` checkpoint, 9,890 cases, and exact normalized
 teacher-forced Yes/No sequence scores.
 
-**Required action:** evaluate the exact local base checkpoint without an
-adapter on the same 9,890 `test_goods.json` rows with `eval/run_qwen_local.py`,
-then estimate it with the same structural code used for the adapter.
+**Status (July 15, 2026): RESOLVED.** The exact local base was evaluated with no
+adapter on the same 9,890 `test_goods.json` rows via `eval/run_qwen_local.py`
+and estimated with the same structural code (Model A NLS, `--link-scale 1`).
+
+| base estimate | lambda | SE | eta | SE |
+|---|---|---|---|---|
+| Historical (Together Turbo, 9,950, top-5 first-token) | 11.75 | 1.22 | 1.52 | 0.085 |
+| **Matched local (local weights, 9,890, teacher-forced)** | **7.637** | 0.627 | **1.007** | 0.120 |
+
+**The historical 11.75 was inflated by ~54% by the pipeline mismatch, not by
+training.** The matched base is well identified (|t| = 12.2) and behaviourally
+extreme: consistency 0.87%, keep-both 99.13%, trade-both 0.00%.
+
+**Use the matched base for every before/after claim.** Against the primary model
+(Qwen-own delta, step 8,000): lambda 7.637 -> 0.111 (-98.5%), eta 1.007 -> 0.504
+(-50%), keep-both 99.13% -> 24.2%, consistency 0.87% -> 69.7%. This comparison is
+now single-pipeline (same weights, rows, scorer, estimator) and may be described
+as causal. Note lambda collapses while eta only halves.
+
+Artifacts: `baseline/Qwen-7B-Base-Local/`. Reproduce:
+`qsub train/submit_eval_base_matched.pbs`.
 
 ### 2. Reliability of Qwen's own pseudo-utility
 

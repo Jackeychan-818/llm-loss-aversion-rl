@@ -43,7 +43,6 @@ open.**
   - forced:   λ̂ = 0.173, η̂ = −0.379
 
 ### Active
-- Matched exact-local-base evaluation with the post-training scorer.
 - Frozen checkpoint rule and at least three Qwen-own-delta seeds.
 - Raw checkpoint/OOD artifact archival, matched SFT/sign-only baselines,
   robust inference, and capability-retention tests.
@@ -90,7 +89,7 @@ Estimation methods (in `core_exp_refactored.py`):
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
-| 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer result pending |
+| 1. Small-model baseline | ✅ Matched | **λ̂ = 7.637** (SE 0.627), η̂ = 1.007 — exact local base, 9,890 rows, teacher-forced. Historical 11.75 (Together Turbo) superseded: inflated ~54% by pipeline mismatch |
 | 2. Qwen-own reward design | ✅ Validated | δ̃ vs frozen ownership-free anchor: 71.1% test / 70.8% train sign agreement (85.5% at \|δ̃\|>1.0); α 91.9% / β 100% significant. `eval/validate_qwen_delta_anchor.py` |
 | 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
 | 4. Primary evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |

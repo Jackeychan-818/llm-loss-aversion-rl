@@ -9,11 +9,11 @@
 %       PRIMARY  = Qwen-own delta, GRPO step 8,000  (lambda=0.111, eta=0.504)
 %       ABLATION = frontier-consensus delta          (lambda=0.177, eta=-0.048)
 %     Both test_goods estimates are VALIDATION-ONLY (that set informed reward
-%     construction and checkpoint selection). The 11.75 base row is a historical,
-%     UNMATCHED reference until the matched local-base rerun lands.
+%     construction and checkpoint selection). BASE = matched local, lambda=7.637
+%     (SE 0.627), eta=1.007. The old 11.75 (Together Turbo) is SUPERSEDED.
 %   * Do NOT reintroduce: superiority over the human 2.25 benchmark (different
 %     task/parameterization), superiority over frontier models (unharmonized),
-%     or a causal before/after claim. See "Claims We Do Not Make".
+%     or the superseded 11.75 base. See "Claims We Do Not Make".
 %
 % If you find another .tex/PDF/deck asserting different numbers or model roles,
 % that artifact is stale — regenerate or archive it; do not edit it in place.
@@ -373,23 +373,28 @@ temperature; evaluation decoding remains greedy ($T_{\mathrm{dec}}=0$).
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Model & Estimate & SE & Estimate & SE \\
 \midrule
-Base Qwen-7B (historical, \emph{unmatched}) & 11.75 & 1.22 & 1.52 & 0.09 \\
+Base Qwen-7B (\textbf{matched local}) & 7.637 & 0.627 & 1.007 & 0.120 \\
 \midrule
 Qwen-own $\tilde{\delta}$, step 8{,}000 (\textbf{primary}) & \textbf{0.111} & 0.014 & 0.504 & 0.029 \\
 Frontier-consensus $\tilde{\delta}$ (reward-source ablation) & 0.177 & 0.005 & $-$0.048 & 0.024 \\
 \bottomrule
 \end{tabular}
 \caption{Structural estimates (Model A NLS, link scale $T=1$) on
-\texttt{test\_goods}. \textbf{Both post-training rows are validation-only, not
-untouched final-test results}: \texttt{test\_goods} informed both the Qwen-own
-reward construction and checkpoint selection. The base row is a
-\emph{historical, unmatched} reference---it used a Together-hosted Turbo
-endpoint, 9{,}950 cases, and top-five first-token probabilities, whereas the
-post-training rows use local weights, 9{,}890 cases, and teacher-forced
-sequence scores; a matched local-base rerun is pending, so the before/after
-difference must not yet be read as a causal training effect. The two reward
-sources trade off rather than dominate: Qwen-own attains lower $\lambda$,
-consensus attains lower $|\eta|$.}
+\texttt{test\_goods}. All rows share one pipeline---the exact local
+\texttt{Qwen2.5-7B-Instruct} weights, the same 9{,}890 rows, the same
+teacher-forced Yes/No sequence scorer, and the same estimator---so the
+before/after difference is attributable to training. The primary model reduces
+$\lambda$ by 98.5\% (7.637 $\rightarrow$ 0.111) but $\eta$ by only 50\%
+(1.007 $\rightarrow$ 0.504): the intervention removes the ownership
+\emph{asymmetry} far more effectively than the \emph{level} of choice rigidity,
+so $\lambda$ and $\eta$ must be read together. \textbf{Both post-training rows
+are validation-only}: \texttt{test\_goods} informed the Qwen-own reward
+construction and checkpoint selection, so these are not untouched final-test
+estimates. An earlier baseline of $\lambda = 11.75$ measured a Together-hosted
+Turbo endpoint over 9{,}950 cases with top-five first-token probabilities; it is
+superseded because roughly 54\% of that value reflects the pipeline mismatch
+rather than the model. The two reward sources trade off rather than dominate:
+Qwen-own attains lower $\lambda$, consensus attains lower $|\eta|$.}
 \end{table}
 
 \begin{table}[h]
@@ -454,9 +459,14 @@ estimates have not been harmonized with ours across model endpoints, sample
 sizes, or probability scorers. Until a harmonized comparison is run, any
 frontier ranking would confound the intervention with measurement differences.
 
-\textbf{We do not yet claim a causal before/after reduction.} The historical
-base estimate is not matched to the post-training evaluation pipeline (see the
-Results table), and a matched local-base rerun is pending.
+\textbf{We do claim a before/after reduction, but only against the matched
+base.} Every row of the Results table shares one pipeline---the exact local
+weights, the same 9{,}890 rows, the same teacher-forced scorer, and the same
+estimator---so the reduction from $\hat{\lambda} = 7.637$ to $0.111$ is
+attributable to training. We do \emph{not} report the earlier $\lambda = 11.75$
+as the baseline: it measured a different endpoint, sample, and scorer, and
+roughly 54\% of it reflects that mismatch rather than the model. Quoting it
+would inflate the reduction with a measurement artifact.
 
 Accordingly the claim we make is narrower and matched to the evidence: relative
 to the ownership-neutral target $\lambda = 0$, post-training with a frozen,
