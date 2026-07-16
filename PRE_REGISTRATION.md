@@ -1,11 +1,13 @@
 # Pre-Registration — Qwen-own-delta Seed Replication
 
-**STATUS: DRAFT — REQUIRES SIGN-OFF BEFORE THE FIRST SEED IS SUBMITTED.**
-Numbers below are proposals. Once agreed, mark this FROZEN, commit it, and do not
-change it after seeing any seed result. If it is not frozen before launch, the
-read-out is a post-hoc judgement and the replication does not do its job.
+**STATUS: FROZEN — July 15, 2026, before any seed was submitted.**
+No seed had been launched and no seed result existed when this was frozen. Do not
+change any threshold or bar below after seeing a seed result; if something must
+change, record it as an amendment with a date and reason, and report the analysis
+as post-hoc.
 
-*Drafted July 15, 2026.*
+Confirmatory seeds at freeze time: **none run**. Exploratory `seed=42` results
+were known and are explicitly excluded from the confirmatory denominator below.
 
 ## Purpose
 
@@ -42,55 +44,46 @@ An OOD result (e.g. λ̂ = 0.226) must be read against **2.209**, not 7.637.
 
 ## Success criteria
 
-**Seed set for the formal criterion: n = 3** — `seed=42` (exploratory) plus the
-two new confirmatory seeds. Counting seed 42 is legitimate *because* the design
-uses the 2k–30k grid + the frozen `min d` rule rather than a fixed 8k stop: seed
-42's checkpoint is re-selected **mechanically**, exactly like the new seeds.
-**Residual caveat to state in the paper:** the rule's design (min d, consistency
-floor) was informed by seed 42's curve, so seed 42 is not fully independent
-evidence.
+**Confirmatory denominator: the NEW seeds only.** `seed=42` is **exploratory** and
+is NOT counted. Its results are already known and helped design the selection
+rule, so including it would be doubly permissive: a "2 of 3" bar counting seed 42
+would require only **one of two** new seeds to succeed.
 
-**Required for a like-for-like 2-of-3:** seed 42 must be selected over the SAME
-2k–30k grid as the new seeds. All 15 of its grid checkpoints exist on disk, but
-only 5 grid points are currently evaluated (8k, 10k, 12k, 20k, 30k); its original
-selection used a 7-point grid that included 5k/15k — which are not on the 2k grid
-— and never evaluated 2k, 4k or 6k. **10 further evals of seed 42 are required**
-(2k, 4k, 6k, 14k, 16k, 18k, 22k, 24k, 26k, 28k) before its selection is
-comparable. Until then its `d = 0.516` at step 8,000 is a 7-point-grid result,
-and an earlier checkpoint could in principle win on the full grid.
-
-Total selection-eval budget: 10 (seed 42 top-up) + 15 + 15 = **40 evals ≈ 40
-GPU-hours**.
-
-**Formal bar: 2 of 3.** Requiring 3/3 is too brittle — one unlucky training run
-would make the entire method "fail", which measures luck rather than reliability.
+**Bar:**
+- **Both new seeds pass → report 2/2 confirmatory**, with seed 42 as *supporting
+  exploratory* evidence (clearly labelled as such, never as a third confirmation).
+- **The new seeds disagree (1/2) → run a third NEW seed and require 2 of 3 FRESH
+  seeds.** Do not fall back on seed 42 to break the tie.
+- **Both fail → report that the method did not replicate.**
 
 **Report BOTH**, always:
-1. the formal **2-of-3** verdict, *and*
-2. **every individual seed's** numbers (λ̂, η̂, consistency, keep/trade-both,
-   selected step, KL) — never the best seed alone — *and*
-3. whether **3 of 3** would also have passed, so the reader sees how much the
-   verdict depends on the 2/3 bar.
+1. the confirmatory verdict on the new seeds, *and*
+2. **every individual seed's** numbers (λ̂ ID and OOD, η̂, consistency,
+   keep/trade-both, selected step, KL) — never the best seed alone.
 
-**S1 — Eligible checkpoint exists.** Required in **2 of 3** seeds. A seed with no
+Judged **per seed**. With few seeds no summary statistic is meaningful: report all
+values and the range, not a median.
+
+**S1 — Eligible checkpoint exists.** Required in **every new seed**. A seed with no
 checkpoint passing `CHECKPOINT_PROTOCOL` eligibility (consistency ≥ 0.50, finite
 non-zero SEs) is a **method failure**, not a discarded seed.
 
-**S2 — Loss-aversion reduction (primary). THRESHOLD DEFERRED BY DECISION.**
+**S2 — Loss-aversion reduction (primary). FROZEN.**
 
-The proposed bar was λ̂ ≤ 1.0 on the ID/validation suite (multiplier (1+λ) < 2.0;
-≥87% below the matched base λ̂ = 7.637). **The threshold has been deferred until
-after training.**
+Judged on the **OOD-50 suite**, at the checkpoint chosen by the frozen selection
+rule:
 
-**Consequence, recorded before the fact:** because the bar is not fixed in
-advance, S2 is **NOT a pre-registered test**. The paper must report the seed
-λ̂ values **descriptively** — every seed, plus median and range — and must NOT
-claim a pre-specified success criterion, "confirmed our hypothesis", or any
-threshold-based pass/fail framing chosen after seeing the numbers. Monitoring
-training is unaffected; only the success bar is at issue.
+> **|λ̂_OOD| ≤ 0.5**
 
-If a threshold is agreed BEFORE any seed's λ̂ is inspected, replace this section
-and mark it pre-registered.
+**Why OOD and not ID:** `test_goods` is used for checkpoint selection *and*
+informed the Qwen-own reward construction (PAPER_READINESS #3/#4), so an ID
+threshold would be graded on contaminated data. OOD-50 is the untouched
+comparator. Its base is **λ̂ = 2.209**, so ≤ 0.5 is a ≥77% reduction *on the same
+suite*. Reference: exploratory seed 42 gives λ̂_OOD = 0.226 → would pass.
+
+The OOD suite is opened **once per seed**, on the **already-selected** checkpoint
+only. Evaluating several checkpoints on OOD and choosing among them would
+re-introduce the selection bias this protocol exists to remove.
 
 **S3 — No degenerate choice behaviour.** Per seed: consistency ≥ 0.50 **and**
 keep-both ≤ 0.50 **and** trade-both ≤ 0.50. This blocks a checkpoint from
@@ -103,16 +96,14 @@ the selected checkpoint). Pre-declaring an η̂ threshold we already expect to f
 would be dishonest. Instead we pre-declare the **claim limit**: we will not claim
 η is eliminated.
 
-**S5 — Capability non-inferiority (GSM8K). MARGIN DEFERRED BY DECISION.**
+**S5 — Capability non-inferiority (GSM8K). FROZEN.**
 
-The proposed margin was: lower bound of the paired 95% bootstrap CI on
-Δ (tuned − base, vs the exact local base 86.88%) ≥ −5 pp.
-**Deferred until after training.**
+Per seed, vs the **exact local base** (86.88%), paired over all 1,319 items:
 
-**Consequence:** capability results will be reported descriptively (Δ with paired
-CI and McNemar p per seed) and must NOT be framed as a pre-registered
-non-inferiority test. Reference: the exploratory run gives Δ = −0.99 pp,
-CI [−2.12, +0.15], McNemar p = 0.111.
+> lower bound of the paired 95% bootstrap CI on Δ (tuned − base) **≥ −3 pp**
+
+Reference: exploratory seed 42 gives Δ = −0.99 pp, CI [−2.12, +0.15],
+McNemar p = 0.111 → would pass.
 
 **S6 — IFEval.** Same non-inferiority form (**≥ −5 pp**) once the harness exists.
 If IFEval is not ready before the seeds finish, report GSM8K alone and state that
@@ -127,19 +118,23 @@ the capability evidence is single-benchmark.
 - If seeds disagree materially, that IS the finding: report the variance rather
   than the best run.
 
-## Decisions taken (July 15, 2026)
+## Frozen decisions (July 15, 2026, pre-launch)
 
 | item | decision |
 |---|---|
-| Seeds | **2 new** (`SEED=1,2`) as a first stage + `seed=42` exploratory |
-| Grid | **2k–30k at 2k intervals** (15 checkpoints/seed) |
+| Confirmatory seeds | **2 new** (`SEED=1,2`). `seed=42` = exploratory, **excluded from the denominator** |
+| Bar | **2/2** new seeds; if they disagree → third NEW seed, require **2/3 fresh** |
 | Training endpoint | **MAX_STEPS=30000**, fixed for every seed |
-| Formal pass bar | **2 of 3** seeds (n=3 incl. exploratory seed 42) — 3/3 judged too brittle |
-| S2 λ̂ threshold | **deferred** → S2 is descriptive, not a pre-registered test |
-| S5 capability margin | **deferred** → descriptive, not a non-inferiority test |
+| Selection grid | **2k–30k @ 2k** (15 checkpoints/seed), ID/validation suite |
+| Selection rule | `CHECKPOINT_PROTOCOL.md` min-d, mechanical |
+| **S2 primary threshold** | **\|λ̂_OOD\| ≤ 0.5** (OOD base 2.209; ID is contaminated by selection) |
+| **S5 capability margin** | paired 95% CI lower bound **≥ −3 pp** on GSM8K |
+| S4 η̂ | reported jointly, **not gated**; we will not claim η is eliminated |
 
-## Open — settle before launch
+Eval budget: 15 ID selection evals + 1 OOD + 1 GSM8K per new seed ≈ **34 evals**.
+(seed 42 needs no grid top-up now that it is out of the denominator.)
 
-1. Whether to fix the S2 λ̂ threshold before inspecting any seed's λ̂ (which would
-   recover a genuine pre-registered test) or accept descriptive-only reporting.
-   The 2-of-3 bar is agreed; what "pass" means numerically is not.
+## Amendments
+
+*None. Record any post-freeze change here with date, reason, and its effect on
+the analysis' status.*

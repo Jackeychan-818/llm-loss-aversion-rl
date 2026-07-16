@@ -22,7 +22,11 @@ mechanically.
 | Set | Role | May be used for |
 |---|---|---|
 | `test_goods.json` | **VALIDATION** | checkpoint selection ONLY |
-| frozen OOD suite | **FINAL** | opened once, AFTER selection, for the reported claim |
+| frozen OOD suite | **FINAL** | opened once per seed, AFTER selection, on the selected checkpoint only — this is where the frozen success threshold (\|λ̂_OOD\| ≤ 0.5, `PRE_REGISTRATION.md` S2) is judged |
+
+This rule selects a checkpoint; it does **not** decide success. Selection happens
+on validation, the verdict is read on OOD. Never evaluate several checkpoints on
+OOD and choose among them — that re-opens the bias this protocol removes.
 
 `test_goods` cannot serve as a final test for Qwen-own-delta runs: it informed
 both the reward construction (PAPER_READINESS #3) and checkpoint selection (#4).

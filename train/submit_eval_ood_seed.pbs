@@ -1,0 +1,86 @@
+#!/bin/bash
+# ============================================================
+# PBS Job — OOD-50 evaluation of ONE seed's SELECTED checkpoint.
+#
+# The replication success threshold (PRE_REGISTRATION.md S2) is judged on the
+# OOD suite, NOT on test_goods: test_goods is used for checkpoint selection and
+# also informed the Qwen-own reward construction, so it is validation data. The
+# OOD suite is the untouched comparator.
+#
+# Run this ONCE PER SEED, on the checkpoint chosen by the frozen selection rule
+# (eval/select_checkpoint.py) — never before selection, and never on several
+# checkpoints in order to pick the best. Doing so would re-open the exact
+# selection bias the protocol exists to remove.
+#
+# Compare the result against the OOD base (lambda = 2.209) ONLY — never against
+# the ID base (7.637). See the suite-pairing rule in PRE_REGISTRATION.md.
+#
+#   qsub -v SEED=1,CKPT=8000 train/submit_eval_ood_seed.pbs
+# ============================================================
+#PBS -N lz-ood-seed
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/ood_seed_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/ood_seed_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+: "${SEED:?Must pass -v SEED=<n>}"
+: "${CKPT:?Must pass -v CKPT=<step selected by eval/select_checkpoint.py>}"
+
+BASE_MODEL="${BASE_MODEL:-models/Qwen2.5-7B-Instruct}"
+OOD_GOODS="data/ood_new_goods_50.json"
+OOD_CASES="data/ood_new_goods_50_test.json"
+OUTPUT_ROOT="ood"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+
+# Seed-aware paths + names so seeds cannot overwrite or mix results.
+if [[ "$SEED" == "42" ]]; then
+    RUN_DIR="checkpoints/grpo_qwen_delta"
+    MODEL_NAME="Qwen-7B-GRPO-QwenDelta-step${CKPT}-OOD50"
+else
+    RUN_DIR="checkpoints/grpo_qwen_delta_seed${SEED}"
+    MODEL_NAME="Qwen-7B-GRPO-qd-seed${SEED}-ckpt${CKPT}-OOD50"
+fi
+ADAPTER="${ADAPTER:-${RUN_DIR}/checkpoint-${CKPT}}"
+
+echo "=== GPU Check ==="; nvidia-smi
+echo "SEED:       $SEED"
+echo "CKPT:       $CKPT  (must be the frozen-rule selection for this seed)"
+echo "Adapter:    $ADAPTER"
+echo "Model name: $MODEL_NAME"
+if [[ ! -d "$ADAPTER" ]]; then echo "ERROR: adapter not found: $ADAPTER"; exit 1; fi
+for f in "$OOD_GOODS" "$OOD_CASES"; do
+    [[ -f "$f" ]] || { echo "ERROR: OOD data not found: $f"; exit 1; }
+done
+
+echo "=== Eval $MODEL_NAME on OOD-50 ==="
+python eval/run_qwen_local.py \
+    --model_path "$BASE_MODEL" \
+    --adapter_path "$ADAPTER" \
+    --model_name "$MODEL_NAME" \
+    --data_file "$OOD_CASES" \
+    --goods_json "$OOD_GOODS" \
+    --treatment baseline \
+    --output_root "$OUTPUT_ROOT" \
+    --batch_size "$BATCH_SIZE" \
+    --yes \
+    2>&1 | tee "logs/ood_seed${SEED}_ckpt${CKPT}_eval.log"
+
+echo "=== Estimate $MODEL_NAME (Model A NLS, link scale T=1) ==="
+python eval/estimate_qwen_checkpoint.py \
+    --model_name "$MODEL_NAME" \
+    --feature "$OUTPUT_ROOT" \
+    --robust_model 1 \
+    --link-scale 1 \
+    2>&1 | tee "logs/ood_seed${SEED}_ckpt${CKPT}_estimate.log"
+
+echo "=== Done. Compare lambda against the OOD base (2.209), NOT the ID base. ==="

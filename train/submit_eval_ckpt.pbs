@@ -26,11 +26,24 @@ source "$PROJECT_DIR/venv/bin/activate"
 export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
 
 : "${CKPT:?Must pass -v CKPT=<step> (e.g. 30000)}"
-ADAPTER="checkpoints/grpo_qwen_delta/checkpoint-${CKPT}"
-MODEL_NAME="Qwen-7B-GRPO-qd-ckpt${CKPT}"
+
+# SEED-AWARE. The run dir and the model/output name are both derived from SEED so
+# that replication seeds cannot overwrite or mix each other's results. seed=42 is
+# the exploratory run and keeps its legacy paths/names so existing artifacts and
+# manifests stay valid.
+SEED="${SEED:-42}"
+if [[ "$SEED" == "42" ]]; then
+    RUN_DIR="checkpoints/grpo_qwen_delta"
+    MODEL_NAME="Qwen-7B-GRPO-qd-ckpt${CKPT}"
+else
+    RUN_DIR="checkpoints/grpo_qwen_delta_seed${SEED}"
+    MODEL_NAME="Qwen-7B-GRPO-qd-seed${SEED}-ckpt${CKPT}"
+fi
+ADAPTER="${ADAPTER:-${RUN_DIR}/checkpoint-${CKPT}}"
 
 echo "=== GPU Check ==="
 nvidia-smi
+echo "SEED: $SEED"
 echo "Checkpoint: $ADAPTER"
 echo "Model name: $MODEL_NAME"
 
