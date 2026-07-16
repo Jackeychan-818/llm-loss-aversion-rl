@@ -1,8 +1,8 @@
 {
   "name": "matched_local_base",
-  "note": "PAPER_READINESS #1: matched causal baseline. Supersedes historical lambda=11.75.",
-  "created_utc": "2026-07-16T04:43:49.590753+00:00",
-  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "note": "PAPER_READINESS #1: matched causal baseline (ID/validation suite). Supersedes historical lambda=11.75. Compare ID models against THIS base only.",
+  "created_utc": "2026-07-16T06:53:16.783062+00:00",
+  "code_commit": "99b109041b83e015ecbc5887dc3dfc7464416460",
   "eval_dir": "baseline/Qwen-7B-Base-Local",
   "reproduce": "qsub train/submit_eval_base_matched.pbs",
   "estimate": {
@@ -39,31 +39,31 @@
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_choice_prob_fraction_with_estimation_model_A.csv",
       "bytes": 62,
       "sha256": "eebff5057155d3d59a4a3219163d1d9dbfe4d60568f618079e76e1120674c851",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_choice_prob_number_with_estimation_model_A.csv",
       "bytes": 44,
       "sha256": "90df5fb73c1b3fdf9d7a9d699b9158bab7c34970ae8cf6abfef10af338f03edd",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_raw_choice_counts_fraction.csv",
       "bytes": 64,
       "sha256": "a8734b08a39591a779701550cc4f31fcfae9bfbf1b0ecffa7a50e49f5cd3802a",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_raw_choice_counts_number.csv",
       "bytes": 47,
       "sha256": "24bbfe73d1f8775eb4a69cfd10eb45194d140c3a25cf88095affac233c6de0c8",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_utility_of_each_goods_Model_A.csv",
       "bytes": 23267,
       "sha256": "25ffb0de01caf27b7e8c1622160f1f1457223f69c7ae97b743d9fcd8b0d6e7f4",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-Base-Local/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",

@@ -201,14 +201,35 @@ Report every seed, not only the best.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
-The canonical paper source is `training_overview.tex` (see
-`PAPER_SOURCES.md`); paper tables must be generated from tracked
-artifacts. Today the raw checkpoint/OOD X/Y predictions,
-NLS output directories, run manifests, adapter/checkpoint checksums, and
-final table-generation artifacts are not tracked in the repository.
+**Status (July 15, 2026): PARTIALLY resolved. Be precise about which half.**
 
-**Required action:** archive the raw outputs and metadata, add exact
-reproduction commands, and generate paper tables from tracked artifacts.
+**Committed (derived results — every reported number is traceable):**
+- `results/manifests/*.json` — per result: the parsed estimate, SHA-256 of every
+  file in the eval dir, adapter identity + checksum, exact repro command, code
+  commit, and a per-file `tracked_in_git` flag. Covers: `matched_local_base`,
+  `primary_qwen_delta_step8000`, `ood50_primary_qwen_delta_step8000`,
+  `ood50_base`, `ood50_consensus_ablation`, `gsm8k_capability_retention`.
+- The estimation outputs behind each number (NLS CSVs, choice-prob and raw-count
+  CSVs), the GSM8K summaries + `comparison.json`, `ood50_summary.html`,
+  `results/qwen_delta_anchor_validation.json`,
+  `results/checkpoint_selection/*.json`.
+
+**NOT committed (raw data — the reported numbers are NOT reproducible from the
+repository alone):**
+- Raw `loss_aversion_X/Y.json` predictions for every eval (~167 MB total; `.git`
+  is already 1.6 GB). A SHA-256 verifies a file someone **already has**; it does
+  **not** make the file downloadable or the result independently re-derivable.
+  Anyone cloning this repo can read the numbers and the commands, but cannot
+  re-run the estimator on the raw predictions.
+- Adapter weights for the selected checkpoints (checksummed in the manifests
+  only).
+
+**Required action (decision pending):** either commit the raw predictions for the
+claim-carrying results (primary ID, matched base, primary OOD ≈ 95 MB), or
+publish them to an external archive (e.g. Zenodo/HF dataset) and record the DOI +
+checksums here. Until one of these happens, the honest status is: **derived
+results archived, raw data not publicly reproducible.** Do not describe artifact
+archival as complete.
 
 ## Priority 1: Needed for a Competitive Full Paper
 

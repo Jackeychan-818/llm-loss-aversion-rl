@@ -79,16 +79,22 @@ def main():
     if not d.exists():
         raise SystemExit(f"eval dir not found: {d}")
 
+    # Batch the tracked-check: one `git ls-files` for the whole dir. (Per-file
+    # --error-unmatch calls were slow, and running this BEFORE `git add` silently
+    # reported everything as untracked — regenerate manifests AFTER staging.)
+    tracked = set(subprocess.run(
+        ["git", "ls-files", args.eval_dir], cwd=PROJECT_ROOT,
+        capture_output=True, text=True).stdout.split())
+
     files = []
     for p in sorted(d.rglob("*")):
         if p.is_file():
+            rel = str(p.relative_to(PROJECT_ROOT))
             files.append({
-                "path": str(p.relative_to(PROJECT_ROOT)),
+                "path": rel,
                 "bytes": p.stat().st_size,
                 "sha256": sha256(p),
-                "tracked_in_git": subprocess.run(
-                    ["git", "ls-files", "--error-unmatch", str(p.relative_to(PROJECT_ROOT))],
-                    cwd=PROJECT_ROOT, capture_output=True).returncode == 0,
+                "tracked_in_git": rel in tracked,
             })
 
     adapter = None

@@ -1,8 +1,8 @@
 {
   "name": "ood50_base",
-  "note": "OOD-50 base reference.",
-  "created_utc": "2026-07-16T04:44:22.299246+00:00",
-  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "note": "OOD-suite base. THIS is the comparator for OOD model results (lambda=2.209), not the ID base.",
+  "created_utc": "2026-07-16T06:53:36.792539+00:00",
+  "code_commit": "99b109041b83e015ecbc5887dc3dfc7464416460",
   "eval_dir": "ood/Qwen-7B-Base-OOD50",
   "reproduce": "qsub train/submit_eval_ood_new_goods.pbs",
   "estimate": {
@@ -39,31 +39,31 @@
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_choice_prob_fraction_with_estimation_model_A.csv",
       "bytes": 61,
       "sha256": "ed3cc2ed6f420b440f3e502b8dda87e0ae3c6a4e85bb4cd465bf9c82ff154010",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_choice_prob_number_with_estimation_model_A.csv",
       "bytes": 44,
       "sha256": "2132734f09c9a1bc4970b1eb26b6fe00091b501133cdaa15d5549662b15f43f2",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_raw_choice_counts_fraction.csv",
       "bytes": 64,
       "sha256": "d3690ee293db35bd6c8b3289746e1ef8967aeb2ed49f46f2272d61fde6dba4f2",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_raw_choice_counts_number.csv",
       "bytes": 44,
       "sha256": "e512a4fd90fb87ff3cd8369c3a61859e9db2146f0aab439df642a2800f36e79a",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_utility_of_each_goods_Model_A.csv",
       "bytes": 11613,
       "sha256": "770b7300496a171e156f7d174b403d0d3369c5f3676b80be9ed65e050887366e",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-Base-OOD50/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",

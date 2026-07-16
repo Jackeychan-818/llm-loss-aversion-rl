@@ -1,8 +1,8 @@
 {
   "name": "ood50_primary_qwen_delta_step8000",
-  "note": "INTENDED FINAL generalization claim (unseen goods). PAPER_READINESS #6 requires frozen-suite status documented.",
-  "created_utc": "2026-07-16T04:44:21.540126+00:00",
-  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "note": "PRIMARY model, OOD suite. Compare against ood50_base (lambda=2.209) ONLY -- never against the ID base 7.637.",
+  "created_utc": "2026-07-16T06:53:36.035613+00:00",
+  "code_commit": "99b109041b83e015ecbc5887dc3dfc7464416460",
   "eval_dir": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50",
   "reproduce": "qsub train/submit_eval_ood_new_goods.pbs",
   "estimate": {
@@ -44,31 +44,31 @@
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Qwen-7B-GRPO-QwenDelta-step8000-OOD50_choice_prob_fraction_with_estimation_model_A.csv",
       "bytes": 65,
       "sha256": "2e88a42524e8879cc89fdbe4d5174f32d8c0048afbefd3bc6df14c40e89ae21f",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Qwen-7B-GRPO-QwenDelta-step8000-OOD50_choice_prob_number_with_estimation_model_A.csv",
       "bytes": 50,
       "sha256": "0586366f2c0e763509d6255828e7ccbcd08e83450f0faf8d90766048bb7cd5db",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Qwen-7B-GRPO-QwenDelta-step8000-OOD50_raw_choice_counts_fraction.csv",
       "bytes": 71,
       "sha256": "4ece21f186eb2cb87d98f321c4b008c1c4482407409f147715ddef1be56720a3",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Qwen-7B-GRPO-QwenDelta-step8000-OOD50_raw_choice_counts_number.csv",
       "bytes": 58,
       "sha256": "8bd4b82bf0c83261674fc4808f796cd9c3cb870cb639126d9541e7ef685a8cd3",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Qwen-7B-GRPO-QwenDelta-step8000-OOD50_utility_of_each_goods_Model_A.csv",
       "bytes": 11592,
       "sha256": "6d05f35dc8c57864974df348e3af07070c2e1142e9da37c250b0508ca426e915",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "ood/Qwen-7B-GRPO-QwenDelta-step8000-OOD50/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",

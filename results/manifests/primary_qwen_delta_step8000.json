@@ -1,8 +1,8 @@
 {
   "name": "primary_qwen_delta_step8000",
-  "note": "PRIMARY model. VALIDATION-only (test_goods informed reward construction + checkpoint selection).",
-  "created_utc": "2026-07-16T04:43:51.234632+00:00",
-  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "note": "PRIMARY model, ID/validation suite. Compare against matched_local_base (lambda=7.637) ONLY -- never against an OOD base.",
+  "created_utc": "2026-07-16T06:53:35.224442+00:00",
+  "code_commit": "99b109041b83e015ecbc5887dc3dfc7464416460",
   "eval_dir": "baseline/Qwen-7B-GRPO-qd-ckpt8000",
   "reproduce": "qsub -v CKPT=8000 train/submit_eval_ckpt.pbs",
   "estimate": {
@@ -44,31 +44,31 @@
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_choice_prob_fraction_with_estimation_model_A.csv",
       "bytes": 65,
       "sha256": "19cd08b90931a66b0f6ad85f3e6aab5b987c08f5696cd0320d0190503aee7e73",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_choice_prob_number_with_estimation_model_A.csv",
       "bytes": 50,
       "sha256": "ef5f0b67e7fbf69574181ef0712cabaa22f0e66acd1e6d838667143f947f2661",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_raw_choice_counts_fraction.csv",
       "bytes": 68,
       "sha256": "eeed5e4b2999b770accd28cc614c145d786af6244f0329e91edb557fadca7b82",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_raw_choice_counts_number.csv",
       "bytes": 56,
       "sha256": "eb194e222fe10c2f1dc62e05f7885f8815f9a0394736b10908281e9c1d75a646",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_utility_of_each_goods_Model_A.csv",
       "bytes": 22891,
       "sha256": "c81ed1d930c7cf6638d745d0144ac2bba92900af0d32356202eae58815447b90",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",

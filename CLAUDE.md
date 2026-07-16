@@ -35,7 +35,8 @@ open.**
 - Qwen-own-delta checkpoint 8,000 selected as the primary candidate.
 - Primary ID validation: λ̂ = **0.111**, η̂ = **0.504**.
 - Reported primary OOD result: λ̂ = **0.226**, η̂ = **0.790**,
-  consistency = **49.46%**; underlying artifacts still require archival.
+  consistency = **49.46%**. Derived results + manifests committed; **raw X/Y
+  predictions are NOT in git** (see `PAPER_READINESS.md` #6).
 - Consensus reward-source ablation: λ̂ = **0.177**, η̂ = **-0.048** ID.
 - Historical treatment comparison for the consensus run:
   - baseline: λ̂ = 0.177, η̂ = −0.048
@@ -44,8 +45,10 @@ open.**
 
 ### Active
 - Frozen checkpoint rule and at least three Qwen-own-delta seeds.
-- Raw checkpoint/OOD artifact archival, matched SFT/sign-only baselines,
-  robust inference, and capability-retention tests.
+- Raw-prediction archival (derived results + manifests ARE committed; the raw
+  X/Y predictions, ~167 MB, are not — numbers are traceable but not
+  independently re-derivable from the repo alone).
+- Matched SFT/sign-only baselines, robust inference, IFEval.
 
 The complete blocker ordering and claim restrictions are in
 `PAPER_READINESS.md`.
@@ -92,7 +95,7 @@ Estimation methods (in `core_exp_refactored.py`):
 | 1. Small-model baseline | ✅ Matched | **λ̂ = 7.637** (SE 0.627), η̂ = 1.007 — exact local base, 9,890 rows, teacher-forced. Historical 11.75 (Together Turbo) superseded: inflated ~54% by pipeline mismatch |
 | 2. Qwen-own reward design | ✅ Validated | δ̃ vs frozen ownership-free anchor: 71.1% test / 70.8% train sign agreement (85.5% at \|δ̃\|>1.0); α 91.9% / β 100% significant. `eval/validate_qwen_delta_anchor.py` |
 | 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
-| 4. Primary evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |
+| 4. Primary evaluation | 🟡 Partially complete | ID validation + OOD table exist; derived results & manifests committed, raw X/Y predictions not (PAPER_READINESS #6) |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
 | 6. Baselines/robustness | ⏳ | SFT, sign-only GRPO, robust inference, capability retention |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |

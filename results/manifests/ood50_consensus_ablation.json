@@ -1,0 +1,110 @@
+{
+  "name": "ood50_consensus_ablation",
+  "note": "Reward-source ablation, OOD suite. Was MISSING from the manifest set.",
+  "created_utc": "2026-07-16T06:53:38.373710+00:00",
+  "code_commit": "99b109041b83e015ecbc5887dc3dfc7464416460",
+  "eval_dir": "ood/Qwen-7B-GRPO-Consensus-OOD50",
+  "reproduce": "qsub train/submit_eval_ood_new_goods.pbs",
+  "estimate": {
+    "source_csv": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_NLS_estimation_T1(Model A).csv",
+    "lambda": 0.39515732,
+    "lambda_se": 0.01819498,
+    "eta": 0.50181502,
+    "eta_se": 0.04345867,
+    "estimator": "Model A (NLS), structural link scale T=1"
+  },
+  "adapter": {
+    "path": "checkpoints/grpo_20260427_1724/final",
+    "exists": true,
+    "adapter_model.safetensors_sha256": "d4a81fa79c396eb6847553e0f508dfd149d7fe7e71825ac39424856a0e89f055",
+    "bytes": 161533192
+  },
+  "n_files": 14,
+  "total_bytes": 36302284,
+  "files": [
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50-alpha-estimation-Model-A.png",
+      "bytes": 173729,
+      "sha256": "d91fa4cd7f52fa2212d8aacff0d2fc4017c9016c7dae4adb4ea12a1b997a687b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50-utility-of-each-goods-Model-A.png",
+      "bytes": 217222,
+      "sha256": "37428814490292d6eaebf336186b3cde2bebda6b2f9a1981bbd65ebe972e7131",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_NLS_estimation_T1(Model A).csv",
+      "bytes": 2547,
+      "sha256": "a98b5c9844982b7990e548905fc9b55c6d4f90430cb8faf69c55929b4eda2196",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_choice_prob_fraction_with_estimation_model_A.csv",
+      "bytes": 65,
+      "sha256": "7220442804f1f13a951dedf7cbaa6151895d9850d803a7e12023f11af84255d6",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_choice_prob_number_with_estimation_model_A.csv",
+      "bytes": 50,
+      "sha256": "9ee1a20fa9416b07cf838591b27da312a06a8e6168f6e7da9489a0f9892b62c5",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_raw_choice_counts_fraction.csv",
+      "bytes": 70,
+      "sha256": "9913283011d0f0c78b69a93f88c35f648f39fbfca671a2d4b328cb6fca4c3d14",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_raw_choice_counts_number.csv",
+      "bytes": 52,
+      "sha256": "d63d5bb9f5381e9876797df0617fa49098c0f828de5ec175fc2b94f1bc294f52",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Qwen-7B-GRPO-Consensus-OOD50_utility_of_each_goods_Model_A.csv",
+      "bytes": 11376,
+      "sha256": "0d5f70f489f82e8fdb597b7f8eaf20be85f4024687858d5803aaae14c6c5aa40",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 9269316,
+      "sha256": "f5345e0e3faaca30d31cab7f1da3b4159c8d90f77f48de4a8acd643742445729",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 9307374,
+      "sha256": "a68f12cdaa96b0c3f43c14d95be8254a08392680c8b7ecd177357824cd8ac776",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/completed_index.json",
+      "bytes": 186347,
+      "sha256": "bb039f9cd100010af255bcecb70ef71ab93eabc5b14e8f60e8bc55ba2235e633",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/loss_aversion_X.json",
+      "bytes": 8547280,
+      "sha256": "0a13d33d9d79197acb88a574b7b3a75c3dcc109194b06ba8f0099ed8377a0587",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-Consensus-OOD50/loss_aversion_Y.json",
+      "bytes": 8586855,
+      "sha256": "f30ccbf529f1bd7a8996500d0b9dbeaa061d7ab519b55e7658e0fd5b4e93c0ea",
+      "tracked_in_git": false
+    }
+  ]
+}

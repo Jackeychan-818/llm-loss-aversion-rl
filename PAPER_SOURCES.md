@@ -26,8 +26,13 @@ notebooks that render tables — is **derived**. Derived artifacts are
 
 1. **One number, one home.** A result cited anywhere (README, CLAUDE.md,
    KNOWN_ISSUES, PAPER_READINESS, slides) must trace to the canonical `.tex` and
-   to a committed artifact under `results/`. If a number has no committed
+   to a committed artifact under `results/` — at minimum a manifest in
+   `results/manifests/` plus the estimation CSV. If a number has no committed
    artifact, it is not yet reportable (PAPER_READINESS #6).
+   **Traceable is not the same as reproducible.** Derived results and manifests
+   are committed; the raw X/Y predictions are not. A checksum proves a file you
+   already hold produced a number — it does not let anyone else re-derive it. Say
+   "derived results archived", never "artifacts archived".
 2. **Model roles are declared once**, in the canonical header, and must match
    `PAPER_READINESS.md`:
    - **PRIMARY** — Qwen-own δ̃, GRPO step 8,000: λ̂ = 0.111 (SE 0.014), η̂ = 0.504

@@ -35,6 +35,12 @@ echo "Start time: $(date)"
 cd "$PROJECT_DIR"
 
 SEED="${SEED:-42}"
+# FROZEN TRAINING ENDPOINT. Without an explicit --max_steps the run goes to a
+# full epoch (config max_steps: -1) or dies at the 72h wall, so different seeds
+# would stop at different steps and expose different checkpoint grids -- not
+# comparable. Fixed sweep: train to exactly MAX_STEPS, then apply the frozen
+# selection rule (CHECKPOINT_PROTOCOL.md) over the pre-declared grid.
+MAX_STEPS="${MAX_STEPS:-30000}"
 # Per-seed output dir by default so replication runs cannot overwrite each other.
 if [[ "$SEED" == "42" ]]; then
     OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/grpo_qwen_delta}"
@@ -46,6 +52,7 @@ mkdir -p "$OUTPUT_DIR"
 
 echo "Output dir: $OUTPUT_DIR"
 echo "SEED: $SEED"
+echo "MAX_STEPS: $MAX_STEPS (frozen endpoint)"
 echo "Resume from checkpoint: $RESUME_FROM_CHECKPOINT"
 
 python train/grpo_train.py \
@@ -54,6 +61,7 @@ python train/grpo_train.py \
     --data_file data/remaining_goods.json \
     --output_dir "$OUTPUT_DIR" \
     --seed "$SEED" \
+    --max_steps "$MAX_STEPS" \
     --save_steps 200 \
     --eval_steps 200 \
     --eval_data_file data/trial_goods.json \
