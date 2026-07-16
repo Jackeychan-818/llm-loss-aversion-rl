@@ -1,0 +1,56 @@
+{
+  "name": "gsm8k_capability_retention",
+  "note": "PAPER_READINESS #10: base 86.88% vs qd-8000 85.90%, McNemar p=0.111, no_clear_change. Matched exact local base.",
+  "created_utc": "2026-07-16T04:44:22.691081+00:00",
+  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "eval_dir": "results/gsm8k",
+  "reproduce": "qsub -v GSM8K_DATA_FILE=data/gsm8k_full.csv train/submit_eval_gsm8k.pbs",
+  "estimate": null,
+  "adapter": null,
+  "n_files": 7,
+  "total_bytes": 2717831,
+  "files": [
+    {
+      "path": "results/gsm8k/base/predictions.jsonl",
+      "bytes": 1355300,
+      "sha256": "bfe129cd5000e2cefbbeaf40a8a9a3b53342ec26e4f58dfd6d74c16a2dfafdc8",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/base/run_metadata.json",
+      "bytes": 343,
+      "sha256": "6db1b6c9dfceca8eee657ec5f80f0eeace3f8f9e7ef8c17241b0a2045a6b4b4b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/base/summary.json",
+      "bytes": 297,
+      "sha256": "b10926a8a66fd1d459baf5c5b9f8f10c041c11a5aa28fcd0ada15890bd33864d",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/comparison.json",
+      "bytes": 1007,
+      "sha256": "6baa47edaf91ee0be23f97a5f18ffa88c463e99c301a91164add17ef47af3f1d",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/qwen_delta_8000/predictions.jsonl",
+      "bytes": 1360163,
+      "sha256": "2a2e6e0b495c6f903a9f13ca91026dfd5c7dbbdc1c100681d5aa006a2162e5a2",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/qwen_delta_8000/run_metadata.json",
+      "bytes": 424,
+      "sha256": "440e33bfbb5fe5854fc88839fe325b85aa03f3c79d4e5ca7f9c50ecec507168c",
+      "tracked_in_git": false
+    },
+    {
+      "path": "results/gsm8k/qwen_delta_8000/summary.json",
+      "bytes": 297,
+      "sha256": "f01331730d4b4b21ec628903a374dcc34d732b1d68a039a68441fa8415ae7e8c",
+      "tracked_in_git": false
+    }
+  ]
+}

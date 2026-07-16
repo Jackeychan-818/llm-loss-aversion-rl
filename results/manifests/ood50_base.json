@@ -1,0 +1,105 @@
+{
+  "name": "ood50_base",
+  "note": "OOD-50 base reference.",
+  "created_utc": "2026-07-16T04:44:22.299246+00:00",
+  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "eval_dir": "ood/Qwen-7B-Base-OOD50",
+  "reproduce": "qsub train/submit_eval_ood_new_goods.pbs",
+  "estimate": {
+    "source_csv": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_NLS_estimation_T1(Model A).csv",
+    "lambda": 2.20876166,
+    "lambda_se": 0.2612378,
+    "eta": 5.35823706,
+    "eta_se": 0.08147656,
+    "estimator": "Model A (NLS), structural link scale T=1"
+  },
+  "adapter": null,
+  "n_files": 14,
+  "total_bytes": 36264422,
+  "files": [
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50-alpha-estimation-Model-A.png",
+      "bytes": 155501,
+      "sha256": "eaa50e3f5c0e4f03b2af9627b3bd374c476293ba844479d42544b7d26b9a1cf4",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50-utility-of-each-goods-Model-A.png",
+      "bytes": 213870,
+      "sha256": "2e379adf6aa40323fb1b9b09c86df815375a7a3629226d8d55e79bea0b4d6312",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_NLS_estimation_T1(Model A).csv",
+      "bytes": 2552,
+      "sha256": "17fe607f7a3f7e0b66deb33260d4a7dc1bc936583b62e69a4a688d4633712876",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_choice_prob_fraction_with_estimation_model_A.csv",
+      "bytes": 61,
+      "sha256": "ed3cc2ed6f420b440f3e502b8dda87e0ae3c6a4e85bb4cd465bf9c82ff154010",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_choice_prob_number_with_estimation_model_A.csv",
+      "bytes": 44,
+      "sha256": "2132734f09c9a1bc4970b1eb26b6fe00091b501133cdaa15d5549662b15f43f2",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_raw_choice_counts_fraction.csv",
+      "bytes": 64,
+      "sha256": "d3690ee293db35bd6c8b3289746e1ef8967aeb2ed49f46f2272d61fde6dba4f2",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_raw_choice_counts_number.csv",
+      "bytes": 44,
+      "sha256": "e512a4fd90fb87ff3cd8369c3a61859e9db2146f0aab439df642a2800f36e79a",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Qwen-7B-Base-OOD50_utility_of_each_goods_Model_A.csv",
+      "bytes": 11613,
+      "sha256": "770b7300496a171e156f7d174b403d0d3369c5f3676b80be9ed65e050887366e",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 9263764,
+      "sha256": "7ba0edf33c6e0bc8512175115ef179fddb7544eccd7afe6d7aba27a5c94d477a",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 9303597,
+      "sha256": "0ee9559cd32ccd25ff423774edae94cd4acf3909f5bf4e2e84ea0b4032b8a467",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/completed_index.json",
+      "bytes": 186347,
+      "sha256": "bb039f9cd100010af255bcecb70ef71ab93eabc5b14e8f60e8bc55ba2235e633",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/loss_aversion_X.json",
+      "bytes": 8543376,
+      "sha256": "0310cab0713d688ef8924478b607a1f23da9768b1cbfec5e3bdefc04d5e948da",
+      "tracked_in_git": false
+    },
+    {
+      "path": "ood/Qwen-7B-Base-OOD50/loss_aversion_Y.json",
+      "bytes": 8583588,
+      "sha256": "80bd3bfba2e044f98ed24792db4cf8e582a8790f15d6ee2c2d6fa74e4e79ff60",
+      "tracked_in_git": false
+    }
+  ]
+}

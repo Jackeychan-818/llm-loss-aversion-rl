@@ -1,0 +1,105 @@
+{
+  "name": "matched_local_base",
+  "note": "PAPER_READINESS #1: matched causal baseline. Supersedes historical lambda=11.75.",
+  "created_utc": "2026-07-16T04:43:49.590753+00:00",
+  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "eval_dir": "baseline/Qwen-7B-Base-Local",
+  "reproduce": "qsub train/submit_eval_base_matched.pbs",
+  "estimate": {
+    "source_csv": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+    "lambda": 7.63679813,
+    "lambda_se": 0.62698434,
+    "eta": 1.00702456,
+    "eta_se": 0.11979881,
+    "estimator": "Model A (NLS), structural link scale T=1"
+  },
+  "adapter": null,
+  "n_files": 14,
+  "total_bytes": 30849176,
+  "files": [
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local-alpha-estimation-Model-A.png",
+      "bytes": 171633,
+      "sha256": "78eae0e62cef5d1b14f40597997e03e5cf6898553ace2406dc0b544f86a874c9",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local-utility-of-each-goods-Model-A.png",
+      "bytes": 226164,
+      "sha256": "96a34c44e7c8d500624f958caf35ac4b5a2b3ee8926a8ee56fc652668b771f4f",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+      "bytes": 4700,
+      "sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_choice_prob_fraction_with_estimation_model_A.csv",
+      "bytes": 62,
+      "sha256": "eebff5057155d3d59a4a3219163d1d9dbfe4d60568f618079e76e1120674c851",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_choice_prob_number_with_estimation_model_A.csv",
+      "bytes": 44,
+      "sha256": "90df5fb73c1b3fdf9d7a9d699b9158bab7c34970ae8cf6abfef10af338f03edd",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_raw_choice_counts_fraction.csv",
+      "bytes": 64,
+      "sha256": "a8734b08a39591a779701550cc4f31fcfae9bfbf1b0ecffa7a50e49f5cd3802a",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_raw_choice_counts_number.csv",
+      "bytes": 47,
+      "sha256": "24bbfe73d1f8775eb4a69cfd10eb45194d140c3a25cf88095affac233c6de0c8",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_utility_of_each_goods_Model_A.csv",
+      "bytes": 23267,
+      "sha256": "25ffb0de01caf27b7e8c1622160f1f1457223f69c7ae97b743d9fcd8b0d6e7f4",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 7914662,
+      "sha256": "a9ee915a6a908f311b94c1f0a6c7cb8a0cca5660129921dd4a8c46b799c4f2ce",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 7936084,
+      "sha256": "1d45f6f21ea90b25884a0a97f47a07c6640fe53893b8251a2a366be45e0e29fb",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/completed_index.json",
+      "bytes": 177167,
+      "sha256": "8ea8dee309b15824c1742565bdf04e198b178ec393654f9ad299fd450a8df8b9",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/loss_aversion_X.json",
+      "bytes": 7187022,
+      "sha256": "9976421951b37685b04bc0b17bf0793d5bf45b6ec33a1e94e40a22d95e599299",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-Base-Local/loss_aversion_Y.json",
+      "bytes": 7208259,
+      "sha256": "5229b1c182b3d6b017bbfb2ed5ec7ceaff28d2af4e9d96b271b7aa358561275d",
+      "tracked_in_git": false
+    }
+  ]
+}

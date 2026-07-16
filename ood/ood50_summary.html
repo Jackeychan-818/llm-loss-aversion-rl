@@ -1,0 +1,335 @@
+<title>Loss Aversion — OOD Generalization</title>
+<style>
+  :root {
+    --bg: #f5f7f8;
+    --surface: #ffffff;
+    --surface-2: #fbfcfd;
+    --ink: #1a2027;
+    --ink-soft: #38434f;
+    --muted: #5d6b78;
+    --line: #e2e8ec;
+    --line-strong: #cfd8dd;
+    --accent: #146b74;
+    --accent-ink: #0e4d54;
+    --good: #2f7d5b;
+    --warn: #b25a12;
+    --warn-ink: #8a4310;
+    --shadow: 0 1px 2px rgba(16,32,40,.04), 0 8px 28px rgba(16,32,40,.06);
+    --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --font-body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10141a;
+      --surface: #171c24;
+      --surface-2: #1c222b;
+      --ink: #e9edf1;
+      --ink-soft: #c3ccd5;
+      --muted: #93a0ac;
+      --line: #29313b;
+      --line-strong: #38424e;
+      --accent: #45b3bc;
+      --accent-ink: #7fd0d7;
+      --good: #5cbb8b;
+      --warn: #e0a35a;
+      --warn-ink: #edbf85;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f7f8; --surface: #ffffff; --surface-2: #fbfcfd;
+    --ink: #1a2027; --ink-soft: #38434f; --muted: #5d6b78;
+    --line: #e2e8ec; --line-strong: #cfd8dd;
+    --accent: #146b74; --accent-ink: #0e4d54; --good: #2f7d5b;
+    --warn: #b25a12; --warn-ink: #8a4310;
+    --shadow: 0 1px 2px rgba(16,32,40,.04), 0 8px 28px rgba(16,32,40,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #10141a; --surface: #171c24; --surface-2: #1c222b;
+    --ink: #e9edf1; --ink-soft: #c3ccd5; --muted: #93a0ac;
+    --line: #29313b; --line-strong: #38424e;
+    --accent: #45b3bc; --accent-ink: #7fd0d7; --good: #5cbb8b;
+    --warn: #e0a35a; --warn-ink: #edbf85;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.62; font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: clamp(1.4rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem; }
+
+  /* ── Header ─────────────────────────────── */
+  header { border-bottom: 1px solid var(--line); padding-bottom: 1.8rem; margin-bottom: 2.2rem; }
+  .eyebrow {
+    font-size: .74rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin: 0 0 .9rem;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(1.8rem, 4.4vw, 2.65rem); line-height: 1.12;
+    margin: 0 0 .7rem; letter-spacing: -.01em; text-wrap: balance; color: var(--ink);
+  }
+  .dek { color: var(--muted); font-size: 1.02rem; max-width: 62ch; margin: 0; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; margin-top: 1.3rem;
+    font-size: .82rem; color: var(--muted); font-family: var(--font-mono);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ── TL;DR ──────────────────────────────── */
+  .tldr {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 1.3rem 1.5rem; margin: 0 0 2.6rem; box-shadow: var(--shadow);
+  }
+  .tldr h2 { margin: 0 0 .7rem; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; font-family: var(--font-body); }
+  .tldr ul { margin: 0; padding-left: 1.15rem; display: grid; gap: .5rem; }
+  .tldr li { color: var(--ink-soft); }
+  .tldr strong { color: var(--ink); }
+
+  section { margin-bottom: 2.8rem; }
+  h2.sec {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.4rem;
+    margin: 0 0 .3rem; letter-spacing: -.005em; color: var(--ink);
+  }
+  .sec-note { color: var(--muted); font-size: .92rem; margin: 0 0 1.2rem; max-width: 64ch; }
+
+  /* ── Data tables ────────────────────────── */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); background: var(--surface); }
+  table.data { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  table.data th, table.data td { padding: .68rem .95rem; text-align: right; white-space: nowrap; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data thead th {
+    background: var(--surface-2); color: var(--muted);
+    font-weight: 600; font-size: .76rem; letter-spacing: .05em; text-transform: uppercase;
+    border-bottom: 1px solid var(--line-strong); position: sticky; top: 0;
+  }
+  table.data tbody td { border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; font-family: var(--font-mono); color: var(--ink-soft); }
+  table.data tbody td:first-child { font-family: var(--font-body); color: var(--ink); font-weight: 600; }
+  table.data tbody tr:hover td { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+  .se { color: var(--muted); font-size: .82em; }
+  .rowlabel-sub { display: block; font-family: var(--font-mono); font-size: .72rem; color: var(--muted); font-weight: 400; }
+  .pill {
+    display: inline-block; font-family: var(--font-mono); font-size: .74rem;
+    padding: .1rem .5rem; border-radius: 999px; font-weight: 600; letter-spacing: .02em;
+  }
+  .pill.good { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+  .pill.warn { color: var(--warn-ink); background: color-mix(in srgb, var(--warn) 18%, transparent); }
+
+  /* ── Cross-tab matrices ─────────────────── */
+  .xtab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 1.1rem; }
+  .xtab {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 1.1rem 1.15rem 1.25rem; box-shadow: var(--shadow);
+  }
+  .xtab h3 { margin: 0 0 .2rem; font-size: 1.02rem; color: var(--ink); font-family: var(--font-body); font-weight: 700; }
+  .xtab .sub { margin: 0 0 .9rem; font-size: .78rem; color: var(--muted); font-family: var(--font-mono); }
+  table.mtx { border-collapse: separate; border-spacing: 4px; width: 100%; }
+  table.mtx th { font-size: .68rem; color: var(--muted); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; padding: .2rem; text-align: center; }
+  table.mtx th.rh { writing-mode: horizontal-tb; text-align: right; padding-right: .5rem; white-space: nowrap; }
+  table.mtx td.cell {
+    text-align: center; padding: .7rem .3rem; border-radius: 7px;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 1.02rem; font-weight: 600; color: var(--ink);
+  }
+  table.mtx td.cell small { display: block; font-size: .62rem; font-weight: 500; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-top: .12rem; }
+  .xtab .corner { color: var(--muted); font-size: .62rem; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin-top: .95rem; font-size: .76rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: .38rem; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  /* ── Caveat ─────────────────────────────── */
+  .caveat {
+    background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+    border: 1px solid color-mix(in srgb, var(--warn) 32%, var(--line));
+    border-left: 3px solid var(--warn);
+    border-radius: 10px; padding: 1.3rem 1.5rem; margin-top: 1rem;
+  }
+  .caveat h3 { margin: 0 0 .55rem; font-size: .95rem; color: var(--warn-ink); display: flex; align-items: center; gap: .5rem; }
+  .caveat p { margin: 0 0 .6rem; color: var(--ink-soft); font-size: .95rem; }
+  .caveat p:last-child { margin-bottom: 0; }
+  .caveat code { font-family: var(--font-mono); font-size: .86em; background: color-mix(in srgb, var(--warn) 14%, transparent); padding: .05rem .35rem; border-radius: 4px; color: var(--warn-ink); }
+
+  footer { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.3rem; color: var(--muted); font-size: .8rem; font-family: var(--font-mono); }
+  footer p { margin: .25rem 0; }
+  em.q { color: var(--ink-soft); font-style: italic; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Loss-Aversion RL · Out-of-Distribution Evaluation</p>
+    <h1>Do λ and η hold up on goods the model never saw?</h1>
+    <p class="dek">Three models scored on a frozen suite of <b>50 brand-new goods</b> (10 new categories, zero overlap with the training set). We report the structural loss-aversion estimates and the raw Yes/No choice patterns.</p>
+    <div class="meta">
+      <span><b>Suite:</b> 9,800 structural cases</span>
+      <span><b>Estimator:</b> NLS (Model A), T=1</span>
+      <span><b>Treatment:</b> baseline</span>
+      <span><b>Endowment:</b> both perspectives per pair</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <h2>The short version</h2>
+    <ul>
+      <li><strong>The debiasing generalizes.</strong> Both fine-tuned models trade actively and make consistent, preference-driven choices on goods they were never trained on — while the base model refuses to trade in <strong>99.96%</strong> of cases.</li>
+      <li><strong>λ stays low out-of-distribution</strong> (0.23–0.40) vs. a base that is entirely endowment-locked. A mild generalization gap: λ roughly doubles from in-distribution, but the core effect holds.</li>
+      <li><strong>The base λ̂ = 2.21 is not a reliable number</strong> — with no trades and no perspective asymmetry, λ is weakly identified and the rigidity is absorbed into η̂ = 5.36. Read the base by its behavior, not its λ. (See caveat below.)</li>
+    </ul>
+  </div>
+
+  <section>
+    <h2 class="sec">1 · Structural estimates (λ̂, η̂)</h2>
+    <p class="sec-note">λ = loss aversion (endowment weight; 0 = rational). η = status-quo bias (a blanket push to keep whatever you hold). Standard errors in grey. In-distribution λ̂ shown for reference.</p>
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>λ̂ (OOD)</th>
+            <th>η̂ (OOD)</th>
+            <th>λ̂ (in-dist.)</th>
+            <th>Hard trade rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Base Qwen-7B<span class="rowlabel-sub">no fine-tuning</span></td>
+            <td>2.209 <span class="se">± .261</span> <span class="pill warn">weakly id.</span></td>
+            <td>5.358 <span class="se">± .081</span></td>
+            <td>11.75</td>
+            <td>0.0%</td>
+          </tr>
+          <tr>
+            <td>Consensus-GRPO<span class="rowlabel-sub">6-model δ̃ reward</span></td>
+            <td>0.395 <span class="se">± .018</span></td>
+            <td>0.502 <span class="se">± .043</span></td>
+            <td>0.177</td>
+            <td>66.3%</td>
+          </tr>
+          <tr>
+            <td>Qwen-delta-8k<span class="rowlabel-sub">self-δ̃ ablation, step 8k</span></td>
+            <td>0.226 <span class="se">± .020</span></td>
+            <td>0.790 <span class="se">± .038</span></td>
+            <td>0.111</td>
+            <td>45.7%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">2 · Choice consistency — Yes/No cross-tabs</h2>
+    <p class="sec-note">The same goods pair is shown twice: endowed with X (rows) and endowed with Y (columns). <b>Yes</b> = trade the good away, <b>No</b> = keep it. Because it's the same pair both ways, the <b style="color:var(--good)">off-diagonal</b> is rational (pick the same good regardless of endowment); <b style="color:var(--warn-ink)">No / No</b> is the endowment effect (cling to whatever you hold).</p>
+
+    <div class="xtab-grid">
+      <!-- BASE -->
+      <div class="xtab">
+        <h3>Base Qwen-7B</h3>
+        <p class="sub">n = 9,800 · % of cases</p>
+        <table class="mtx">
+          <tr><td class="corner">X&nbsp;↓ / Y&nbsp;→</td><th>Y: Yes</th><th>Y: No</th></tr>
+          <tr>
+            <th class="rh">X: Yes</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 2%, var(--surface-2))">0.00<small>trade-both</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 2%, var(--surface-2))">0.01<small>consistent</small></td>
+          </tr>
+          <tr>
+            <th class="rh">X: No</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 2%, var(--surface-2))">0.03<small>consistent</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--warn) 55%, transparent)">99.96<small>keep-both</small></td>
+          </tr>
+        </table>
+        <div class="legend">
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--good) 40%,transparent)"></i>rational</span>
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--warn) 45%,transparent)"></i>endowment-locked</span>
+        </div>
+      </div>
+
+      <!-- CONSENSUS -->
+      <div class="xtab">
+        <h3>Consensus-GRPO</h3>
+        <p class="sub">n = 9,800 · % of cases</p>
+        <table class="mtx">
+          <tr><td class="corner">X&nbsp;↓ / Y&nbsp;→</td><th>Y: Yes</th><th>Y: No</th></tr>
+          <tr>
+            <th class="rh">X: Yes</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--muted) 6%, var(--surface-2))">0.37<small>trade-both</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 40%, transparent)">35.50<small>consistent</small></td>
+          </tr>
+          <tr>
+            <th class="rh">X: No</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 34%, transparent)">29.39<small>consistent</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--warn) 38%, transparent)">34.74<small>keep-both</small></td>
+          </tr>
+        </table>
+        <div class="legend">
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--good) 40%,transparent)"></i>rational</span>
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--warn) 45%,transparent)"></i>endowment-locked</span>
+        </div>
+      </div>
+
+      <!-- QWEN-DELTA -->
+      <div class="xtab">
+        <h3>Qwen-delta-8k</h3>
+        <p class="sub">n = 9,800 · % of cases</p>
+        <table class="mtx">
+          <tr><td class="corner">X&nbsp;↓ / Y&nbsp;→</td><th>Y: Yes</th><th>Y: No</th></tr>
+          <tr>
+            <th class="rh">X: Yes</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--muted) 9%, var(--surface-2))">4.53<small>trade-both</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 32%, transparent)">27.55<small>consistent</small></td>
+          </tr>
+          <tr>
+            <th class="rh">X: No</th>
+            <td class="cell" style="background:color-mix(in srgb, var(--good) 26%, transparent)">21.91<small>consistent</small></td>
+            <td class="cell" style="background:color-mix(in srgb, var(--warn) 50%, transparent)">46.01<small>keep-both</small></td>
+          </tr>
+        </table>
+        <div class="legend">
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--good) 40%,transparent)"></i>rational</span>
+          <span><i class="swatch" style="background:color-mix(in srgb,var(--warn) 45%,transparent)"></i>endowment-locked</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">3 · Behavior at a glance</h2>
+    <p class="sec-note">Collapsing each cross-tab into the three outcomes that matter.</p>
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Consistent (rational)</th>
+            <th>Keep-both (loss-averse)</th>
+            <th>Trade-both</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Base Qwen-7B</td><td>0.04%</td><td>99.96%</td><td>0.00%</td></tr>
+          <tr><td>Consensus-GRPO</td><td><span class="pill good">64.9%</span></td><td>34.7%</td><td>0.37%</td></tr>
+          <tr><td>Qwen-delta-8k</td><td><span class="pill good">49.5%</span></td><td>46.0%</td><td>4.53%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="caveat">
+    <h3>⚠ Why the base λ̂ is not comparable</h3>
+    <p>λ is identified by the <b>asymmetry</b> between the two endowment perspectives — whether the model refuses a trade specifically <em>because</em> it holds the good. The base model refuses <strong>uniformly</strong> (P(Yes) ≈ 0.5% from both sides; asymmetry ≈ 0.0003), so there is almost no signal to pin λ down.</p>
+    <p>With nothing to separate them, the estimator loads the near-total refusal onto the blanket status-quo term (<code>η̂ = 5.36</code>) and leaves <code>λ̂ = 2.21</code> loosely constrained — its SE (0.261) is ~180× the fine-tuned models'. The base is <em>maximally</em> rigid; that rigidity simply lives in η here, not λ.</p>
+    <p><strong>Reporting guidance:</strong> don't place the base λ̂ on the leaderboard as if comparable. State the base by its behavior — <em class="q">0 / 9,800 trades, η̂ ≈ 5.4</em> — and reserve the λ comparison for the fine-tuned models, whose estimates are genuinely identified.</p>
+  </div>
+
+  <footer>
+    <p>Data: ood/{Qwen-7B-Base, Qwen-7B-GRPO-Consensus, Qwen-7B-GRPO-QwenDelta-step8000}-OOD50/ · job 14847129</p>
+    <p>lambda-zero · loss_aversion_rl · generated 2026-07-10</p>
+  </footer>
+</div>

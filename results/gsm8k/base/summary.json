@@ -1,0 +1,11 @@
+{
+  "protocol_version": "gsm8k_cot_8shot_chat_v1",
+  "evaluated": 1319,
+  "total_available": 1319,
+  "correct": 1146,
+  "accuracy": 0.8688400303260045,
+  "parsed": 1319,
+  "parse_rate": 1.0,
+  "complete": true,
+  "data_sha256": "4d5a04aadb4be73970b1b1bc9331f4cd227fc78485b5fcbef28a1f1e8aa20d04"
+}

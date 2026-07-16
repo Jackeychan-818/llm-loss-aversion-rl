@@ -1,0 +1,11 @@
+{
+  "protocol_version": "gsm8k_cot_8shot_chat_v1",
+  "source": "/scratch/users/nus/jackeyc0/lambda-zero/data/gsm8k_full.csv",
+  "model_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct",
+  "adapter_path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/grpo_qwen_delta/checkpoint-8000",
+  "max_new_tokens": 512,
+  "dtype": "bf16",
+  "device_map": "auto",
+  "seed": 42,
+  "decoding": "greedy"
+}

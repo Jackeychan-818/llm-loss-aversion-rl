@@ -1,0 +1,110 @@
+{
+  "name": "primary_qwen_delta_step8000",
+  "note": "PRIMARY model. VALIDATION-only (test_goods informed reward construction + checkpoint selection).",
+  "created_utc": "2026-07-16T04:43:51.234632+00:00",
+  "code_commit": "dda4003ee4606f030a3fd91be13a1811478f163b",
+  "eval_dir": "baseline/Qwen-7B-GRPO-qd-ckpt8000",
+  "reproduce": "qsub -v CKPT=8000 train/submit_eval_ckpt.pbs",
+  "estimate": {
+    "source_csv": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_NLS_estimation_T1(Model A).csv",
+    "lambda": 0.11099538,
+    "lambda_se": 0.01421005,
+    "eta": 0.50408026,
+    "eta_se": 0.02913343,
+    "estimator": "Model A (NLS), structural link scale T=1"
+  },
+  "adapter": {
+    "path": "checkpoints/grpo_qwen_delta/checkpoint-8000",
+    "exists": true,
+    "adapter_model.safetensors_sha256": "8411c1f6dbd68d95f97248d360db3802cf2a096161b6667442496f38933b36e0",
+    "bytes": 161533192
+  },
+  "n_files": 14,
+  "total_bytes": 30875272,
+  "files": [
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000-alpha-estimation-Model-A.png",
+      "bytes": 187949,
+      "sha256": "c7e8dd5a319f600158bb2aeee6dec37e23b774dc2deeeb0797492310606e651b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000-utility-of-each-goods-Model-A.png",
+      "bytes": 249726,
+      "sha256": "fd349b59b81d11366e5363bc05f91e9275a317e66c31ccfe89f5a4042b020d5a",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_NLS_estimation_T1(Model A).csv",
+      "bytes": 4666,
+      "sha256": "ea4e1182391bb2e97ec9802a35e17726b2595e156b4a7f97e10fafdec8100a6d",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_choice_prob_fraction_with_estimation_model_A.csv",
+      "bytes": 65,
+      "sha256": "19cd08b90931a66b0f6ad85f3e6aab5b987c08f5696cd0320d0190503aee7e73",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_choice_prob_number_with_estimation_model_A.csv",
+      "bytes": 50,
+      "sha256": "ef5f0b67e7fbf69574181ef0712cabaa22f0e66acd1e6d838667143f947f2661",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_raw_choice_counts_fraction.csv",
+      "bytes": 68,
+      "sha256": "eeed5e4b2999b770accd28cc614c145d786af6244f0329e91edb557fadca7b82",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_raw_choice_counts_number.csv",
+      "bytes": 56,
+      "sha256": "eb194e222fe10c2f1dc62e05f7885f8815f9a0394736b10908281e9c1d75a646",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_utility_of_each_goods_Model_A.csv",
+      "bytes": 22891,
+      "sha256": "c81ed1d930c7cf6638d745d0144ac2bba92900af0d32356202eae58815447b90",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Training_Iteration_Plots_Model_A/NLS_Convergence_History.csv",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 7912930,
+      "sha256": "42776c935d27e654eb2251b36f8b8d1cac2b65393b22132ef2c93966fd87a175",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 7932275,
+      "sha256": "5a506311e6dc3ee0ec9262a815621054182ae1d27a3ec49de4c176b2b4c2c140",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/completed_index.json",
+      "bytes": 177167,
+      "sha256": "8ea8dee309b15824c1742565bdf04e198b178ec393654f9ad299fd450a8df8b9",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/loss_aversion_X.json",
+      "bytes": 7183622,
+      "sha256": "22544f262735d4a17a9bcd145b5722a3d3c3aa33f3a75fc01ae837a45d82a7e4",
+      "tracked_in_git": false
+    },
+    {
+      "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/loss_aversion_Y.json",
+      "bytes": 7203806,
+      "sha256": "52a49e0170dae18f1b6da8566f83d20c20485f7c1af532d1757c5572058bd8d8",
+      "tracked_in_git": false
+    }
+  ]
+}
