@@ -30,8 +30,8 @@ Any λ̂ reported on it is a **validation** number.
 
 ## The rule
 
-Applied per seed, independently, to a checkpoint grid declared in advance
-(every 1,000 steps).
+Applied per seed, independently, to a checkpoint grid declared in advance:
+**every 2,000 steps from 2k to 30k** (15 checkpoints; see `PRE_REGISTRATION.md`).
 
 **Step 1 — Eligibility.** Discard a checkpoint unless all hold:
 - `consistency >= 0.50` — the pair makes a symmetric choice at least half the
@@ -68,7 +68,7 @@ produced no admissible checkpoint. **Do not relax the thresholds post hoc.**
 | `CONSISTENCY_FLOOR` | 0.50 |
 | `D_TOL` | 0.05 |
 | `CONS_TOL` | 0.02 |
-| checkpoint grid | every 1,000 steps |
+| checkpoint grid | every 2,000 steps, 2k–30k |
 
 ## Verification on the existing run (post hoc, illustrative only)
 
