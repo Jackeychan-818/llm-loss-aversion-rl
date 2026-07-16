@@ -367,16 +367,16 @@ temperature; evaluation decoding remains greedy ($T_{\mathrm{dec}}=0$).
 
 \begin{table}[h]
 \centering
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
- & \multicolumn{2}{c}{$\lambda$ (loss aversion)} & \multicolumn{2}{c}{$\eta$ (status-quo)} \\
+ & \multicolumn{2}{c}{$\lambda$ (loss aversion)} & \multicolumn{2}{c}{$\eta$ (status-quo)} & $W$ \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
-Model & Estimate & SE & Estimate & SE \\
+Model & Estimate & SE & Estimate & SE & Score \\
 \midrule
-Base Qwen-7B (\textbf{matched local}) & 7.637 & 0.627 & 1.007 & 0.120 \\
+Base Qwen-7B (\textbf{matched local}) & 7.637 & 0.627 & 1.007 & 0.120 & 0.744 \\
 \midrule
-Qwen-own $\tilde{\delta}$, step 8{,}000 (\textbf{primary}) & \textbf{0.111} & 0.014 & 0.504 & 0.029 \\
-Frontier-consensus $\tilde{\delta}$ (reward-source ablation) & 0.177 & 0.005 & $-$0.048 & 0.024 \\
+Qwen-own $\tilde{\delta}$, step 8{,}000 (\textbf{primary}) & \textbf{0.111} & 0.014 & 0.504 & 0.029 & \textbf{0.909} \\
+Frontier-consensus $\tilde{\delta}$ (reward-source ablation) & 0.177 & 0.005 & $-$0.048 & 0.024 & 0.890 \\
 \bottomrule
 \end{tabular}
 \caption{Structural estimates (Model A NLS, link scale $T=1$) on
@@ -387,7 +387,9 @@ before/after difference is attributable to training. The primary model reduces
 $\lambda$ by 98.5\% (7.637 $\rightarrow$ 0.111) but $\eta$ by only 50\%
 (1.007 $\rightarrow$ 0.504): the intervention removes the ownership
 \emph{asymmetry} far more effectively than the \emph{level} of choice rigidity,
-so $\lambda$ and $\eta$ must be read together. \textbf{Both post-training rows
+while increasing mean pseudo-utility alignment $W$ from 0.744 to 0.909, where
+$w_q=u_{\mathrm{chosen}}/\max(u_1,u_2)$. Thus $\lambda$, $\eta$, and $W$ must
+be read together. \textbf{Both post-training rows
 are validation-only}: \texttt{test\_goods} informed the Qwen-own reward
 construction and checkpoint selection, so these are not untouched final-test
 estimates. An earlier baseline of $\lambda = 11.75$ measured a Together-hosted

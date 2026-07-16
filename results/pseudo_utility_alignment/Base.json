@@ -1,10 +1,18 @@
 {
-  "W": 0.8005771038946382,
+  "W": 0.7436334919879894,
   "N": 19780,
   "rational_choice_rate": 0.5042467138523762,
   "cases_scored": 9890,
-  "cases_skipped_no_delta_or_zero": 0,
+  "cases_skipped_missing_utility": 0,
+  "lambda": 7.63679813,
+  "lambda_se": 0.62698434,
+  "eta": 1.00702456,
+  "eta_se": 0.11979881,
+  "estimator": "Model A (NLS), structural link scale T=1",
   "name": "Base",
   "eval_dir": "baseline/Qwen-7B-Base-Local",
-  "delta_file": "/scratch/users/nus/jackeyc0/lambda-zero/data/deltas/delta_qwen_base.json"
+  "utility_file": "baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv",
+  "data_dir": "data",
+  "estimation_file": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+  "score_definition": "u_chosen / max(u_X, u_Y)"
 }

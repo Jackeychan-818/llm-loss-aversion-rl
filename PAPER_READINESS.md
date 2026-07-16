@@ -1,6 +1,6 @@
 # Full-Paper Readiness and Current Methodological Risks
 
-*Last updated: July 15, 2026*
+*Last updated: July 16, 2026*
 
 This document is the authoritative summary of the current paper direction,
 which results are final versus validation-only, and which methodological
@@ -29,11 +29,11 @@ story in the main paper without such evidence.
 
 | Model/result | Role in paper | Current interpretation |
 |---|---|---|
-| Qwen-own delta, step 8,000: ID lambda = 0.111, eta = 0.504 | Primary-model validation result | `test_goods.json` was used for checkpoint selection; 0.111 is not an untouched final-test estimate. |
+| Qwen-own delta, step 8,000: ID lambda = 0.111, eta = 0.504, W = 0.909 | Primary-model validation result | `test_goods.json` was used for checkpoint selection; 0.111 is not an untouched final-test estimate. |
 | Qwen-own delta, step 8,000: OOD lambda = 0.226, eta = 0.790, consistency = 49.46% | Intended final generalization result | May carry the final claim only after raw outputs, estimator artifacts, checkpoint identity, and reproduction commands are archived and the suite's frozen status is documented. |
-| Consensus-delta: ID lambda = 0.177, eta = -0.048 | Reward-source ablation/reference | Completed and committed, but its historical pre/post comparison still needs a matched local-base rerun. |
+| Consensus-delta: ID lambda = 0.177, eta = -0.048, W = 0.890 | Reward-source ablation/reference | Completed and committed, but its historical pre/post comparison still needs a matched local-base rerun. |
 | Consensus-delta: OOD lambda = 0.395, eta = 0.502, consistency = 64.89% | Reward-source ablation on OOD | Shows a trade-off: higher lambda than Qwen-own delta, but lower eta and stronger consistency. Raw OOD artifacts must also be archived. |
-| **Matched local base: lambda = 7.637 (SE 0.627), eta = 1.007** | **Causal baseline — use this** | Exact local weights, same 9,890 rows, same teacher-forced scorer, same estimator. Behaviour: keep-both 99.13%, consistency 0.87%. |
+| **Matched local base: lambda = 7.637 (SE 0.627), eta = 1.007, W = 0.744** | **Causal baseline — use this** | Exact local weights, same 9,890 rows, same teacher-forced scorer, same estimator. Behaviour: keep-both 99.13%, consistency 0.87%. |
 | Historical base Qwen: lambda = 11.75, eta = 1.52 | Superseded — do not use for before/after | Together Turbo endpoint, 9,950 cases, top-5 first-token probs. Inflated ~54% vs the matched base by pipeline mismatch, not training. |
 
 The paper must not claim that Qwen-own delta dominates consensus on every
@@ -55,10 +55,10 @@ teacher-forced Yes/No sequence scores.
 adapter on the same 9,890 `test_goods.json` rows via `eval/run_qwen_local.py`
 and estimated with the same structural code (Model A NLS, `--link-scale 1`).
 
-| base estimate | lambda | SE | eta | SE |
-|---|---|---|---|---|
-| Historical (Together Turbo, 9,950, top-5 first-token) | 11.75 | 1.22 | 1.52 | 0.085 |
-| **Matched local (local weights, 9,890, teacher-forced)** | **7.637** | 0.627 | **1.007** | 0.120 |
+| base estimate | lambda | SE | eta | SE | W |
+|---|---|---|---|---|---|
+| Historical (Together Turbo, 9,950, top-5 first-token) | 11.75 | 1.22 | 1.52 | 0.085 | -- |
+| **Matched local (local weights, 9,890, teacher-forced)** | **7.637** | 0.627 | **1.007** | 0.120 | **0.744** |
 
 **The historical 11.75 was inflated by ~54% by the pipeline mismatch, not by
 training.** The matched base is well identified (|t| = 12.2) and behaviourally
@@ -316,25 +316,46 @@ matched local base and the ownership-neutral target `lambda = 0`.
 Alongside lambda (loss aversion) and eta (status-quo bias) we report **W, the mean
 pseudo-utility alignment** (`eval/pseudo_utility_alignment.py`):
 
-    w_q = 1 if the higher-delta good is chosen, else exp(-|delta|);  W = mean(w_q)
+    w_q = u_chosen / max(u_1, u_2);  W = mean(w_q)
 
-W in (0,1] is a magnitude-weighted rational-choice rate against the pseudo-utility
-delta (tau fixed at 1). It is **descriptive**, reported with lambda/eta; it is
-**not** a seed success gate (S2 remains |lambda_OOD| <= 0.5) and was added AFTER
-the seed pre-registration was frozen, so it must not be framed as a
-pre-registered criterion. Reference delta = `delta_qwen_base.json` (one shared
-reference so W is comparable across models). test_goods values:
+The frozen Model-A reference utilities are strictly positive, so W lies in
+(0,1]. A higher-utility choice receives 1; a lower-utility choice receives its
+utility as a fraction of the best available utility. W is **descriptive**,
+reported with lambda/eta; it is **not** a seed success gate (S2 remains
+|lambda_OOD| <= 0.5) and was added AFTER the seed pre-registration was frozen,
+so it must not be framed as a pre-registered criterion. The shared reference is
+`baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv`, the same
+utility table used to construct `delta_qwen_base.json`, so W is comparable
+across models.
 
-| model | W | rational-choice rate |
-|---|---|---|
-| base (matched local) | 0.801 | 0.504 |
-| Qwen-own delta step 8,000 (primary) | 0.933 | 0.753 |
-| consensus ablation | 0.915 | 0.725 |
+The matched ID results are:
 
-**Open:** OOD-50 uses new goods with no `delta_qwen_base` entry, so W is currently
-an ID/test_goods quantity only. Computing W on OOD needs a delta source for the
-new goods (or falling back to each model's own fitted utilities, which would not
-be comparable across models). Decide before reporting OOD W.
+| model | lambda (SE) | eta (SE) | W | rational-choice rate |
+|---|---:|---:|---:|---:|
+| Matched local base | 7.637 (0.627) | 1.007 (0.120) | **0.744** | 0.504 |
+| Qwen-own delta step 8,000 (primary) | 0.111 (0.014) | 0.504 (0.029) | **0.909** | 0.753 |
+| Consensus-delta GRPO (ablation) | 0.177 (0.005) | -0.048 (0.024) | **0.890** | 0.725 |
+
+Machine-readable combined results are under
+`results/pseudo_utility_alignment/`.
+
+Per-choice w distribution:
+
+| w range | Matched local base | Qwen-own delta step 8,000 | Consensus-delta GRPO |
+|---|---:|---:|---:|
+| 0.0 <= w < 0.2 | 8.43% | 0.83% | 1.17% |
+| 0.2 <= w < 0.4 | 13.40% | 4.01% | 5.67% |
+| 0.4 <= w < 0.6 | 10.71% | 5.82% | 6.75% |
+| 0.6 <= w < 0.8 | 9.18% | 6.69% | 6.70% |
+| 0.8 <= w < 1.0 | 7.85% | 7.35% | 7.22% |
+| **w = 1** | **50.42%** | **75.29%** | **72.48%** |
+| **Total** | **100%** | **100%** | **100%** |
+
+**Open:** OOD-50 uses new goods with no entries in the frozen Qwen-base utility
+table, so W is currently an ID/test_goods quantity only. Computing W on OOD
+needs a shared positive utility reference for the new goods (or falling back to
+each model's own fitted utilities, which would not be comparable across
+models). Decide before reporting OOD W.
 
 ## What Is Not Currently a Major Problem
 

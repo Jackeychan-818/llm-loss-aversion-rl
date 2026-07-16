@@ -11,6 +11,9 @@
     "lambda_se": 0.01421005,
     "eta": 0.50408026,
     "eta_se": 0.02913343,
+    "W": 0.9091606373337557,
+    "W_definition": "mean(u_chosen / max(u_X, u_Y))",
+    "W_reference": "baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv",
     "estimator": "Model A (NLS), structural link scale T=1"
   },
   "adapter": {
@@ -98,13 +101,13 @@
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/loss_aversion_X.json",
       "bytes": 7183622,
       "sha256": "22544f262735d4a17a9bcd145b5722a3d3c3aa33f3a75fc01ae837a45d82a7e4",
-      "tracked_in_git": false
+      "tracked_in_git": true
     },
     {
       "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/loss_aversion_Y.json",
       "bytes": 7203806,
       "sha256": "52a49e0170dae18f1b6da8566f83d20c20485f7c1af532d1757c5572058bd8d8",
-      "tracked_in_git": false
+      "tracked_in_git": true
     }
   ]
 }

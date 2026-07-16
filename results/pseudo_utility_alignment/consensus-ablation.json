@@ -1,0 +1,18 @@
+{
+  "W": 0.8901375810428692,
+  "N": 19780,
+  "rational_choice_rate": 0.7248230535894843,
+  "cases_scored": 9890,
+  "cases_skipped_missing_utility": 0,
+  "lambda": 0.1765277,
+  "lambda_se": 0.00502222,
+  "eta": -0.04773904,
+  "eta_se": 0.02399583,
+  "estimator": "Model A (NLS), structural link scale T=1",
+  "name": "consensus-ablation",
+  "eval_dir": "baseline/Qwen-7B-GRPO",
+  "utility_file": "baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv",
+  "data_dir": "data",
+  "estimation_file": "baseline/Qwen-7B-GRPO/Model_1/Qwen-7B-GRPO_NLS_estimation_T1(Model A).csv",
+  "score_definition": "u_chosen / max(u_X, u_Y)"
+}
