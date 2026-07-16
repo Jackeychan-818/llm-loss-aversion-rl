@@ -1,0 +1,10 @@
+{
+  "W": 0.9328722864264216,
+  "N": 19780,
+  "rational_choice_rate": 0.7529322548028311,
+  "cases_scored": 9890,
+  "cases_skipped_no_delta_or_zero": 0,
+  "name": "qd-8k",
+  "eval_dir": "baseline/Qwen-7B-GRPO-qd-ckpt8000",
+  "delta_file": "/scratch/users/nus/jackeyc0/lambda-zero/data/deltas/delta_qwen_base.json"
+}

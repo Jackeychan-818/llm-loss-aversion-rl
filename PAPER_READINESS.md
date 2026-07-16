@@ -311,6 +311,31 @@ project parameterizes the endowed-good multiplier as `1 + lambda`.
 human experiment, or narrow the paper to reductions relative to an exactly
 matched local base and the ownership-neutral target `lambda = 0`.
 
+## Reported quantities
+
+Alongside lambda (loss aversion) and eta (status-quo bias) we report **W, the mean
+pseudo-utility alignment** (`eval/pseudo_utility_alignment.py`):
+
+    w_q = 1 if the higher-delta good is chosen, else exp(-|delta|);  W = mean(w_q)
+
+W in (0,1] is a magnitude-weighted rational-choice rate against the pseudo-utility
+delta (tau fixed at 1). It is **descriptive**, reported with lambda/eta; it is
+**not** a seed success gate (S2 remains |lambda_OOD| <= 0.5) and was added AFTER
+the seed pre-registration was frozen, so it must not be framed as a
+pre-registered criterion. Reference delta = `delta_qwen_base.json` (one shared
+reference so W is comparable across models). test_goods values:
+
+| model | W | rational-choice rate |
+|---|---|---|
+| base (matched local) | 0.801 | 0.504 |
+| Qwen-own delta step 8,000 (primary) | 0.933 | 0.753 |
+| consensus ablation | 0.915 | 0.725 |
+
+**Open:** OOD-50 uses new goods with no `delta_qwen_base` entry, so W is currently
+an ID/test_goods quantity only. Computing W on OOD needs a delta source for the
+new goods (or falling back to each model's own fitted utilities, which would not
+be comparable across models). Decide before reporting OOD W.
+
 ## What Is Not Currently a Major Problem
 
 - Training and `test_goods` contain zero repeated exact prompts and zero
