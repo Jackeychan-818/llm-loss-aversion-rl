@@ -23,10 +23,12 @@ readiness descriptions elsewhere in this file.
 A 7B model can be post-trained to reduce ownership-dependent choice while
 preserving its own estimated preference ordering.
 
-> **Status (July 15, 2026):** One Qwen-own-delta run is complete and checkpoint
-> 8,000 is the selected candidate. Matched-base evaluation, pseudo-utility
-> validation, frozen final evaluation, seed replication, matched baselines, and
-> raw-artifact archival remain required for a full paper.
+> **Status (July 21, 2026):** Exploratory checkpoint 8,000 remains the primary
+> candidate. Confirmatory seeds 1 and 2 both reached the frozen 30,000-step
+> endpoint with the complete 15-checkpoint grid; their ID selection, one-shot
+> OOD, and GSM8K evaluations remain pending. Matched-base and ownership-free
+> pseudo-utility validation are complete. Matched baselines, stronger inference,
+> and complete raw-artifact archival remain required for a full paper.
 
 ---
 
@@ -96,9 +98,9 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
-| 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer result pending |
-| 2. Qwen-own reward design | 🟡 Needs validation | Primary pseudo-utility exists; ownership-free validation and leakage-clean construction pending |
-| 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
+| 1. Small-model baseline | ✅ Matched | Exact local base λ̂ = 7.637, η̂ = 1.007 |
+| 2. Qwen-own reward design | 🟡 Partly validated | Ownership-free validation complete; leakage-clean construction pending |
+| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k; frozen evaluations pending |
 | 4. Primary-model evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
 | 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
@@ -215,7 +217,9 @@ python plot_training.py logs/<training-log>.out
 6. **vLLM is optional, not the working dependency.** NSCC-compatible vLLM failed; the working path uses plain HF generation/evaluation.
 7. **Do not select checkpoints from training reward alone.** Recent plots show high zero-std/DAPO filtering, weak reward trend, and nontrivial KL drift; validate with held-out structural λ̂.
 8. **Describe `test_goods.json` precisely.** It holds out exact attribute configurations/questions, while goods and goods-pair identities are shared with training. The separate 50-good OOD suite is external-validity evidence, not part of this split.
+9. **Keep optimization layers distinct.** GRPO's `beta=0.04` is a KL coefficient; structural beta denotes attribute-profile effects. The matched local base is behavioral step 0, while the historical Qwen utility table is the fixed reward source.
+10. **Do not add exploratory checkpoints to frozen selection.** Step 600 may be used to diagnose early training because saves occur every 200 steps, but confirmatory selection remains the 15 checkpoints from 2k to 30k at 2k intervals.
 
 ---
 
-*Last updated: July 15, 2026*
+*Last updated: July 21, 2026*

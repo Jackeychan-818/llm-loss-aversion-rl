@@ -26,10 +26,10 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 
 ---
 
-## Current Status (July 15, 2026)
+## Current Status (July 21, 2026)
 
-**One primary Qwen-own-delta run is complete; full-paper validation remains
-open.**
+**The exploratory primary run and two confirmatory training runs are complete;
+confirmatory evaluation remains open.**
 
 ### Completed
 - Qwen-own-delta checkpoint 8,000 selected as the primary candidate.
@@ -44,7 +44,10 @@ open.**
   - forced:   λ̂ = 0.173, η̂ = −0.379
 
 ### Active
-- Frozen checkpoint rule and at least three Qwen-own-delta seeds.
+- ID evaluation of the frozen 15-point grids for seeds 1 and 2, followed by
+  mechanical selection, one OOD evaluation, and GSM8K per selected checkpoint.
+- Non-gating GRPO optimization and structural alpha/beta/utility diagnostics;
+  step 600 is exploratory only and cannot enter frozen selection.
 - Raw-prediction archival (derived results + manifests ARE committed; the raw
   X/Y predictions, ~167 MB, are not — numbers are traceable but not
   independently re-derivable from the repo alone).
@@ -94,7 +97,7 @@ Estimation methods (in `core_exp_refactored.py`):
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
 | 1. Small-model baseline | ✅ Matched | **λ̂ = 7.637** (SE 0.627), η̂ = 1.007 — exact local base, 9,890 rows, teacher-forced. Historical 11.75 (Together Turbo) superseded: inflated ~54% by pipeline mismatch |
 | 2. Qwen-own reward design | ✅ Validated | δ̃ vs frozen ownership-free anchor: 71.1% test / 70.8% train sign agreement (85.5% at \|δ̃\|>1.0); α 91.9% / β 100% significant. `eval/validate_qwen_delta_anchor.py` |
-| 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds required |
+| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k with complete frozen grids; evaluations pending |
 | 4. Primary evaluation | 🟡 Partially complete | ID validation + OOD table exist; derived results & manifests committed, raw X/Y predictions not (PAPER_READINESS #6) |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
 | 6. Baselines/robustness | ⏳ | SFT, sign-only GRPO, robust inference, capability retention |

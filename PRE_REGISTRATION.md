@@ -9,6 +9,11 @@ as post-hoc.
 Confirmatory seeds at freeze time: **none run**. Exploratory `seed=42` results
 were known and are explicitly excluded from the confirmatory denominator below.
 
+**Status update (July 21, 2026; does not alter the frozen design):** both new
+training runs (`SEED=1,2`) reached the frozen `MAX_STEPS=30000` endpoint and
+saved the complete 15-checkpoint selection grid. ID evaluation, mechanical
+selection, one-shot OOD evaluation, and per-seed GSM8K remain to be completed.
+
 ## Purpose
 
 The completed run (seed=42) shows **one adapter worked**. Replication tests
@@ -136,5 +141,19 @@ Eval budget: 15 ID selection evals + 1 OOD + 1 GSM8K per new seed ≈ **34 evals
 
 ## Amendments
 
-*None. Record any post-freeze change here with date, reason, and its effect on
-the analysis' status.*
+### July 21, 2026 — non-gating optimization and utility diagnostics
+
+We will inspect GRPO training dynamics and structural-estimator stability as a
+post-hoc diagnostic. This does **not** change any frozen threshold, outcome,
+selection rule, or confirmatory checkpoint. The diagnostic may include the
+matched local base as training step 0 and an early saved checkpoint such as
+step 600 (the nearest saved checkpoint after 500 because adapters were saved
+every 200 steps). Any checkpoint outside the frozen 2k–30k @ 2k grid is
+exploratory only: it cannot be selected, cannot affect the seed verdict, and
+must not be evaluated on OOD for checkpoint choice.
+
+The diagnostic will report (i) GRPO reward/loss, KL, entropy, gradient norm,
+learning rate, reward dispersion, and zero-reward/DAPO filtering; (ii) the NLS
+starting and final objective under multiple numerical starts; and (iii) fitted
+alpha, beta, and utility drift relative to the appropriate base. Results will
+be labelled post-hoc and non-gating.

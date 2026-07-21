@@ -165,9 +165,15 @@ opening the frozen final suite only after selection.
 
 ### 5. Training-seed replication
 
-The Qwen-own-delta checkpoint curve is highly non-monotonic, and only one
-training run currently supports the main result. Conditional NLS standard
-errors do not measure this training variation.
+The Qwen-own-delta checkpoint curve is highly non-monotonic. Conditional NLS
+standard errors do not measure variation across training seeds.
+
+**Status (July 21, 2026): training complete; confirmatory evaluation pending.**
+Both new seeds (`SEED=1,2`) finished cleanly at `MAX_STEPS=30000`, with the full
+15/15 grid from 2k through 30k plus a final adapter. Their logs record distinct
+training seeds. This establishes the existence of the confirmatory runs, not
+their outcome: the 30 ID evaluations, mechanical per-seed selections, one OOD
+evaluation per selected checkpoint, and per-seed GSM8K checks remain open.
 
 **BLOCKER FOUND AND FIXED (July 15, 2026) — read before launching seeds.**
 `grpo_train.py` had no seed handling at all: no `--seed`, no config key, nothing
@@ -185,19 +191,65 @@ Fixed: `--seed` (CLI, overrides config) is now threaded into
 per-seed output dir (`checkpoints/grpo_qwen_delta_seed<N>`) and a per-seed log.
 Each run logs `Training seed: <N>` so the seed is auditable afterwards.
 
-**The completed run therefore used seed=42.** It is the exploratory run; new
-seeds must use different values (e.g. 1, 2, 3).
+**The original completed run used seed=42.** It remains exploratory and is not
+part of the confirmatory denominator. The two new runs use seeds 1 and 2.
 
-**Required action:** run at least three independent Qwen-own-delta seeds under
-one fixed training and checkpoint-selection protocol. Report seed-level
-lambda, eta, consistency, target agreement, and final-evaluation performance,
-plus their mean and variation.
+**Required action:** complete the frozen evaluation pipeline for seeds 1 and 2
+and apply the decision rule in `PRE_REGISTRATION.md`. Report seed-level lambda,
+eta, consistency, target agreement, and final-evaluation performance, plus
+their range. If the two new seeds disagree, run the pre-declared third fresh
+seed; do not use exploratory seed 42 as the tie-breaker.
 
 **Pre-register the success criterion BEFORE launching** (otherwise the read-out
 is another post-hoc judgement): each seed must reduce lambda far below the
 matched base (lambda = 7.637) without degenerate choice behaviour or material
 capability loss. Seeds are NOT required to reproduce lambda = 0.111 exactly.
 Report every seed, not only the best.
+
+#### Optimization path and structural utility diagnostics (post-hoc)
+
+Two optimization layers must be reported separately. GRPO uses the fixed
+Qwen-own pseudo-utility difference to assign `+|delta|` or `-|delta|`, then
+optimizes a DAPO policy objective with clipping (`epsilon=0.2`) and a KL penalty
+(`beta_GRPO=0.04`). It does not directly optimize the structural alpha or beta
+parameters. Training-path diagnostics should plot reward, reward dispersion,
+loss, KL, entropy, gradient norm, learning rate, and the zero-reward/DAPO
+filtering rate for every seed.
+
+Model A subsequently estimates behavior by NLS, minimizing squared error
+between teacher-forced `P(Yes)` and the logistic link of
+`z=(1+lambda)U_X-U_Y+eta`, with
+`U=exp(alpha_item+beta_attribute_profile)`. Here `alpha_1=0` and
+`beta_1,1=0` are reference levels. The default `--starting ols` uses
+`lambda_0=eta_0=0` and pooled-OLS starts for the remaining alpha/beta values.
+The structural beta parameters are unrelated to the GRPO KL coefficient.
+
+The current `curve_fit` implementation returns final parameters and covariance
+but does not expose a genuine per-iteration callback; its nominal convergence
+history is therefore not an optimization trace. A diagnostic wrapper should
+record starting/final RSS, convergence status, Jacobian conditioning, and
+agreement across OLS, zero, and perturbed starts without changing
+`eval/core_exp_refactored.py` or overwriting the claim-carrying estimates.
+
+Current fitted ranges motivate this check:
+
+| estimate source | alpha range | beta range | fitted utility range |
+|---|---:|---:|---:|
+| Historical Qwen used for the reward | [-2.632, 0.409] | [0.451, 1.019] | [0.072, 4.173] |
+| Matched local base (behavioral step 0) | [-1.746, 0.624] | [0.358, 0.869] | [0.174, 4.450] |
+| Exploratory Qwen-own-delta step 8,000 | [-1075.111, 1.884] | [0.435, 1.026] | [0, 18.375] |
+
+The extreme step-8,000 alpha and zero implied utilities are a warning about
+weak identification or quasi-separation for some goods. Low lambda alone does
+not establish stable utility recovery. Report alpha/beta stability, utility
+distribution and rank preservation, and multi-start sensitivity. The matched
+local base is the training step-0 comparator; the historical Together-hosted
+utility is the fixed reward source. They must not be conflated.
+
+An early saved adapter such as step 600 may be added to the ID trajectory as a
+post-hoc diagnostic because checkpoints were saved every 200 steps. It is not
+part of the frozen 2k–30k selection grid, cannot affect selection, and must not
+be opened on OOD as a candidate.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
@@ -269,8 +321,9 @@ fully reflect repeated perspectives, goods pairs, shared goods, or training
 randomness.
 
 **Required action:** add pair-aware resampling, leave-one-good-out robustness,
-and intervals across training seeds. Run estimator-recovery simulations with
-known lambda and eta, and always interpret both parameters jointly.
+intervals across training seeds, multi-start/objective diagnostics, and
+Jacobian/conditioning checks. Run estimator-recovery simulations with known
+lambda and eta, and always interpret both parameters jointly.
 
 ### 10. General-capability retention
 
@@ -389,9 +442,12 @@ final-evaluation, and reproducibility issues above.
 2. Archive and reproduce all Qwen-own-delta checkpoint and OOD artifacts.
 3. Validate Qwen-own delta against ownership-free Qwen preferences.
 4. Freeze the checkpoint-selection rule and primary/secondary outcomes.
-5. Run at least three Qwen-own-delta training seeds.
+5. Complete the frozen ID-selection, OOD, and GSM8K evaluations for seeds 1 and
+   2; run a third fresh seed only if required by the pre-registered decision
+   rule.
 6. Train the matched SFT and flat-reward baselines.
-7. Add robust structural inference and estimator-recovery checks.
+7. Add robust structural inference, multi-start optimization/utility
+   diagnostics, and estimator-recovery checks.
 8. Run GSM8K and IFEval or an equivalent capability pair.
 9. Rewrite the paper with Qwen-own delta as primary and consensus delta as the
    reward-source ablation.

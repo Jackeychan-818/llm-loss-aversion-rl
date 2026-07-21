@@ -37,6 +37,12 @@ Any λ̂ reported on it is a **validation** number.
 Applied per seed, independently, to a checkpoint grid declared in advance:
 **every 2,000 steps from 2k to 30k** (15 checkpoints; see `PRE_REGISTRATION.md`).
 
+The matched local base is the behavioral step-0 comparator, but it is not a
+candidate checkpoint. Saved adapters outside this grid (for example step 600,
+the nearest saved checkpoint after 500) may be inspected only as explicitly
+post-hoc training-trajectory diagnostics. They must never enter the candidate
+set, alter a tie-break, or receive OOD evaluation for checkpoint choice.
+
 **Step 1 — Eligibility.** Discard a checkpoint unless all hold:
 - `consistency >= 0.50` — the pair makes a symmetric choice at least half the
   time. This rules out degenerate keep-both / trade-both collapse, where λ̂ and η̂
@@ -103,6 +109,25 @@ status-quo bias**, and keep-both is still 24.2% of pairs. The intervention drive
 the *asymmetry* λ̂ toward 0 far more effectively than it removes the *level* of
 choice rigidity η̂. Report λ and η jointly; a λ-only headline would misrepresent
 the result.
+
+## Optimization and utility diagnostics (non-gating)
+
+Checkpoint selection uses only the final fitted lambda, eta, consistency, and
+the frozen rule above. Separately, estimator diagnostics should report the NLS
+objective and sensitivity to numerical initialization. Model A minimizes the
+sum of squared errors between teacher-forced `P(Yes)` and the logistic link of
+
+```text
+z = (1 + lambda) * U_X - U_Y + eta
+U(item, attributes) = exp(alpha_item + beta_attribute_profile)
+```
+
+The reference parameters are `alpha_1 = 0` and `beta_1,1 = 0`. With the default
+`--starting ols`, numerical initialization sets `lambda_0 = eta_0 = 0` and uses
+pooled-OLS values for the remaining alpha and beta parameters. Alternative
+zero and perturbed starts are robustness checks, not alternative selection
+rules. Structural beta is an attribute-profile parameter and must not be
+confused with GRPO's KL coefficient, also named `beta` in the training config.
 
 ## Usage
 

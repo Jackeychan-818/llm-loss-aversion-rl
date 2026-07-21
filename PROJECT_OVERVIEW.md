@@ -1,5 +1,5 @@
 # Project Overview — lambda-zero
-*Last updated: July 15, 2026*
+*Last updated: July 21, 2026*
 
 ---
 
@@ -146,9 +146,9 @@ for the full-paper claim. Full methods and reproducibility details are in
 | Phase | Status | Deliverable |
 |---|---|---|
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
-| 1. Small-model baseline | 🟡 Needs matched rerun | Historical λ̂ = 11.75 exists; exact local-base/local-scorer comparison pending |
-| 2. Qwen-own reward design | 🟡 Needs validation | Primary pseudo-utility exists; ownership-free preference validation and leakage-clean construction pending |
-| 3. Qwen-own GRPO training | 🟡 One run complete | Step 8,000 selected; at least three fixed-protocol seeds still required |
+| 1. Small-model baseline | ✅ Matched | Exact local base: λ̂ = 7.637, η̂ = 1.007 on the local scorer |
+| 2. Qwen-own reward design | 🟡 Partly validated | Ownership-free validation complete; leakage-clean reward construction remains open |
+| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k with the full frozen grid; evaluations pending |
 | 4. Primary-model evaluation | 🟡 Partially complete | ID validation and claimed OOD tables exist; raw OOD/checkpoint artifacts must be archived |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID results committed; reported OOD artifacts need archival |
 | 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
@@ -198,6 +198,28 @@ agent-specific. This advantage is conditional on demonstrating that Qwen's
 utility estimate is identified and agrees with ownership-free Qwen choices.
 Neither reward source should be called objective cardinal ground truth.
 
+## Optimization and Utility Diagnostics
+
+Training and structural estimation are distinct. GRPO optimizes a DAPO policy
+objective using fixed Qwen-own `delta` rewards, clipping `epsilon=0.2`, and KL
+coefficient `beta_GRPO=0.04`. The downstream Model-A estimator separately fits
+lambda, eta, item alpha, and attribute-profile beta by NLS, with
+`U=exp(alpha+beta)`. Structural beta is not the GRPO KL coefficient.
+
+The behavioral trajectory uses the matched local base as step 0 and the frozen
+2k–30k @ 2k grid for confirmatory checkpoint selection. Step 600 may be
+evaluated as an explicitly post-hoc early-training diagnostic because saves are
+every 200 steps; it cannot enter selection or receive OOD candidate testing.
+
+Diagnostics will report GRPO reward/loss, KL, entropy, gradient norm, learning
+rate, reward dispersion and DAPO filtering, plus NLS starting/final RSS,
+conditioning, multi-start stability, alpha/beta drift, fitted-utility
+distributions, and preference-rank preservation. The default NLS starts at
+`lambda=eta=0` with pooled-OLS alpha/beta values. The current estimator's
+`curve_fit` callback is ignored, so its nominal iteration-history CSV is not a
+valid optimization trace; convergence must be captured by a separate
+non-destructive diagnostic wrapper.
+
 ---
 
 ## Training And Evaluation Infrastructure
@@ -229,11 +251,14 @@ Key main-run hyperparameters:
 
 ## Remaining Work
 
-1. Rerun the exact local base model with the post-training evaluator.
-2. Archive and reproduce the Qwen-own checkpoint sweep and OOD results.
-3. Validate Qwen-own delta against ownership-free Qwen preferences.
-4. Freeze a joint lambda/eta/consistency checkpoint-selection rule.
-5. Run at least three Qwen-own-delta training seeds.
+1. Complete all 30 ID checkpoint evaluations for replication seeds 1 and 2.
+2. Apply the frozen selection rule, then evaluate exactly one selected
+   checkpoint per seed on OOD and GSM8K.
+3. Run the full 120-scenario framing evaluation as a non-gating specificity
+   check.
+4. Add the post-hoc optimization, multi-start, alpha/beta, and utility-trajectory
+   diagnostics without changing the frozen selection grid.
+5. Archive and reproduce all seed, OOD, framing, and capability artifacts.
 6. Add matched SFT and sign-only GRPO baselines; keep consensus as the
    reward-source ablation.
 7. Add pair/good-aware structural robustness, estimator recovery, and

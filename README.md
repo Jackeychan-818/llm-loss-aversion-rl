@@ -14,9 +14,9 @@ Fine-tuning Qwen2.5-7B-Instruct with GRPO to reduce measured loss aversion in an
 - **Reward-source ablation:** frontier-consensus-delta GRPO, with ID
   λ̂ = **0.177** (SE = 0.005), η̂ = **-0.048** and reported OOD
   λ̂ = **0.395**, η̂ = **0.502**, consistency = **64.89%**.
-- Historical Together-hosted base Qwen: λ̂ = **11.75** (SE = 1.22). A matched
-  evaluation of the exact local base checkpoint with the post-training scorer
-  is still required before using this as the causal before/after baseline.
+- Matched local base Qwen: λ̂ = **7.637** (SE = 0.627), η̂ = **1.007**, using
+  the same local weights, rows, scorer, and estimator as the tuned model. The
+  historical Together-hosted estimate of 11.75 is not the matched comparator.
 - Attribute profiles explain **48.8%** of within-pair/perspective variation
 - Changing the held-out configuration flips at least one answer for **42.2%** of goods pairs
 
@@ -32,12 +32,18 @@ full methodological audit.
 
 ## Current Work
 
-- Rerun the exact local base checkpoint on the same 9,890 rows and scorer.
+- Evaluate the complete frozen 2k–30k checkpoint grid for replication seeds 1
+  and 2. Both training runs reached 30,000 steps cleanly; their confirmatory
+  selections and outcomes are not yet known.
+- Apply the frozen selector, then run exactly one OOD-50 and one GSM8K
+  evaluation per selected seed checkpoint.
+- Run the full framing benchmark as a non-gating behavioral-specificity test.
+- Diagnose training reward/loss, KL and DAPO filtering, and separately inspect
+  NLS starting/final objective, multi-start stability, alpha/beta drift, and
+  fitted utility preservation. Step 600 may be used only as an exploratory
+  early-trajectory point; frozen selection remains 2k–30k @ 2k.
 - Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
   artifacts.
-- Validate Qwen-own delta against frozen ownership-free Qwen preferences.
-- Freeze the checkpoint-selection rule and run at least three Qwen-own-delta
-  training seeds.
 - Add matched SFT and sign-only GRPO baselines; retain consensus delta as the
   reward-source ablation.
 - Add robust structural inference and GSM8K/IFEval capability checks.
