@@ -1,0 +1,69 @@
+#!/bin/bash
+# ============================================================
+# PBS — Structural-estimator diagnostics (CPU ONLY, non-gating)
+#
+# Runs eval/estimator_diagnostics.py. No GPU: it reads existing teacher-forced
+# eval output + the committed NLS CSVs and refits Model A on CPU.
+#
+# Phase 1 (cheap, ~40 s each): fast SOLUTION diagnostics — objective/RSS,
+#   cond(Jacobian), SEs, alpha/beta/utility, and rank preservation vs the matched
+#   base — across every available Qwen-own-delta grid checkpoint + the base.
+# Phase 2 (slow): full --multistart starting-point sensitivity on ONLY the four
+#   targets that warrant it:
+#     - matched base            (Qwen-7B-Base-Local)
+#     - exploratory seed42 8k   (Qwen-7B-GRPO-qd-ckpt8000)   <- the singular one
+#     - seed2 selected ckpt     (Qwen-7B-GRPO-qd-seed2-ckpt6000)
+#     - seed1 selected = healthy reference (Qwen-7B-GRPO-qd-seed1-ckpt2000)
+#   Expand multistart to the whole grid ONLY if these reveal broader instability.
+#
+# Submit:  qsub train/submit_diagnostics_cpu.pbs
+# ============================================================
+#PBS -N lz-diag-cpu
+#PBS -q normal
+#PBS -l select=1:ncpus=16:mem=64gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/diag_cpu_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/diag_cpu_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+
+BASE="Qwen-7B-Base-Local"
+OUT="results/estimator_diagnostics"
+mkdir -p "$OUT"
+
+echo "############ PHASE 1: fast solution diagnostics across the grid ############"
+# every evaluated Qwen-own-delta checkpoint (all seeds) + the matched base.
+for d in baseline/${BASE} \
+         baseline/Qwen-7B-GRPO-qd-ckpt* \
+         baseline/Qwen-7B-GRPO-qd-seed1-ckpt* \
+         baseline/Qwen-7B-GRPO-qd-seed2-ckpt*; do
+    [ -f "$d/loss_aversion_X.json" ] || continue
+    name=$(basename "$d")
+    echo "--- solution diagnostics: $name ---"
+    python eval/estimator_diagnostics.py \
+        --feature baseline --model_name "$name" \
+        --base_feature baseline --base_model "$BASE" \
+        --out "$OUT/${name}.json" 2>&1 | grep -v -E "RuntimeWarning|np.exp"
+done
+
+echo "############ PHASE 2: targeted multi-start sensitivity (slow) ############"
+for name in "$BASE" \
+            Qwen-7B-GRPO-qd-ckpt8000 \
+            Qwen-7B-GRPO-qd-seed1-ckpt2000 \
+            Qwen-7B-GRPO-qd-seed2-ckpt6000; do
+    [ -f "baseline/$name/loss_aversion_X.json" ] || { echo "skip missing $name"; continue; }
+    echo "--- multistart: $name ---"
+    python eval/estimator_diagnostics.py \
+        --feature baseline --model_name "$name" \
+        --base_feature baseline --base_model "$BASE" \
+        --multistart --n_perturb 3 --max_nfev 1500 \
+        --out "$OUT/${name}_multistart.json" 2>&1 | grep -v -E "RuntimeWarning|np.exp"
+done
+
+echo "=== diagnostics complete -> $OUT ==="

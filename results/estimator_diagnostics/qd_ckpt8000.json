@@ -1,0 +1,90 @@
+{
+  "feature": "baseline",
+  "model_name": "Qwen-7B-GRPO-qd-ckpt8000",
+  "estimator": "Model A (NLS), structural link scale T=1",
+  "committed_csv": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_NLS_estimation_T1(Model A).csv",
+  "num_items": 100,
+  "num_attr_combos": 9,
+  "n_params": 109,
+  "n_obs": 19780,
+  "gating": "NON-GATING diagnostic; does not select checkpoints or touch frozen thresholds",
+  "solution_diagnostics": {
+    "rss_at_solution": 1527.9705867085117,
+    "lambda": 0.11099538,
+    "eta": 0.50408026,
+    "cond_jacobian": 6.085173664355473e+16,
+    "cond_pcov": null,
+    "se_all_finite_positive": false,
+    "se_max_rel_diff_vs_committed": 0.007833555313132776,
+    "alpha": {
+      "min": -685.58659427,
+      "max": 1.88447174,
+      "p01": -271.2022377311,
+      "p50": 0.081547395,
+      "p99": 1.8187559855000004,
+      "n_nonfinite": 0
+    },
+    "beta": {
+      "min": 0.0,
+      "max": 1.02649711,
+      "p01": 0.034764713600000004,
+      "p50": 0.64417829,
+      "p99": 1.01811275,
+      "n_nonfinite": 0
+    },
+    "utility": {
+      "min": 1.792772747354247e-298,
+      "max": 18.374592169583636,
+      "p01": 1.0760353253545113e-116,
+      "p50": 2.0740789082451485,
+      "p99": 11.739468807356568,
+      "n_nonfinite": 0
+    }
+  },
+  "start_objectives": [
+    {
+      "start": "ols",
+      "start_rss": 3010.957219836956,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "zero",
+      "start_rss": 3886.036435896576,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "perturb1",
+      "start_rss": 4216.8119101876955,
+      "lambda_start": 0.06286511054669665,
+      "eta_start": -0.06605243164565094
+    },
+    {
+      "start": "perturb2",
+      "start_rss": 4235.478248625741,
+      "lambda_start": 0.19318479878315292,
+      "eta_start": -0.2908204182047516
+    },
+    {
+      "start": "perturb3",
+      "start_rss": 3966.5197374296895,
+      "lambda_start": -0.4338083821608513,
+      "eta_start": 1.5330183695244484
+    }
+  ],
+  "multistart": null,
+  "rank_preservation": {
+    "base": "baseline/Qwen-7B-Base-Local",
+    "spearman_alpha_items": 0.8344794479447945,
+    "spearman_utility_grid": 0.8391637520540148
+  },
+  "config": {
+    "n_perturb": 3,
+    "seed": 0,
+    "perturb_scale": 0.5,
+    "max_nfev": 3000,
+    "multistart": false,
+    "link_scale": 1.0
+  }
+}

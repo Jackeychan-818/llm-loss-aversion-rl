@@ -40,6 +40,15 @@ D_TOL = 0.05
 CONS_TOL = 0.02
 PROTOCOL_FROZEN = "2026-07-15"
 
+# The frozen candidate grid: every 2,000 steps from 2k to 30k (15 checkpoints).
+# ANY matched eval dir off this grid — e.g. the diagnostic early checkpoints
+# (step 200..1800) added for the training-trajectory plots — is shown for
+# visibility but can NEVER be a candidate. This encodes the CHECKPOINT_PROTOCOL
+# rule ("Saved adapters outside this grid ... must never enter the candidate
+# set, alter a tie-break, or receive OOD evaluation for checkpoint choice") so
+# selection is safe regardless of which eval dirs happen to exist on disk.
+FROZEN_GRID = frozenset(range(2000, 30001, 2000))
+
 
 def read_estimates(d: Path) -> dict | None:
     csvs = glob.glob(str(d / "Model_1" / "*NLS_estimation*.csv"))
@@ -85,7 +94,38 @@ def eligible(r: dict) -> tuple[bool, str]:
     return True, ""
 
 
+def build_row(step: int, model_name: str, est: dict, beh: dict | None) -> dict:
+    """Assemble one candidate row and classify it. Off-grid steps (e.g. the
+    diagnostic early checkpoints) are marked ineligible so they can never be
+    selected; on-grid steps go through the frozen eligibility rule."""
+    r = {"step": step, "model_name": model_name, **est, **(beh or {})}
+    r["d"] = math.hypot(r["lambda"], r["eta"])
+    r["_on_grid"] = step in FROZEN_GRID
+    if not r["_on_grid"]:
+        r["_eligible"], r["_why"] = False, "off frozen 2k-30k grid (diagnostic only)"
+    else:
+        ok, why = eligible(r)
+        r["_eligible"], r["_why"] = ok, why
+    return r
+
+
+def grid_status(rows: list[dict]) -> tuple[list[int], list[int]]:
+    """(present_on_grid, missing_from_grid) against the frozen 15-step grid."""
+    present = sorted({r["step"] for r in rows if r.get("_on_grid")})
+    missing = sorted(FROZEN_GRID - set(present))
+    return present, missing
+
+
 def select(rows: list[dict]) -> tuple[dict | None, str]:
+    # HARD REQUIREMENT: the exact 15-step grid must be complete. A partial grid
+    # is a hard failure, not a "pick the best of what ran" — selecting on a
+    # subset silently reintroduces the degree of freedom the protocol removes.
+    _, missing = grid_status(rows)
+    if missing:
+        return None, (f"INCOMPLETE GRID: missing frozen checkpoint(s) {missing}. The "
+                      f"frozen protocol requires all 15 of {sorted(FROZEN_GRID)} before "
+                      "any selection. Evaluate the missing step(s); do NOT select on a "
+                      "partial grid.")
     cand = [r for r in rows if r["_eligible"]]
     if not cand:
         return None, "no eligible checkpoint (do NOT relax thresholds post hoc)"
@@ -126,11 +166,7 @@ def main():
         beh = behavior(d)
         if est is None:
             continue
-        r = {"step": int(m.group(1)), "model_name": d.name, **est, **(beh or {})}
-        r["d"] = math.hypot(r["lambda"], r["eta"])
-        ok, why = eligible(r)
-        r["_eligible"], r["_why"] = ok, why
-        rows.append(r)
+        rows.append(build_row(int(m.group(1)), d.name, est, beh))
     rows.sort(key=lambda r: r["step"])
     if not rows:
         print(f"No checkpoints matched {args.feature}/{args.pattern}")
@@ -144,14 +180,30 @@ def main():
     hdr = f"{'step':>7} | {'lambda':>8} | {'eta':>8} | {'consist':>7} | {'d':>6} | eligible"
     print(hdr); print("-" * len(hdr))
     for r in rows:
-        flag = "yes" if r["_eligible"] else f"NO ({r['_why']})"
+        if not r["_on_grid"]:
+            flag = "diagnostic (off-grid, not a candidate)"
+        else:
+            flag = "yes" if r["_eligible"] else f"NO ({r['_why']})"
         print(f"{r['step']:>7} | {r['lambda']:>+8.4f} | {r['eta']:>+8.4f} | "
               f"{r.get('consistency', float('nan')):>7.3f} | {r['d']:>6.3f} | {flag}")
+    off_grid = [r["step"] for r in rows if not r["_on_grid"]]
+    if off_grid:
+        print(f"\n  ({len(off_grid)} off-grid diagnostic checkpoint(s) shown but excluded "
+              f"from selection: {off_grid})")
+
+    # Hard-fail on an incomplete frozen grid (exit 2, no manifest written).
+    present, missing = grid_status(rows)
+    print(f"\n  frozen grid: {len(present)}/{len(FROZEN_GRID)} present"
+          + (f"; MISSING {missing}" if missing else " (complete)"))
+    if missing:
+        print(f"\nHARD FAILURE: incomplete grid, missing {missing}. Evaluate the missing "
+              "step(s) before selecting. No selection written.")
+        sys.exit(2)
 
     best, reason = select(rows)
     if best is None:
         print(f"\nNO SELECTION: {reason}")
-        return
+        sys.exit(1)
     print(f"\n{'='*66}")
     print(f"SELECTED: step {best['step']}  (d = {best['d']:.3f})")
     print(f"  lambda = {best['lambda']:+.4f} (SE {best['lambda_se']:.4f})")

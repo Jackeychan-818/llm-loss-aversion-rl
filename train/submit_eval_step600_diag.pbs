@@ -1,0 +1,78 @@
+#!/bin/bash
+# ============================================================
+# PBS — Step-600 ID-ONLY EXPLORATORY diagnostic (one seed per job)
+#
+# Scores test_goods.json with checkpoint-600 of a Qwen-own-delta run and runs
+# Model A NLS, purely to extend the early ID trajectory for the training-dynamics
+# plots. This is EXPLORATORY and strictly NON-GATING:
+#
+#   * Output lands under  diagnostics/step600/<MODEL_NAME>  (NOT baseline/),
+#     and MODEL_NAME contains "step600-EXPLORATORY" with no trailing digits and
+#     no "ckpt" token -> select_checkpoint.py (which globs baseline/*ckpt* and
+#     parses a trailing step number) can never see or parse it.
+#   * ID ONLY. There is no OOD stage here; step 600 must never be evaluated on
+#     the frozen OOD suite.
+#   * Independent of the frozen 30-job grid — submit these separately; they do
+#     not touch or delay the grid jobs.
+#
+# Submit (one per seed):
+#   qsub -v SEED=42 train/submit_eval_step600_diag.pbs
+#   qsub -v SEED=1  train/submit_eval_step600_diag.pbs
+#   qsub -v SEED=2  train/submit_eval_step600_diag.pbs
+# ============================================================
+#PBS -N lz-step600-diag
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/step600_diag_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/step600_diag_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+
+SEED="${SEED:-42}"
+CKPT=600
+FEATURE="diagnostics/step600"          # deliberately NOT baseline/
+if [[ "$SEED" == "42" ]]; then
+    RUN_DIR="checkpoints/grpo_qwen_delta"
+    MODEL_NAME="Qwen-7B-GRPO-qd-step600-EXPLORATORY"
+else
+    RUN_DIR="checkpoints/grpo_qwen_delta_seed${SEED}"
+    MODEL_NAME="Qwen-7B-GRPO-qd-seed${SEED}-step600-EXPLORATORY"
+fi
+ADAPTER="${RUN_DIR}/checkpoint-${CKPT}"
+
+echo "=== Step-600 EXPLORATORY diagnostic (ID only, non-gating) ==="
+nvidia-smi
+echo "SEED=$SEED  adapter=$ADAPTER"
+echo "feature=$FEATURE  model_name=$MODEL_NAME"
+if [[ ! -d "$ADAPTER" ]]; then
+    echo "ERROR: adapter dir not found: $ADAPTER"; exit 1
+fi
+
+# ---------- ID eval on test_goods (teacher-forced log-probs) ----------
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --adapter_path "$ADAPTER" \
+    --model_name "$MODEL_NAME" \
+    --data_file data/test_goods.json \
+    --treatment baseline \
+    --output_root "$FEATURE" \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee "logs/eval_${MODEL_NAME}.log"
+
+# ---------- Model A NLS on the diagnostics feature root ----------
+python eval/estimate_qwen_checkpoint.py \
+    --model_name "$MODEL_NAME" \
+    --feature "$FEATURE" \
+    --link-scale 1 \
+    2>&1 | tee "logs/estimate_${MODEL_NAME}.log"
+
+echo "=== Done: ${FEATURE}/${MODEL_NAME} (EXPLORATORY, never enters selection/OOD) ==="
