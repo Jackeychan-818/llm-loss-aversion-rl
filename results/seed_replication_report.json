@@ -1,0 +1,22 @@
+{
+  "seeds": [
+    {
+      "seed": 1,
+      "checks": {
+        "S1": "pending"
+      },
+      "values": {},
+      "status": "PENDING: selection not run"
+    },
+    {
+      "seed": 2,
+      "checks": {
+        "S1": "pending"
+      },
+      "values": {},
+      "status": "PENDING: selection not run"
+    }
+  ],
+  "n_pass": 0,
+  "n_pending": 2
+}
