@@ -1,5 +1,5 @@
 {
-  "git_commit": "e4cb24810260eb29d4b9654fa51dd5102b4f2d24",
+  "git_commit": "bd8118b7906bc50f2cb5d8080e532e85528f4185",
   "generated_by": "eval/plot_training_dynamics.py",
   "exact_local_base": "baseline/Qwen-7B-Base-Local",
   "frozen_selection_grid": [

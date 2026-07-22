@@ -307,16 +307,21 @@ def main() -> None:
     multistart = None
     if args.multistart:
         fits = multistart_refits(model, starts, args.max_nfev)
+        all_converged = all(f["converged"] for f in fits)
+        lam_spread = spread([f["lambda"] for f in fits])
         multistart = {
             "fits": fits,
-            "lambda_spread": spread([f["lambda"] for f in fits]),
+            "lambda_spread": lam_spread,
             "eta_spread": spread([f["eta"] for f in fits]),
             "alpha_max_spread": spread([f["alpha"]["max"] for f in fits]),
             "n_converged": sum(f["converged"] for f in fits),
             "n_starts": len(fits),
+            "all_converged": all_converged,
+            # "agreement" is only meaningful if EVERY start actually converged;
+            # a start that hit the nfev cap has no trustworthy lambda to agree.
             "all_starts_agree_lambda_0p05": bool(
-                spread([f["lambda"] for f in fits])["spread"] is not None
-                and spread([f["lambda"] for f in fits])["spread"] <= 0.05),
+                all_converged and lam_spread["spread"] is not None
+                and lam_spread["spread"] <= 0.05),
         }
 
     rank_pres = None
@@ -378,7 +383,9 @@ def main() -> None:
         for f in multistart["fits"]:
             print(f"  {f['start']:<9}{f['lambda']:>9.3f}{f['eta']:>9.3f}{f['final_rss']:>11.3f}"
                   f"{f['nfev']:>7}{f['seconds']:>7.0f}{('yes' if f['converged'] else 'CAP'):>6}")
-        print(f"  lambda spread across starts={multistart['lambda_spread']['spread']}  "
+        print(f"  {multistart['n_converged']}/{multistart['n_starts']} converged  "
+              f"(all_converged={multistart['all_converged']})  "
+              f"lambda spread={multistart['lambda_spread']['spread']}  "
               f"agree<=0.05: {multistart['all_starts_agree_lambda_0p05']}")
     if rank_pres:
         print(f"RANK PRESERVATION vs {rank_pres['base']}: "

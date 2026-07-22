@@ -1,7 +1,10 @@
 # Structural non-identification at Qwen-own-delta step 8,000 — forensic record
 
-*Recorded 2026-07-21. Non-gating diagnostic. This does NOT alter the committed
-estimate; the committed `alpha_37 = -1075.111` remains authoritative.*
+*Recorded 2026-07-21; updated 2026-07-22 after the working tree was restored to
+HEAD. Non-gating diagnostic. The committed `alpha_37 = -1075.111` is
+authoritative and is the current tracked value. The alternative NLS solution is
+preserved only as a labelled copy (paths + SHA-256 below); it is NOT in the
+tracked CSV.*
 
 ## Why this file exists
 
@@ -12,8 +15,8 @@ NLS solutions of the same fit**, present in the same repository:
 
 | | value read | provenance |
 |---|---|---|
-| Committed (git HEAD blob, = Desktop copy) | `alpha_37 = -1075.111` (global min) | commit `5e574c2` |
-| Working tree (uncommitted, mtime 2026-07-21 21:37) | `alpha_51 = -685.587` (global min) | regeneration provenance unknown |
+| Committed & currently tracked (git HEAD blob) | `alpha_37 = -1075.111` (global min) | commit `5e574c2`; working tree restored to this on 2026-07-22 |
+| Alternative solution (preserved copy, was briefly in the working tree) | `alpha_51 = -685.587` (global min) | `results/estimator_diagnostics/qd_ckpt8000_ALT_SOLUTION_worktree.csv`; regeneration provenance unknown |
 
 ## Exact artifacts
 
@@ -22,18 +25,19 @@ NLS solutions of the same fit**, present in the same repository:
 - **Estimator:** Model A (NLS), structural link scale T=1
 - **Starting method:** not stamped in the CSV. The pipeline default in
   `eval/estimate_qwen_checkpoint.py` is `--starting ols`; the regeneration that
-  produced the working-tree copy is **not attributed** (do not assume a
+  produced the alternative-solution copy is **not attributed** (do not assume a
   different start was used — the objective is flat enough that the same start
   can reach either point).
 
 | version | SHA-256 | alpha_37 | alpha_51 | lambda | eta |
 |---|---|---|---|---|---|
-| committed (HEAD) | `ea4e1182391bb2e97ec9802a35e17726b2595e156b4a7f97e10fafdec8100a6d` | **-1075.111** | -367.303 | 0.11099538 | 0.50408026 |
-| working tree | `ad4774892ee75640b2e572382123fd0515148057623034ddca477b5fca4ec0f0` | -267.017 | **-685.587** | 0.11099538 | 0.50408026 |
+| committed & tracked (HEAD) | `ea4e1182391bb2e97ec9802a35e17726b2595e156b4a7f97e10fafdec8100a6d` | **-1075.111** | -367.303 | 0.11099538 | 0.50408026 |
+| alternative (preserved copy) | `ad4774892ee75640b2e572382123fd0515148057623034ddca477b5fca4ec0f0` | -267.017 | **-685.587** | 0.11099538 | 0.50408026 |
 
-Preserved copy of the working-tree (alternative) solution:
-`results/estimator_diagnostics/qd_ckpt8000_ALT_SOLUTION_worktree.csv` (same SHA
-as the working tree above).
+Preserved copy of the alternative solution:
+`results/estimator_diagnostics/qd_ckpt8000_ALT_SOLUTION_worktree.csv` (SHA
+`ad477489...`, matching the alternative row above). The tracked CSV under
+`baseline/.../Model_1/` holds the authoritative `-1075.111` solution.
 
 ## What differs between the two solutions
 
@@ -71,11 +75,11 @@ a clean, reportable instance of numerical non-identification, and both solutions
 should be reported together as evidence rather than either being presented as
 "the" utility of those goods.
 
-## Actions
+## Actions (resolved 2026-07-22)
 
 - **Do NOT replace `-1075.111`.** It is the committed, authoritative estimate.
-- The working tree currently holds an **uncommitted modification** to this
-  claim-carrying CSV. Decide explicitly whether to (a) `git checkout` it back to
-  the committed version so the tracked file matches HEAD (the alternative
-  solution is already preserved above), or (b) keep investigating its origin
-  first. Do not commit the modified CSV silently.
+- The working tree was **restored to HEAD** (`git restore --source=HEAD`), so the
+  tracked CSV again holds `-1075.111` (sha256 `ea4e1182...`). The alternative
+  solution is preserved as the labelled copy above and in
+  `qd_ckpt8000_ALT_SOLUTION.json` (flagged `_ALTERNATIVE_SOLUTION`). The modified
+  CSV was never committed.

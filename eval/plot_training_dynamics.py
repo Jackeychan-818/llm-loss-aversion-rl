@@ -148,13 +148,31 @@ def parse_text_log(path: Path) -> tuple[pd.DataFrame, dict]:
     return df, present
 
 
+def parse_compact_csv(path: Path) -> tuple[pd.DataFrame, dict]:
+    """Read a previously-written compact metrics CSV back into the same frame."""
+    df = pd.read_csv(path)
+    for m in GRPO_METRICS + ["epoch"]:
+        if m not in df.columns:
+            df[m] = np.nan
+    df = df.sort_values("step").reset_index(drop=True)
+    present = {m: bool(df[m].notna().any()) for m in GRPO_METRICS}
+    return df, present
+
+
 def load_grpo(seed: str) -> tuple[pd.DataFrame, dict, dict]:
     ts, log = RUNS[seed]
     ts_p, log_p = PROJECT_ROOT / ts, PROJECT_ROOT / log
+    compact_p = OUT / f"grpo_metrics_{seed}.csv"   # committed; regenerable source
     if ts_p.exists():
         df, present = parse_trainer_state(ts_p)
         src = {"source": str(ts_p.relative_to(PROJECT_ROOT)), "sha256": sha256_of(ts_p),
                "parser": "trainer_state.json"}
+    elif compact_p.exists():
+        # trainer_state.json / checkpoints are NOT committed; fall back to the
+        # committed compact CSV so the figures regenerate from tracked artifacts.
+        df, present = parse_compact_csv(compact_p)
+        src = {"source": str(compact_p.relative_to(PROJECT_ROOT)), "sha256": sha256_of(compact_p),
+               "parser": "committed_compact_csv"}
     elif log_p.exists():
         df, present = parse_text_log(log_p)
         src = {"source": str(log_p.relative_to(PROJECT_ROOT)), "sha256": sha256_of(log_p),
