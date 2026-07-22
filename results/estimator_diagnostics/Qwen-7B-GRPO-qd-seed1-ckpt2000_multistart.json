@@ -1,0 +1,278 @@
+{
+  "feature": "baseline",
+  "model_name": "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+  "estimator": "Model A (NLS), structural link scale T=1",
+  "committed_csv": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt2000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt2000_NLS_estimation_T1(Model A).csv",
+  "committed_csv_sha256": "26bccaefa7ff3772deaf5517d5b21a7eaa512548436428fe96e7871141c3e0a1",
+  "num_items": 100,
+  "num_attr_combos": 9,
+  "n_params": 109,
+  "n_obs": 19780,
+  "gating": "NON-GATING diagnostic; does not select checkpoints or touch frozen thresholds",
+  "solution_diagnostics": {
+    "rss_at_solution": 1687.3908194917785,
+    "lambda": 0.03175071,
+    "eta": 0.09098552,
+    "cond_jacobian": 97.26803874257263,
+    "cond_pcov": 9461.071360826098,
+    "jacobian_rank": 109,
+    "jacobian_full_rank": true,
+    "jacobian_largest_sv": 58.597716225266645,
+    "jacobian_smallest_sv": 0.6024354657787439,
+    "jacobian_smallest_svals": [
+      2.187816044112246,
+      2.144531896632658,
+      1.4889857377210614,
+      0.8974882291576047,
+      0.6024354657787439
+    ],
+    "se_all_finite_positive": true,
+    "se_max_rel_diff_vs_committed": 2.2545529026864195e-07,
+    "alpha": {
+      "min": -2.17198192,
+      "max": 1.47492491,
+      "p01": -1.4963041182999999,
+      "p50": 0.004224305,
+      "p99": 1.4063715581000003,
+      "n_nonfinite": 0
+    },
+    "beta": {
+      "min": 0.0,
+      "max": 1.01726521,
+      "p01": 0.0354511704,
+      "p50": 0.62313239,
+      "p99": 1.0077519019999999,
+      "n_nonfinite": 0
+    },
+    "utility": {
+      "min": 0.11395155010548932,
+      "max": 12.087720710343843,
+      "p01": 0.29783707357042843,
+      "p50": 1.9628669763021414,
+      "p99": 7.644372349546901,
+      "n_nonfinite": 0
+    }
+  },
+  "start_objectives": [
+    {
+      "start": "ols",
+      "start_rss": 2580.342383048301,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "zero",
+      "start_rss": 3303.103649209889,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "perturb1",
+      "start_rss": 3904.0037880562586,
+      "lambda_start": 0.06286511054669665,
+      "eta_start": -0.06605243164565094
+    },
+    {
+      "start": "perturb2",
+      "start_rss": 3884.1768866749458,
+      "lambda_start": 0.19318479878315292,
+      "eta_start": -0.2908204182047516
+    },
+    {
+      "start": "perturb3",
+      "start_rss": 4143.29936218085,
+      "lambda_start": -0.4338083821608513,
+      "eta_start": 1.5330183695244484
+    }
+  ],
+  "multistart": {
+    "fits": [
+      {
+        "start": "ols",
+        "converged": true,
+        "status": 2,
+        "hit_nfev_cap": false,
+        "nfev": 17,
+        "seconds": 25.3,
+        "final_rss": 1687.3908194917285,
+        "lambda": 0.03175071084926358,
+        "eta": 0.09098552287763104,
+        "cond_jacobian": 97.26803874520962,
+        "cond_pcov": 9461.071361340522,
+        "se_all_finite_positive": true,
+        "alpha": {
+          "min": -2.1719819247493675,
+          "max": 1.4749249123672883,
+          "p01": -1.4963041158092067,
+          "p50": 0.004224305578128941,
+          "p99": 1.4063715610434655,
+          "n_nonfinite": 0
+        },
+        "utility": {
+          "min": 0.11395154956429153,
+          "max": 12.087720767341981,
+          "p01": 0.2978370721908679,
+          "p50": 1.962866983794814,
+          "p99": 7.644372393095778,
+          "n_nonfinite": 0
+        }
+      },
+      {
+        "start": "zero",
+        "converged": true,
+        "status": 2,
+        "hit_nfev_cap": false,
+        "nfev": 18,
+        "seconds": 25.3,
+        "final_rss": 1687.3908192286526,
+        "lambda": 0.03174842384210554,
+        "eta": 0.09098965237242246,
+        "cond_jacobian": 97.26850409396434,
+        "cond_pcov": 9461.16188867693,
+        "se_all_finite_positive": true,
+        "alpha": {
+          "min": -2.1719891699259395,
+          "max": 1.4749276884265243,
+          "p01": -1.4963068289262438,
+          "p50": 0.004222677586213258,
+          "p99": 1.4063814108269552,
+          "n_nonfinite": 0
+        },
+        "utility": {
+          "min": 0.11395072396818508,
+          "max": 12.087780215056178,
+          "p01": 0.2978356217417147,
+          "p50": 1.962867371383334,
+          "p99": 7.644408308216702,
+          "n_nonfinite": 0
+        }
+      },
+      {
+        "start": "perturb1",
+        "converged": true,
+        "status": 2,
+        "hit_nfev_cap": false,
+        "nfev": 16,
+        "seconds": 21.0,
+        "final_rss": 1687.3908196612776,
+        "lambda": 0.0317250613083661,
+        "eta": 0.09103325158494724,
+        "cond_jacobian": 97.27307367051108,
+        "cond_pcov": 9462.050861305835,
+        "se_all_finite_positive": true,
+        "alpha": {
+          "min": -2.172023640874336,
+          "max": 1.474918265376721,
+          "p01": -1.4963155948434694,
+          "p50": 0.004232581343251196,
+          "p99": 1.4062732038165067,
+          "n_nonfinite": 0
+        },
+        "utility": {
+          "min": 0.1139467960463594,
+          "max": 12.087619275871589,
+          "p01": 0.2978321476109299,
+          "p50": 1.96287129702718,
+          "p99": 7.6442920127562415,
+          "n_nonfinite": 0
+        }
+      },
+      {
+        "start": "perturb2",
+        "converged": true,
+        "status": 2,
+        "hit_nfev_cap": false,
+        "nfev": 15,
+        "seconds": 20.6,
+        "final_rss": 1687.3908180395329,
+        "lambda": 0.03171074949992174,
+        "eta": 0.09105879552163011,
+        "cond_jacobian": 97.27590464329454,
+        "cond_pcov": 9462.601624171406,
+        "se_all_finite_positive": true,
+        "alpha": {
+          "min": -2.1720700186382897,
+          "max": 1.4749391278788455,
+          "p01": -1.4963320742226405,
+          "p50": 0.004220678334976015,
+          "p99": 1.4063466747889146,
+          "n_nonfinite": 0
+        },
+        "utility": {
+          "min": 0.11394151157129111,
+          "max": 12.08805347962218,
+          "p01": 0.2978221907506565,
+          "p50": 1.9628736861327782,
+          "p99": 7.644557035497816,
+          "n_nonfinite": 0
+        }
+      },
+      {
+        "start": "perturb3",
+        "converged": true,
+        "status": 2,
+        "hit_nfev_cap": false,
+        "nfev": 16,
+        "seconds": 20.7,
+        "final_rss": 1687.3908171704425,
+        "lambda": 0.03166803617889133,
+        "eta": 0.09113601407981668,
+        "cond_jacobian": 97.28422828380967,
+        "cond_pcov": 9464.221072779026,
+        "se_all_finite_positive": true,
+        "alpha": {
+          "min": -2.1721747406798224,
+          "max": 1.4749647190602981,
+          "p01": -1.4963643383952012,
+          "p50": 0.004207961320197247,
+          "p99": 1.4063868783927636,
+          "n_nonfinite": 0
+        },
+        "utility": {
+          "min": 0.11392958000834376,
+          "max": 12.088635441298416,
+          "p01": 0.2978017290981929,
+          "p50": 1.9628799943894681,
+          "p99": 7.644898975747064,
+          "n_nonfinite": 0
+        }
+      }
+    ],
+    "lambda_spread": {
+      "n": 5,
+      "min": 0.03166803617889133,
+      "max": 0.03175071084926358,
+      "spread": 8.267467037224863e-05
+    },
+    "eta_spread": {
+      "n": 5,
+      "min": 0.09098552287763104,
+      "max": 0.09113601407981668,
+      "spread": 0.00015049120218564582
+    },
+    "alpha_max_spread": {
+      "n": 5,
+      "min": 1.474918265376721,
+      "max": 1.4749647190602981,
+      "spread": 4.645368357714119e-05
+    },
+    "n_converged": 5,
+    "n_starts": 5,
+    "all_converged": true,
+    "all_starts_agree_lambda_0p05": true
+  },
+  "rank_preservation": {
+    "base": "baseline/Qwen-7B-Base-Local",
+    "base_csv_sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5",
+    "spearman_alpha_items": 0.7762976297629763,
+    "spearman_utility_grid": 0.791973125892748
+  },
+  "config": {
+    "n_perturb": 3,
+    "seed": 0,
+    "perturb_scale": 0.5,
+    "max_nfev": 1500,
+    "multistart": true,
+    "link_scale": 1.0
+  }
+}

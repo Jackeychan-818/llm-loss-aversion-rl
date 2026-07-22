@@ -453,9 +453,10 @@ def plot_structural(df: pd.DataFrame, path: Path, mode_note: str = ""):
             ax.text(0.5, 0.5, f"unavailable\n(run: {DIAG_QSUB})" if col in ("rss", "log10_cond_jacobian")
                     else "unavailable", ha="center", va="center", transform=ax.transAxes, fontsize=8)
     axes.ravel()[0].legend(fontsize=8, loc="best")
+    rss_cov = int(df["rss"].notna().sum())
     fig.suptitle("Structural NLS trajectory vs exact local base (Qwen-7B-Base-Local).  "
                  "Circled = frozen selection (seed1@2000, seed2@6000).  "
-                 "RSS/cond(J) shown only where estimator_diagnostics has run." + mode_note,
+                 f"RSS/cond(J) from estimator_diagnostics ({rss_cov}/{len(df)} points)." + mode_note,
                  fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(path, dpi=130)
@@ -498,6 +499,61 @@ def plot_preservation(dfc: pd.DataFrame, path: Path, mode_note: str = ""):
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(path, dpi=130)
     plt.close(fig)
+
+
+def plot_multistart(paths: list, path: Path) -> list:
+    """Per target: lambda (blue circles) and eta (red squares) at each start;
+    hollow marker = the fit hit the nfev cap (did not converge). A tight cluster
+    means the solution is start-insensitive."""
+    data = []
+    for p in sorted(paths):
+        d = json.load(open(p))
+        m = d.get("multistart") or {}
+        if m.get("fits"):
+            data.append((d["model_name"], m))
+    if not data:
+        return []
+    n = len(data)
+    fig, axes = plt.subplots(1, n, figsize=(5 * n, 5), squeeze=False)
+    def band(vals, floor):
+        # Floor the axis half-width at the agreement threshold so a ~1e-5 spread
+        # renders as a tight cluster (agreement), not auto-zoomed into false scatter.
+        c = (min(vals) + max(vals)) / 2
+        h = max(floor, (max(vals) - min(vals)) * 0.75)
+        return c - h, c + h
+
+    for ax, (name, m) in zip(axes[0], data):
+        fits = m["fits"]
+        xs = list(range(len(fits)))
+        lam = [f["lambda"] for f in fits]
+        eta = [f["eta"] for f in fits]
+        ax2 = ax.twinx()
+        for x, f in zip(xs, fits):
+            cv = f.get("converged")
+            # small x-offset so lambda (left axis) and eta (right axis) never occlude
+            ax.scatter(x - 0.13, f["lambda"], s=70, marker="o", edgecolors="#1f77b4",
+                       facecolors=("#1f77b4" if cv else "none"), zorder=3)
+            ax2.scatter(x + 0.13, f["eta"], s=70, marker="s", edgecolors="#d62728",
+                        facecolors=("#d62728" if cv else "none"), zorder=3)
+        ax.set_ylim(*band(lam, 0.06))   # 0.06 > the 0.05 lambda-agreement threshold
+        ax2.set_ylim(*band(eta, 0.06))
+        ax.set_xlim(-0.5, len(fits) - 0.5)
+        ax.set_xticks(xs)
+        ax.set_xticklabels([f["start"] for f in fits], rotation=30, fontsize=7)
+        ax.set_ylabel("lambda", color="#1f77b4")
+        ax2.set_ylabel("eta", color="#d62728")
+        sp = m.get("lambda_spread", {}).get("spread")
+        ax.set_title(f"{name}\n{m.get('n_converged')}/{m.get('n_starts')} converged, "
+                     f"all_converged={m.get('all_converged')}\n"
+                     f"lambda spread={sp:.2e}  agree<=0.05={m.get('all_starts_agree_lambda_0p05')}",
+                     fontsize=8)
+        ax.grid(alpha=0.25)
+    fig.suptitle("Multi-start starting-point sensitivity  (blue circle=lambda, red square=eta; "
+                 "hollow=hit nfev cap).  Tight cluster => start-insensitive solution.", fontsize=12)
+    fig.tight_layout(rect=[0, 0, 1, 0.90])
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+    return [name for name, _ in data]
 
 
 def finite_guard(df: pd.DataFrame, cols: list, label: str):
@@ -606,13 +662,27 @@ def main():
     plot_preservation(dfc, OUT / "parameter_preservation.png", mode_note)
     print(f"  wrote parameter_preservation.png ({len(dfc)} rows)")
 
-    # multistart status (do not fabricate)
+    # multistart (plot if present; do NOT fabricate an NLS iteration curve)
     ms = glob.glob(str(PROJECT_ROOT / "results" / "estimator_diagnostics" / "*_multistart.json"))
-    manifest["analyses"]["multistart"] = {
-        "type": "post-hoc / non-gating", "present": bool(ms),
-        "targets": [BASE_MODEL, "Qwen-7B-GRPO-qd-ckpt8000",
-                    "Qwen-7B-GRPO-qd-seed1-ckpt2000", "Qwen-7B-GRPO-qd-seed2-ckpt6000"]}
-    if not ms:
+    targets = [BASE_MODEL, "Qwen-7B-GRPO-qd-ckpt8000",
+               "Qwen-7B-GRPO-qd-seed1-ckpt2000", "Qwen-7B-GRPO-qd-seed2-ckpt6000"]
+    if ms:
+        plotted = plot_multistart(ms, OUT / "multistart_sensitivity.png")
+        summ = {}
+        for p in ms:
+            d = json.load(open(p)); m = d.get("multistart") or {}
+            summ[d["model_name"]] = {
+                "n_converged": m.get("n_converged"), "n_starts": m.get("n_starts"),
+                "all_converged": m.get("all_converged"),
+                "lambda_spread": m.get("lambda_spread", {}).get("spread"),
+                "agree_lambda_0p05": m.get("all_starts_agree_lambda_0p05")}
+        manifest["analyses"]["multistart"] = {
+            "type": "post-hoc / non-gating", "present": True,
+            "figure": "multistart_sensitivity.png", "targets": targets, "summary": summ}
+        print(f"  wrote multistart_sensitivity.png ({len(plotted)} targets)")
+    else:
+        manifest["analyses"]["multistart"] = {"type": "post-hoc / non-gating",
+                                              "present": False, "targets": targets}
         manifest["pending"].append(f"multistart diagnostics not run. Run: {DIAG_QSUB}")
         print(f"  multistart: PENDING (run: {DIAG_QSUB})")
 

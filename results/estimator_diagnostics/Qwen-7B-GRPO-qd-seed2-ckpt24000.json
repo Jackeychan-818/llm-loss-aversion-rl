@@ -1,0 +1,103 @@
+{
+  "feature": "baseline",
+  "model_name": "Qwen-7B-GRPO-qd-seed2-ckpt24000",
+  "estimator": "Model A (NLS), structural link scale T=1",
+  "committed_csv": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt24000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt24000_NLS_estimation_T1(Model A).csv",
+  "committed_csv_sha256": "9ca806e268136e74bd9290aa4deb8cca12e3507c901a504a8d990b780c860aa7",
+  "num_items": 100,
+  "num_attr_combos": 9,
+  "n_params": 109,
+  "n_obs": 19780,
+  "gating": "NON-GATING diagnostic; does not select checkpoints or touch frozen thresholds",
+  "solution_diagnostics": {
+    "rss_at_solution": 1217.4414794867985,
+    "lambda": 0.03515542,
+    "eta": 0.77460069,
+    "cond_jacobian": 1.735686103090269e+18,
+    "cond_pcov": null,
+    "jacobian_rank": 107,
+    "jacobian_full_rank": false,
+    "jacobian_largest_sv": 52.78249228384956,
+    "jacobian_smallest_sv": 3.04101601031857e-17,
+    "jacobian_smallest_svals": [
+      0.6375208142487443,
+      0.42946204369551544,
+      0.35487831612974696,
+      2.0173441759847704e-15,
+      3.04101601031857e-17
+    ],
+    "se_all_finite_positive": false,
+    "se_max_rel_diff_vs_committed": 3.064887585392903e-07,
+    "alpha": {
+      "min": -6239.97254965,
+      "max": 2.45423128,
+      "p01": -1107.0556832551001,
+      "p50": 0.33825834499999996,
+      "p99": 2.328312793900001,
+      "n_nonfinite": 0
+    },
+    "beta": {
+      "min": 0.0,
+      "max": 0.99854616,
+      "p01": 0.033252192800000004,
+      "p50": 0.59424888,
+      "p99": 0.9912737815999999,
+      "n_nonfinite": 0
+    },
+    "utility": {
+      "min": 0.0,
+      "max": 31.588004370663363,
+      "p01": 0.0,
+      "p50": 2.6699110721259807,
+      "p99": 21.34445669214312,
+      "n_nonfinite": 0
+    }
+  },
+  "start_objectives": [
+    {
+      "start": "ols",
+      "start_rss": 3330.8124157419115,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "zero",
+      "start_rss": 4331.236214129061,
+      "lambda_start": 0.0,
+      "eta_start": 0.0
+    },
+    {
+      "start": "perturb1",
+      "start_rss": 4261.059497540753,
+      "lambda_start": 0.06286511054669665,
+      "eta_start": -0.06605243164565094
+    },
+    {
+      "start": "perturb2",
+      "start_rss": 4236.998518455953,
+      "lambda_start": 0.19318479878315292,
+      "eta_start": -0.2908204182047516
+    },
+    {
+      "start": "perturb3",
+      "start_rss": 4363.758375462786,
+      "lambda_start": -0.4338083821608513,
+      "eta_start": 1.5330183695244484
+    }
+  ],
+  "multistart": null,
+  "rank_preservation": {
+    "base": "baseline/Qwen-7B-Base-Local",
+    "base_csv_sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5",
+    "spearman_alpha_items": 0.9329012901290129,
+    "spearman_utility_grid": 0.9173587495062777
+  },
+  "config": {
+    "n_perturb": 3,
+    "seed": 0,
+    "perturb_scale": 0.5,
+    "max_nfev": 3000,
+    "multistart": false,
+    "link_scale": 1.0
+  }
+}

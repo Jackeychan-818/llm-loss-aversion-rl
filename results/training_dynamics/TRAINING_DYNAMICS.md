@@ -31,7 +31,8 @@ Two layers are kept strictly separate:
 | `structural_training_curves.png` | 8 structural panels vs training step |
 | `parameter_correlations.csv` | α/β/utility Pearson+Spearman+MAE/RMSE per checkpoint |
 | `parameter_preservation.png` | preservation curves (incl. α excl. goods 37/51) |
-| `manifest.json` | provenance + pending analyses |
+| `multistart_sensitivity.png` | per-start λ/η for base + 3 targets (convergence + spread) |
+| `manifest.json` | provenance + per-analysis labels |
 
 Smoothing on the GRPO curves is a **causal trailing** rolling mean over
 **50 observations (~500 steps)**, `min_periods=1` (no boundary zero-padding);
@@ -89,21 +90,44 @@ not always 37/51. **β** preservation is high throughout (~0.93–0.98).
 - **Validation estimates:** λ, η, d (read from the committed Model-A NLS CSVs).
 - **Post-hoc diagnostics:** α/β/utility preservation, RSS, cond(J), multistart.
 
-## Missing / pending (not fabricated)
+## Conditioning emerges during training (RSS / cond(J), full grid)
 
-- **RSS and Jacobian conditioning** are present for only **2 of 38** checkpoints
-  (the two already run through `eval/estimator_diagnostics.py`:
-  seed1@2000 → log10 cond(J)≈2.0, healthy; exploratory seed42@8000 → ≈16.6,
-  numerically singular). The rest are blank in the RSS / cond(J) panels. To fill
-  the full grid:
+`eval/estimator_diagnostics.py` has now run across the whole grid, so the RSS and
+`log10 cond(J)` panels are populated for **all 38 points**. Two findings:
 
-  ```
-  qsub train/submit_diagnostics_cpu.pbs
-  ```
+- **RSS** at the solution is small at the base (~50) and ~1,100–1,700 across the
+  tuned checkpoints, drifting down slightly with training.
+- **Conditioning degrades as λ collapses.** The base and the earliest
+  checkpoints are well-conditioned (`log10 cond(J)` ≈ 2), but from **~step
+  4,000–6,000** onward the Jacobian becomes **near-singular (`log10 cond(J)` ≈
+  16–18)**. The structural non-identification is therefore an **emergent property
+  of the trained low-λ policy**, not present at initialization. Note this splits
+  the two selected checkpoints: **seed1@2000 is still well-conditioned (≈2)**,
+  whereas **seed2@6000 is already near-singular (≈16.5)** — a real difference in
+  the identifiability of their individual utilities (λ/η are unaffected).
 
-- **Multi-start starting-point sensitivity** (targets: base, seed42@8000,
-  seed1@2000, seed2@6000) has **not** been run. Same command produces it. We do
-  **not** invent an NLS iteration curve — `scipy.curve_fit` exposes no genuine
-  per-iteration callback history.
-- **seed42** is the exploratory run (shown as a dashed "exploratory, non-gating"
-  line where relevant); it is excluded from the confirmatory denominator.
+## Multi-start starting-point sensitivity (`multistart_sensitivity.png`)
+
+Full re-optimization from 5 starts (ols / zero / 3 perturbed) for the four
+targets; every fit converged (5/5 each, `all_converged=True`).
+
+- **The tuned checkpoints' λ is start-insensitive:** λ spread across starts is
+  ~1e-5 for step-8k, seed1@2000, and seed2@6000 (`agree<=0.05 = True`). The
+  low-λ result is **not** a starting-point artifact — even at step-8k, where two
+  α's are non-identified, λ itself is firmly pinned.
+- **The base's own λ is start-sensitive:** λ ranges **7.64 → 9.01** across starts
+  (spread **1.37**, `agree<=0.05 = False`). The loss-averse base fit is the least
+  numerically stable of the four — a useful caveat when quoting the base λ=7.637
+  point estimate.
+
+We do **not** invent an NLS iteration curve — `scipy.curve_fit` exposes no
+genuine per-iteration callback history; the multistart figure reports converged
+endpoints per start, not an optimization trace.
+
+## Notes
+
+- **seed42** is the exploratory run (dashed "exploratory, non-gating" line); it
+  is excluded from the confirmatory denominator.
+- Nothing pending in this analysis. The **replication verdict** itself remains
+  PENDING on the separate OOD-50 and GSM8K evaluations of seed1@2000 and
+  seed2@6000 (tracked in `seed_replication_report.json`).

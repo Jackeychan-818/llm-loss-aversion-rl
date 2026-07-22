@@ -1,5 +1,5 @@
 {
-  "git_commit": "bd8118b7906bc50f2cb5d8080e532e85528f4185",
+  "git_commit": "533e11f0147443fd74d176f4fda3ebbc84086853",
   "generated_by": "eval/plot_training_dynamics.py",
   "exact_local_base": "baseline/Qwen-7B-Base-Local",
   "frozen_selection_grid": [
@@ -300,16 +300,55 @@
         }
       }
     },
+    "structural_mode": "recomputed_from_nls_csvs",
     "structural_trajectory": {
       "type": "lambda/eta/d = validation estimates; RSS/cond(J) = post-hoc diagnostic",
+      "mode": "recomputed_from_nls_csvs",
       "n_rows": 38,
       "rss_cond_available_for": [
+        "Qwen-7B-Base-Local",
         "Qwen-7B-GRPO-qd-seed1-ckpt2000",
-        "Qwen-7B-GRPO-qd-ckpt8000"
+        "Qwen-7B-GRPO-qd-seed1-ckpt4000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt6000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt8000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt10000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt12000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt14000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt16000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt18000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt20000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt22000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt24000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt26000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt28000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt30000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt2000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt4000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt6000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt8000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt10000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt12000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt14000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt16000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt18000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt20000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt22000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt24000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt26000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt28000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt30000",
+        "Qwen-7B-GRPO-qd-ckpt5000",
+        "Qwen-7B-GRPO-qd-ckpt8000",
+        "Qwen-7B-GRPO-qd-ckpt10000",
+        "Qwen-7B-GRPO-qd-ckpt12000",
+        "Qwen-7B-GRPO-qd-ckpt15000",
+        "Qwen-7B-GRPO-qd-ckpt20000",
+        "Qwen-7B-GRPO-qd-ckpt30000"
       ]
     },
     "parameter_preservation": {
       "type": "post-hoc / non-gating",
+      "mode": "recomputed_from_nls_csvs",
       "alignment": "by Parameter name",
       "rank_method": "scipy.stats.spearmanr (tie-aware)",
       "references_excluded": [
@@ -320,17 +359,45 @@
     },
     "multistart": {
       "type": "post-hoc / non-gating",
-      "present": false,
+      "present": true,
+      "figure": "multistart_sensitivity.png",
       "targets": [
         "Qwen-7B-Base-Local",
         "Qwen-7B-GRPO-qd-ckpt8000",
         "Qwen-7B-GRPO-qd-seed1-ckpt2000",
         "Qwen-7B-GRPO-qd-seed2-ckpt6000"
-      ]
+      ],
+      "summary": {
+        "Qwen-7B-Base-Local": {
+          "n_converged": 5,
+          "n_starts": 5,
+          "all_converged": true,
+          "lambda_spread": 1.371547994616252,
+          "agree_lambda_0p05": false
+        },
+        "Qwen-7B-GRPO-qd-seed1-ckpt2000": {
+          "n_converged": 5,
+          "n_starts": 5,
+          "all_converged": true,
+          "lambda_spread": 8.267467037224863e-05,
+          "agree_lambda_0p05": true
+        },
+        "Qwen-7B-GRPO-qd-ckpt8000": {
+          "n_converged": 5,
+          "n_starts": 5,
+          "all_converged": true,
+          "lambda_spread": 1.5170985819018545e-05,
+          "agree_lambda_0p05": true
+        },
+        "Qwen-7B-GRPO-qd-seed2-ckpt6000": {
+          "n_converged": 5,
+          "n_starts": 5,
+          "all_converged": true,
+          "lambda_spread": 4.6757977536338036e-05,
+          "agree_lambda_0p05": true
+        }
+      }
     }
   },
-  "pending": [
-    "36/38 checkpoints lack RSS/cond(J) (estimator_diagnostics.py not yet run for them). Run: qsub train/submit_diagnostics_cpu.pbs",
-    "multistart diagnostics not run. Run: qsub train/submit_diagnostics_cpu.pbs"
-  ]
+  "pending": []
 }
