@@ -1,54 +1,45 @@
 {
+  "_ALTERNATIVE_SOLUTION": true,
+  "committed_csv_sha256": "ad4774892ee75640b2e572382123fd0515148057623034ddca477b5fca4ec0f0",
+  "provenance": "Uncommitted working-tree re-optimization of the step-8000 fit (alpha_51=-685.587). NOT the authoritative solution; HEAD is sha256 ea4e1182... alpha_37=-1075.111. Preserved CSV: results/estimator_diagnostics/qd_ckpt8000_ALT_SOLUTION_worktree.csv. See alpha_nonidentification_ckpt8000.md.",
   "feature": "baseline",
   "model_name": "Qwen-7B-GRPO-qd-ckpt8000",
   "estimator": "Model A (NLS), structural link scale T=1",
   "committed_csv": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_NLS_estimation_T1(Model A).csv",
-  "committed_csv_sha256": "ea4e1182391bb2e97ec9802a35e17726b2595e156b4a7f97e10fafdec8100a6d",
   "num_items": 100,
   "num_attr_combos": 9,
   "n_params": 109,
   "n_obs": 19780,
   "gating": "NON-GATING diagnostic; does not select checkpoints or touch frozen thresholds",
   "solution_diagnostics": {
-    "rss_at_solution": 1527.9705867082546,
+    "rss_at_solution": 1527.9705867085117,
     "lambda": 0.11099538,
     "eta": 0.50408026,
-    "cond_jacobian": 5.109461146555783e+16,
+    "cond_jacobian": 6.085173664355473e+16,
     "cond_pcov": null,
-    "jacobian_rank": 107,
-    "jacobian_full_rank": false,
-    "jacobian_largest_sv": 49.045713753888904,
-    "jacobian_smallest_sv": 9.598999257866936e-16,
-    "jacobian_smallest_svals": [
-      0.9055134920212519,
-      0.6698344912741108,
-      0.4536085064638844,
-      1.584883041903124e-15,
-      9.598999257866936e-16
-    ],
     "se_all_finite_positive": false,
-    "se_max_rel_diff_vs_committed": 0.03534903067733509,
+    "se_max_rel_diff_vs_committed": 0.007833555313132776,
     "alpha": {
-      "min": -1075.11135287,
+      "min": -685.58659427,
       "max": 1.88447174,
-      "p01": -374.3809931417,
-      "p50": 0.08154739,
+      "p01": -271.2022377311,
+      "p50": 0.081547395,
       "p99": 1.8187559855000004,
       "n_nonfinite": 0
     },
     "beta": {
       "min": 0.0,
       "max": 1.02649711,
-      "p01": 0.0347647144,
+      "p01": 0.034764713600000004,
       "p50": 0.64417829,
-      "p99": 1.0181127508,
+      "p99": 1.01811275,
       "n_nonfinite": 0
     },
     "utility": {
-      "min": 0.0,
+      "min": 1.792772747354247e-298,
       "max": 18.374592169583636,
-      "p01": 3.006136932019018e-160,
-      "p50": 2.074078918595034,
+      "p01": 1.0760353253545113e-116,
+      "p50": 2.0740789082451485,
       "p99": 11.739468807356568,
       "n_nonfinite": 0
     }
@@ -88,9 +79,8 @@
   "multistart": null,
   "rank_preservation": {
     "base": "baseline/Qwen-7B-Base-Local",
-    "base_csv_sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5",
-    "spearman_alpha_items": 0.8345514551455145,
-    "spearman_utility_grid": 0.839244759188575
+    "spearman_alpha_items": 0.8344794479447945,
+    "spearman_utility_grid": 0.8391637520540148
   },
   "config": {
     "n_perturb": 3,

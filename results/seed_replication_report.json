@@ -3,18 +3,32 @@
     {
       "seed": 1,
       "checks": {
-        "S1": "pending"
+        "S1": "PASS",
+        "S2": "pending",
+        "S3": "pending",
+        "S5": "pending"
       },
-      "values": {},
-      "status": "PENDING: selection not run"
+      "values": {
+        "grid_complete": true,
+        "selected_step": 2000,
+        "gsm8k": "no comparison.json"
+      },
+      "status": "PENDING"
     },
     {
       "seed": 2,
       "checks": {
-        "S1": "pending"
+        "S1": "PASS",
+        "S2": "pending",
+        "S3": "pending",
+        "S5": "pending"
       },
-      "values": {},
-      "status": "PENDING: selection not run"
+      "values": {
+        "grid_complete": true,
+        "selected_step": 6000,
+        "gsm8k": "no comparison.json"
+      },
+      "status": "PENDING"
     }
   ],
   "n_pass": 0,

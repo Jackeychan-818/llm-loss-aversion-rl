@@ -43,6 +43,7 @@ from __future__ import annotations
 import argparse
 import csv as _csv
 import glob
+import hashlib
 import json
 import os
 import sys
@@ -52,6 +53,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import least_squares
 from scipy.optimize._numdiff import approx_derivative
+from scipy.stats import rankdata
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 os.chdir(PROJECT_ROOT)
@@ -79,8 +81,18 @@ def build_model(feature: str, model_name: str) -> LossAversionModel:
     )
 
 
+def sha256_of(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def read_committed_fit(feature: str, model_name: str):
-    """Return (popt, committed_se, param_names) from the claim-carrying NLS CSV.
+    """Return (popt, committed_se, param_names, csv_path, csv_sha256) from the
+    claim-carrying NLS CSV — the sha256 pins EXACTLY which solution was read
+    (the step-8k fit is non-identified, so the file content matters).
 
     Row order is [lambda, eta, alpha_2..alpha_n, beta_1,2..beta_3,3], matching
     the packed vector core_exp_refactored expects."""
@@ -88,11 +100,12 @@ def read_committed_fit(feature: str, model_name: str):
                         "Model_1" / "*NLS_estimation*.csv"))
     if not hits:
         raise FileNotFoundError(f"no NLS estimation CSV under {feature}/{model_name}/Model_1")
-    rows = list(_csv.DictReader(open(hits[0])))
+    path = Path(hits[0])
+    rows = list(_csv.DictReader(open(path)))
     popt = np.array([float(r["Estimate"]) for r in rows])
     se = np.array([float(r["Std. Err."]) for r in rows])
     names = [r["Parameter"] for r in rows]
-    return popt, se, names, Path(hits[0])
+    return popt, se, names, path, sha256_of(path)
 
 
 def residual_fn(model: LossAversionModel):
@@ -152,10 +165,19 @@ def solution_diagnostics(model, popt, committed_se):
     r0 = resid(popt)
     sse = float(np.sum(r0 ** 2))
     jac = approx_derivative(resid, popt, method="2-point")     # one ~n-eval Jacobian
+    # singular spectrum of the Jacobian: cond, numerical rank, and the smallest
+    # singular values expose the flat directions that make utilities non-identified.
     try:
-        cond_jac = float(np.linalg.cond(jac))
+        svals = np.linalg.svd(jac, compute_uv=False)
+        smax, smin = float(svals[0]), float(svals[-1])
+        cond_jac = (smax / smin) if smin > 0 else float("inf")
+        tol = smax * max(jac.shape) * np.finfo(float).eps
+        num_rank = int(np.sum(svals > tol))
+        smallest = [float(v) for v in svals[-5:]]
     except np.linalg.LinAlgError:
-        cond_jac = None
+        smax = smin = cond_jac = None
+        num_rank = None
+        smallest = None
     se, cond_pcov = covariance_from_jac(jac, sse, m, n)
     alphas, betas = unpack_alpha_beta(model, popt)
     util = utility_grid(alphas, betas)
@@ -167,6 +189,9 @@ def solution_diagnostics(model, popt, committed_se):
         "rss_at_solution": sse,
         "lambda": float(popt[0]), "eta": float(popt[1]),
         "cond_jacobian": cond_jac, "cond_pcov": cond_pcov,
+        "jacobian_rank": num_rank, "jacobian_full_rank": (num_rank == n if num_rank is not None else None),
+        "jacobian_largest_sv": smax, "jacobian_smallest_sv": smin,
+        "jacobian_smallest_svals": smallest,
         "se_all_finite_positive": bool(np.all(np.isfinite(se)) and np.all(se > 0)),
         "se_max_rel_diff_vs_committed": se_rel,
         "alpha": summarize_vector(alphas), "beta": summarize_vector(betas),
@@ -235,13 +260,14 @@ def spread(values):
 
 
 def spearman(a, b):
+    """Tie-aware Spearman: Pearson on average ranks (scipy.stats.rankdata)."""
     if a is None or b is None or a.shape != b.shape:
         return None
     mask = np.isfinite(a) & np.isfinite(b)
     if mask.sum() < 3:
         return None
-    ra = np.argsort(np.argsort(a[mask])).astype(float)
-    rb = np.argsort(np.argsort(b[mask])).astype(float)
+    ra = rankdata(a[mask]).astype(float)      # average ranks handle ties
+    rb = rankdata(b[mask]).astype(float)
     ra -= ra.mean(); rb -= rb.mean()
     denom = np.sqrt(np.sum(ra ** 2) * np.sum(rb ** 2))
     return float(np.sum(ra * rb) / denom) if denom > 0 else None
@@ -266,7 +292,7 @@ def main() -> None:
     args = ap.parse_args()
 
     model = build_model(args.feature, args.model_name)
-    popt, committed_se, names, csv_path = read_committed_fit(args.feature, args.model_name)
+    popt, committed_se, names, csv_path, csv_sha = read_committed_fit(args.feature, args.model_name)
     if popt.size != model.num_items + 9:
         raise ValueError(f"CSV has {popt.size} params but model expects {model.num_items + 9}; "
                          "num_items/CSV mismatch")
@@ -296,10 +322,11 @@ def main() -> None:
     rank_pres = None
     if args.base_feature and args.base_model:
         base = build_model(args.base_feature, args.base_model)
-        bpopt, _, _, _ = read_committed_fit(args.base_feature, args.base_model)
+        bpopt, _, _, _, base_sha = read_committed_fit(args.base_feature, args.base_model)
         b_alphas, b_betas = unpack_alpha_beta(base, bpopt)
         rank_pres = {
             "base": f"{args.base_feature}/{args.base_model}",
+            "base_csv_sha256": base_sha,
             "spearman_alpha_items": spearman(sol["_alphas"], b_alphas),
             "spearman_utility_grid": spearman(sol["_utility"], utility_grid(b_alphas, b_betas)),
         }
@@ -309,6 +336,7 @@ def main() -> None:
         "feature": args.feature, "model_name": args.model_name,
         "estimator": "Model A (NLS), structural link scale T=1",
         "committed_csv": str(csv_path.relative_to(PROJECT_ROOT)),
+        "committed_csv_sha256": csv_sha,
         "num_items": int(model.num_items), "num_attr_combos": int(model.num_attr_combos),
         "n_params": int(popt.size), "n_obs": int(model.y_data.shape[0]),
         "gating": "NON-GATING diagnostic; does not select checkpoints or touch frozen thresholds",
@@ -325,11 +353,14 @@ def main() -> None:
     print("=" * 78)
     print(f"ESTIMATOR DIAGNOSTICS (non-gating) — {args.feature}/{args.model_name}")
     print(f"n_obs={result['n_obs']}  n_params={result['n_params']}  (original committed fit)")
+    print(f"input CSV sha256={csv_sha[:16]}...")
     print("=" * 78)
     print(f"OBJECTIVE / CONDITIONING at the solution:")
     print(f"  lambda={sol['lambda']:+.4f}  eta={sol['eta']:+.4f}  RSS={sol['rss_at_solution']:.4f}")
     print(f"  cond(Jacobian)={sol['cond_jacobian']:.3e}  cond(pcov)="
           f"{(sol['cond_pcov'] if sol['cond_pcov'] is not None else float('nan')):.3e}")
+    print(f"  Jacobian rank={sol['jacobian_rank']}/{result['n_params']} "
+          f"(full_rank={sol['jacobian_full_rank']})  smallest svals={sol['jacobian_smallest_svals']}")
     print(f"  SEs finite&positive={sol['se_all_finite_positive']}  "
           f"max rel diff vs committed SE={sol['se_max_rel_diff_vs_committed']}")
     print(f"ALPHA / BETA / UTILITY (original fit):")

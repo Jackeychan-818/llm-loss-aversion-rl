@@ -23,12 +23,14 @@ readiness descriptions elsewhere in this file.
 A 7B model can be post-trained to reduce ownership-dependent choice while
 preserving its own estimated preference ordering.
 
-> **Status (July 21, 2026):** Exploratory checkpoint 8,000 remains the primary
+> **Status (July 22, 2026):** Exploratory checkpoint 8,000 remains the primary
 > candidate. Confirmatory seeds 1 and 2 both reached the frozen 30,000-step
-> endpoint with the complete 15-checkpoint grid; their ID selection, one-shot
-> OOD, and GSM8K evaluations remain pending. Matched-base and ownership-free
-> pseudo-utility validation are complete. Matched baselines, stronger inference,
-> and complete raw-artifact archival remain required for a full paper.
+> endpoint with the complete 15-checkpoint grid; their frozen ID selection is
+> **done** (seed 1 → step 2,000, seed 2 → step 6,000), with one-shot OOD and
+> GSM8K per selected checkpoint still pending (replication verdict PENDING).
+> Matched-base and ownership-free pseudo-utility validation are complete.
+> Matched baselines, stronger inference, and complete raw-artifact archival
+> remain required for a full paper.
 
 ---
 

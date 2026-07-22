@@ -28,14 +28,22 @@
 #PBS -P personal-jackeyc0
 
 PROJECT_DIR="$HOME/scratch/lambda-zero"
+set -euo pipefail
 cd "$PROJECT_DIR"
+# The module system + venv activation reference unbound vars internally, which
+# trips `set -u`; guard nounset around them only.
+set +u
 module purge
 module load pytorch/2.6.0-py3-cu11.8
 source "$PROJECT_DIR/venv/bin/activate"
+set -u
 
 BASE="Qwen-7B-Base-Local"
 OUT="results/estimator_diagnostics"
 mkdir -p "$OUT"
+FAIL=0   # a failed checkpoint is recorded and fails the job at the end,
+         # but does not abort the whole sweep. Output is NOT piped through grep,
+         # so a Python error propagates instead of being hidden.
 
 echo "############ PHASE 1: fast solution diagnostics across the grid ############"
 # every evaluated Qwen-own-delta checkpoint (all seeds) + the matched base.
@@ -46,10 +54,12 @@ for d in baseline/${BASE} \
     [ -f "$d/loss_aversion_X.json" ] || continue
     name=$(basename "$d")
     echo "--- solution diagnostics: $name ---"
-    python eval/estimator_diagnostics.py \
-        --feature baseline --model_name "$name" \
-        --base_feature baseline --base_model "$BASE" \
-        --out "$OUT/${name}.json" 2>&1 | grep -v -E "RuntimeWarning|np.exp"
+    if ! python eval/estimator_diagnostics.py \
+            --feature baseline --model_name "$name" \
+            --base_feature baseline --base_model "$BASE" \
+            --out "$OUT/${name}.json"; then
+        echo "!!! FAILED: solution diagnostics $name"; FAIL=1
+    fi
 done
 
 echo "############ PHASE 2: targeted multi-start sensitivity (slow) ############"
@@ -59,11 +69,16 @@ for name in "$BASE" \
             Qwen-7B-GRPO-qd-seed2-ckpt6000; do
     [ -f "baseline/$name/loss_aversion_X.json" ] || { echo "skip missing $name"; continue; }
     echo "--- multistart: $name ---"
-    python eval/estimator_diagnostics.py \
-        --feature baseline --model_name "$name" \
-        --base_feature baseline --base_model "$BASE" \
-        --multistart --n_perturb 3 --max_nfev 1500 \
-        --out "$OUT/${name}_multistart.json" 2>&1 | grep -v -E "RuntimeWarning|np.exp"
+    if ! python eval/estimator_diagnostics.py \
+            --feature baseline --model_name "$name" \
+            --base_feature baseline --base_model "$BASE" \
+            --multistart --n_perturb 3 --max_nfev 1500 \
+            --out "$OUT/${name}_multistart.json"; then
+        echo "!!! FAILED: multistart $name"; FAIL=1
+    fi
 done
 
+if [ "$FAIL" -ne 0 ]; then
+    echo "=== diagnostics FINISHED WITH FAILURES (see !!! lines) ==="; exit 1
+fi
 echo "=== diagnostics complete -> $OUT ==="

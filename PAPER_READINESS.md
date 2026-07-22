@@ -168,12 +168,16 @@ opening the frozen final suite only after selection.
 The Qwen-own-delta checkpoint curve is highly non-monotonic. Conditional NLS
 standard errors do not measure variation across training seeds.
 
-**Status (July 21, 2026): training complete; confirmatory evaluation pending.**
+**Status (July 22, 2026): training + ID selection complete; OOD/GSM8K pending.**
 Both new seeds (`SEED=1,2`) finished cleanly at `MAX_STEPS=30000`, with the full
-15/15 grid from 2k through 30k plus a final adapter. Their logs record distinct
-training seeds. This establishes the existence of the confirmatory runs, not
-their outcome: the 30 ID evaluations, mechanical per-seed selections, one OOD
-evaluation per selected checkpoint, and per-seed GSM8K checks remain open.
+15/15 grid from 2k through 30k plus a final adapter. The 30 ID evaluations and
+the frozen mechanical selection are **done**: seed 1 → **step 2,000**
+(λ̂_ID +0.032, η̂ 0.091, d 0.096; 15/15 eligible), seed 2 → **step 6,000**
+(λ̂_ID −0.042, η̂ 0.659, d 0.660; step 2,000 excluded, consistency 0.419 < 0.50).
+Both near-zero ID λ̂; η̂ diverges (0.091 vs 0.659). Selection manifests:
+`results/checkpoint_selection/qwen_delta_seed{1,2}.json`. **Still open:** one OOD
+evaluation per selected checkpoint and per-seed GSM8K — until those land the
+`seed_replication_report.json` verdict stays PENDING (S1 PASS, S2/S3/S5 pending).
 
 **BLOCKER FOUND AND FIXED (July 15, 2026) — read before launching seeds.**
 `grpo_train.py` had no seed handling at all: no `--seed`, no config key, nothing

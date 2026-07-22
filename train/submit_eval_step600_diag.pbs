@@ -30,11 +30,16 @@
 #PBS -P personal-jackeyc0
 
 PROJECT_DIR="$HOME/scratch/lambda-zero"
+set -euo pipefail
 cd "$PROJECT_DIR"
+# The module system + venv activation reference unbound vars internally, which
+# trips `set -u`; guard nounset around them only.
+set +u
 module purge
 module load pytorch/2.6.0-py3-cu11.8
 source "$PROJECT_DIR/venv/bin/activate"
-export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null):$LD_LIBRARY_PATH"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
 
 SEED="${SEED:-42}"
 CKPT=600

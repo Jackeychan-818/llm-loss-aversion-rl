@@ -3,6 +3,7 @@
   "model_name": "Qwen-7B-GRPO-qd-seed1-ckpt2000",
   "estimator": "Model A (NLS), structural link scale T=1",
   "committed_csv": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt2000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt2000_NLS_estimation_T1(Model A).csv",
+  "committed_csv_sha256": "26bccaefa7ff3772deaf5517d5b21a7eaa512548436428fe96e7871141c3e0a1",
   "num_items": 100,
   "num_attr_combos": 9,
   "n_params": 109,
@@ -14,6 +15,17 @@
     "eta": 0.09098552,
     "cond_jacobian": 97.26803874257268,
     "cond_pcov": 9461.071360826443,
+    "jacobian_rank": 109,
+    "jacobian_full_rank": true,
+    "jacobian_largest_sv": 58.59771622526666,
+    "jacobian_smallest_sv": 0.6024354657787436,
+    "jacobian_smallest_svals": [
+      2.1878160441122456,
+      2.1445318966326603,
+      1.4889857377210596,
+      0.8974882291576041,
+      0.6024354657787436
+    ],
     "se_all_finite_positive": true,
     "se_max_rel_diff_vs_committed": 2.254552897854038e-07,
     "alpha": {
@@ -74,7 +86,12 @@
     }
   ],
   "multistart": null,
-  "rank_preservation": null,
+  "rank_preservation": {
+    "base": "baseline/Qwen-7B-Base-Local",
+    "base_csv_sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5",
+    "spearman_alpha_items": 0.7762976297629763,
+    "spearman_utility_grid": 0.791973125892748
+  },
   "config": {
     "n_perturb": 3,
     "seed": 0,

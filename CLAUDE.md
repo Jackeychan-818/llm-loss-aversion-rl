@@ -44,8 +44,9 @@ confirmatory evaluation remains open.**
   - forced:   λ̂ = 0.173, η̂ = −0.379
 
 ### Active
-- ID evaluation of the frozen 15-point grids for seeds 1 and 2, followed by
-  mechanical selection, one OOD evaluation, and GSM8K per selected checkpoint.
+- ID evaluation + frozen mechanical selection for seeds 1 and 2 are **done**
+  (seed 1 → step 2,000; seed 2 → step 6,000). Still pending per selected
+  checkpoint: one OOD evaluation and GSM8K (replication verdict stays PENDING).
 - Non-gating GRPO optimization and structural alpha/beta/utility diagnostics;
   step 600 is exploratory only and cannot enter frozen selection.
 - Raw-prediction archival (derived results + manifests ARE committed; the raw
