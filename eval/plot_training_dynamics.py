@@ -416,7 +416,7 @@ def plot_grpo(dfs: dict, window: int, path: Path):
     plt.close(fig)
 
 
-def plot_structural(df: pd.DataFrame, path: Path):
+def plot_structural(df: pd.DataFrame, path: Path, mode_note: str = ""):
     panels = [("lambda", "lambda (loss aversion)"), ("eta", "eta (status-quo bias)"),
               ("d", "selection objective d = sqrt(lambda^2+eta^2)"), ("rss", "NLS RSS at solution"),
               ("log10_cond_jacobian", "log10 cond(Jacobian)"),
@@ -455,13 +455,14 @@ def plot_structural(df: pd.DataFrame, path: Path):
     axes.ravel()[0].legend(fontsize=8, loc="best")
     fig.suptitle("Structural NLS trajectory vs exact local base (Qwen-7B-Base-Local).  "
                  "Circled = frozen selection (seed1@2000, seed2@6000).  "
-                 "RSS/cond(J) shown only where estimator_diagnostics has run.", fontsize=12)
+                 "RSS/cond(J) shown only where estimator_diagnostics has run." + mode_note,
+                 fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
 
-def plot_preservation(dfc: pd.DataFrame, path: Path):
+def plot_preservation(dfc: pd.DataFrame, path: Path, mode_note: str = ""):
     families = [("alpha", "alpha (item FE)"), ("beta", "beta (attribute-profile FE)"),
                 ("utility", "utility grid U=exp(alpha+beta)")]
     fig, axes = plt.subplots(1, 3, figsize=(19, 5.5))
@@ -493,7 +494,7 @@ def plot_preservation(dfc: pd.DataFrame, path: Path):
         else:
             ax.text(0.5, 0.5, "unavailable", ha="center", va="center", transform=ax.transAxes)
     fig.suptitle("Parameter preservation vs exact local base — aligned by name, tie-aware ranks, "
-                 "references alpha_1/beta_1,1 excluded", fontsize=12)
+                 "references alpha_1/beta_1,1 excluded" + mode_note, fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.94])
     fig.savefig(path, dpi=130)
     plt.close(fig)
@@ -544,46 +545,66 @@ def main():
     plot_grpo(grpo_dfs, SMOOTH_WINDOW, OUT / "grpo_training_curves.png")
     print(f"  wrote grpo_training_curves.png")
 
-    # (B) structural
+    # (B) structural — recompute from the Model-A NLS CSVs when they exist, else
+    # REPLOT FROM DERIVED ARTIFACTS (the committed structural_trajectory.csv /
+    # parameter_correlations.csv), so figures regenerate on a clean clone where
+    # the raw per-checkpoint NLS CSVs are not present.
     print("== structural trajectory ==")
     base_csv = find_nls_csv(BASE_FEATURE, BASE_MODEL)
-    if base_csv is None:
-        raise SystemExit(f"FATAL: exact local base NLS CSV missing under {BASE_FEATURE}/{BASE_MODEL}")
-    base_params = load_nls(base_csv)
-    base_sha = sha256_of(base_csv)
-    manifest["inputs"]["structural_base"] = {"path": str(base_csv.relative_to(PROJECT_ROOT)),
-                                             "sha256": base_sha}
+    seed_nls = glob.glob(str(PROJECT_ROOT / "baseline" / f"{GRID_PREFIX['seed1']}*"
+                             / "Model_1" / "*NLS_estimation*.csv"))
+    derived_strat, derived_corr = OUT / "structural_trajectory.csv", OUT / "parameter_correlations.csv"
+    mode_note = ""
 
-    val = validate_reference(base_params)
-    manifest["analyses"]["reference_validation"] = val
-    if val.get("ran") and not val["all_ok"]:
-        for k, c in val["checks"].items():
-            print(f"    {k}: got {c['got']} expect {c['expect']} ok={c['ok']}")
-        raise SystemExit("FATAL: reference validation (base vs step-8k) drifted >0.02 — "
-                         "investigate source paths / parameter alignment before trusting output.")
-    print(f"  reference validation vs step-8k: {'PASS' if val.get('all_ok') else val.get('reason')}")
+    if base_csv is not None and seed_nls:
+        structural_mode = "recomputed_from_nls_csvs"
+        base_params = load_nls(base_csv)
+        base_sha = sha256_of(base_csv)
+        manifest["inputs"]["structural_base"] = {"path": str(base_csv.relative_to(PROJECT_ROOT)),
+                                                 "sha256": base_sha}
+        val = validate_reference(base_params)
+        manifest["analyses"]["reference_validation"] = val
+        if val.get("ran") and not val["all_ok"]:
+            for k, c in val["checks"].items():
+                print(f"    {k}: got {c['got']} expect {c['expect']} ok={c['ok']}")
+            raise SystemExit("FATAL: reference validation (base vs step-8k) drifted >0.02 — "
+                             "investigate source paths / parameter alignment before trusting output.")
+        print(f"  reference validation vs step-8k: {'PASS' if val.get('all_ok') else val.get('reason')}")
+        strat, s_inputs, pending = build_structural(base_params, base_sha)
+        manifest["inputs"]["structural_checkpoints"] = s_inputs
+        manifest["pending"] += pending
+        strat.to_csv(derived_strat, index=False)
+        dfc = build_param_correlations(base_params)
+        dfc.to_csv(derived_corr, index=False)
+    elif derived_strat.exists() and derived_corr.exists():
+        structural_mode = "replot_from_derived_artifacts"
+        mode_note = "   [replot from derived artifacts]"
+        print("  seed NLS CSVs absent -> REPLOT FROM DERIVED ARTIFACTS "
+              "(committed structural_trajectory.csv / parameter_correlations.csv; not overwritten)")
+        strat = pd.read_csv(derived_strat)
+        dfc = pd.read_csv(derived_corr)
+        manifest["inputs"]["structural_base"] = {"path": None,
+            "note": "NLS CSVs absent; replot from committed derived artifacts"}
+        manifest["analyses"]["reference_validation"] = {
+            "ran": False, "reason": "replot from derived artifacts (NLS CSVs absent)"}
+    else:
+        raise SystemExit("FATAL: no NLS CSVs and no committed derived structural artifacts to plot from")
 
-    strat, s_inputs, pending = build_structural(base_params, base_sha)
-    manifest["inputs"]["structural_checkpoints"] = s_inputs
-    manifest["pending"] += pending
-    strat.to_csv(OUT / "structural_trajectory.csv", index=False)
+    manifest["analyses"]["structural_mode"] = structural_mode
     finite_guard(strat, ["lambda", "eta", "d", "rss", "log10_cond_jacobian"], "structural")
     manifest["analyses"]["structural_trajectory"] = {
         "type": "lambda/eta/d = validation estimates; RSS/cond(J) = post-hoc diagnostic",
-        "n_rows": int(len(strat)),
+        "mode": structural_mode, "n_rows": int(len(strat)),
         "rss_cond_available_for": strat.dropna(subset=["rss"])["model_name"].tolist()}
-    plot_structural(strat, OUT / "structural_training_curves.png")
-    print(f"  wrote structural_trajectory.csv ({len(strat)} rows), structural_training_curves.png")
+    plot_structural(strat, OUT / "structural_training_curves.png", mode_note)
+    print(f"  wrote structural_training_curves.png ({len(strat)} rows, {structural_mode})")
 
-    dfc = build_param_correlations(base_params)
-    dfc.to_csv(OUT / "parameter_correlations.csv", index=False)
     manifest["analyses"]["parameter_preservation"] = {
-        "type": "post-hoc / non-gating", "alignment": "by Parameter name",
+        "type": "post-hoc / non-gating", "mode": structural_mode, "alignment": "by Parameter name",
         "rank_method": "scipy.stats.spearmanr (tie-aware)",
-        "references_excluded": ["alpha_1=0", "beta_1,1=0"],
-        "n_checkpoints": int(len(dfc))}
-    plot_preservation(dfc, OUT / "parameter_preservation.png")
-    print(f"  wrote parameter_correlations.csv ({len(dfc)} rows), parameter_preservation.png")
+        "references_excluded": ["alpha_1=0", "beta_1,1=0"], "n_checkpoints": int(len(dfc))}
+    plot_preservation(dfc, OUT / "parameter_preservation.png", mode_note)
+    print(f"  wrote parameter_preservation.png ({len(dfc)} rows)")
 
     # multistart status (do not fabricate)
     ms = glob.glob(str(PROJECT_ROOT / "results" / "estimator_diagnostics" / "*_multistart.json"))
