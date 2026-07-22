@@ -32,11 +32,15 @@ full methodological audit.
 
 ## Current Work
 
-- Evaluate the complete frozen 2k–30k checkpoint grid for replication seeds 1
-  and 2. Both training runs reached 30,000 steps cleanly; their confirmatory
-  selections and outcomes are not yet known.
-- Apply the frozen selector, then run exactly one OOD-50 and one GSM8K
-  evaluation per selected seed checkpoint.
+- ID evaluation of the frozen 2k–30k grid and the frozen mechanical selection
+  are **complete** for both replication seeds: seed 1 → step 2,000, seed 2 →
+  step 6,000 (`results/checkpoint_selection/`). Their OOD/GSM8K outcomes are not
+  yet known.
+- Run exactly one OOD-50 and one GSM8K evaluation per selected seed checkpoint
+  (seed1@2000, seed2@6000); the replication verdict stays PENDING until then.
+- Training-process + structural-trajectory figures are posted under
+  `results/training_dynamics/` (GRPO reward/loss/KL/entropy/filtering and the
+  λ/η/d/α/β/utility trajectory vs the exact local base).
 - Run the full framing benchmark as a non-gating behavioral-specificity test.
 - Diagnose training reward/loss, KL and DAPO filtering, and separately inspect
   NLS starting/final objective, multi-start stability, alpha/beta drift, and

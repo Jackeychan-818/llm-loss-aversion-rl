@@ -251,9 +251,11 @@ Key main-run hyperparameters:
 
 ## Remaining Work
 
-1. Complete all 30 ID checkpoint evaluations for replication seeds 1 and 2.
-2. Apply the frozen selection rule, then evaluate exactly one selected
-   checkpoint per seed on OOD and GSM8K.
+1. ID checkpoint evaluation and the frozen mechanical selection are **done** for
+   both replication seeds (seed 1 → step 2,000, seed 2 → step 6,000). Training
+   dynamics + structural trajectory posted under `results/training_dynamics/`.
+2. Evaluate exactly one selected checkpoint per seed (seed1@2000, seed2@6000) on
+   OOD and GSM8K; the replication verdict stays PENDING until then.
 3. Run the full 120-scenario framing evaluation as a non-gating specificity
    check.
 4. Add the post-hoc optimization, multi-start, alpha/beta, and utility-trajectory

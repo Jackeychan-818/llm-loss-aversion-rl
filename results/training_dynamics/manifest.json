@@ -1,0 +1,336 @@
+{
+  "git_commit": "e4cb24810260eb29d4b9654fa51dd5102b4f2d24",
+  "generated_by": "eval/plot_training_dynamics.py",
+  "exact_local_base": "baseline/Qwen-7B-Base-Local",
+  "frozen_selection_grid": [
+    2000,
+    4000,
+    6000,
+    8000,
+    10000,
+    12000,
+    14000,
+    16000,
+    18000,
+    20000,
+    22000,
+    24000,
+    26000,
+    28000,
+    30000
+  ],
+  "selected_checkpoints": {
+    "seed1": 2000,
+    "seed2": 6000
+  },
+  "smoothing": {
+    "method": "causal trailing rolling mean",
+    "window_obs": 50,
+    "step_spacing": 10
+  },
+  "grpo_note": "GRPO beta=0.04 is the KL coefficient; distinct from structural beta.",
+  "inputs": {
+    "grpo_seed1": {
+      "source": "checkpoints/grpo_qwen_delta_seed1/checkpoint-30000/trainer_state.json",
+      "sha256": "57259560932d405c011d146ab853122e1426bbc99b862a4f01502f4f73b342a0",
+      "parser": "trainer_state.json",
+      "n_observations": 3000,
+      "step_range": [
+        10,
+        30000
+      ],
+      "metrics_present": {
+        "reward": true,
+        "reward_std": true,
+        "loss": true,
+        "kl": true,
+        "entropy": true,
+        "frac_reward_zero_std": true,
+        "grad_norm": true,
+        "learning_rate": true
+      }
+    },
+    "grpo_seed2": {
+      "source": "checkpoints/grpo_qwen_delta_seed2/checkpoint-30000/trainer_state.json",
+      "sha256": "f1f1942168f6cfcc6a76d8150608b0ac4826329c05cbb82822422fcc219a95f2",
+      "parser": "trainer_state.json",
+      "n_observations": 3000,
+      "step_range": [
+        10,
+        30000
+      ],
+      "metrics_present": {
+        "reward": true,
+        "reward_std": true,
+        "loss": true,
+        "kl": true,
+        "entropy": true,
+        "frac_reward_zero_std": true,
+        "grad_norm": true,
+        "learning_rate": true
+      }
+    },
+    "grpo_seed42": {
+      "source": "checkpoints/grpo_qwen_delta/checkpoint-30000/trainer_state.json",
+      "sha256": "e44e18f806ea214205b9afd554303f5c63f526bff696e13ef6bacf411ad6d6d9",
+      "parser": "trainer_state.json",
+      "n_observations": 3000,
+      "step_range": [
+        10,
+        30000
+      ],
+      "metrics_present": {
+        "reward": true,
+        "reward_std": true,
+        "loss": true,
+        "kl": true,
+        "entropy": true,
+        "frac_reward_zero_std": true,
+        "grad_norm": true,
+        "learning_rate": true
+      }
+    },
+    "structural_base": {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+      "sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5"
+    },
+    "structural_checkpoints": {
+      "Qwen-7B-GRPO-qd-seed1-ckpt10000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt10000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt10000_NLS_estimation_T1(Model A).csv",
+        "sha256": "519aebc3ee5fe4e9144d81689b0896b90189de48bd35dda77156eebc1a4deb45"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt12000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt12000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt12000_NLS_estimation_T1(Model A).csv",
+        "sha256": "ed523f144d64efbfa96a010e87d9204a4b107172f6a1893542a3c5b2b8e58fa8"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt14000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt14000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt14000_NLS_estimation_T1(Model A).csv",
+        "sha256": "9b4032fe762960b4aefbecf8d7b34acc3a9920853c7f6d796079095376d0d6d3"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt16000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt16000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt16000_NLS_estimation_T1(Model A).csv",
+        "sha256": "83b47b90206091d88f06ac72ed54262e7e350df8b19b5135d07b7e1fecdb010a"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt18000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt18000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt18000_NLS_estimation_T1(Model A).csv",
+        "sha256": "1e64ba359bf6361a594c39fc101917bb585d4202f2b93afbf619071876f5b3d1"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt2000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt2000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt2000_NLS_estimation_T1(Model A).csv",
+        "sha256": "26bccaefa7ff3772deaf5517d5b21a7eaa512548436428fe96e7871141c3e0a1"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt20000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt20000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt20000_NLS_estimation_T1(Model A).csv",
+        "sha256": "e94f980820009f83b21eab210761d8b5afe6c240d6338fa72e75a2362f320561"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt22000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt22000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt22000_NLS_estimation_T1(Model A).csv",
+        "sha256": "639ec0d80a53768c4e3bbb75c530270e4cc42e210cda7f86abcd5b57f9b33193"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt24000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt24000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt24000_NLS_estimation_T1(Model A).csv",
+        "sha256": "68b159febdee0e6ca14cf5206ff0beef6a583bd7ede5da58587f2a22e860e443"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt26000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt26000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt26000_NLS_estimation_T1(Model A).csv",
+        "sha256": "8a2249749b5e8eaf64b4ea1b4c6135803ebf7bbe49ab48737f43ec889d694d8a"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt28000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt28000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt28000_NLS_estimation_T1(Model A).csv",
+        "sha256": "3be8d460418266db64afdcafe658e5c04381a3ada49cf9bfc2af4af8bef40291"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt30000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt30000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt30000_NLS_estimation_T1(Model A).csv",
+        "sha256": "3894f5d3bcbc3bc3d7507da560f85614382ad83cc764eaceb8381b60c5263e09"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt4000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt4000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt4000_NLS_estimation_T1(Model A).csv",
+        "sha256": "8584bc6027ea54936501cf13eab39f812a2956d25198010eeb49ce611ac3abd8"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt6000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt6000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt6000_NLS_estimation_T1(Model A).csv",
+        "sha256": "684280615028d08b07fa4378b2ce6a130f408ca5e9527a5e7e33967ddbdfc04e"
+      },
+      "Qwen-7B-GRPO-qd-seed1-ckpt8000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed1-ckpt8000/Model_1/Qwen-7B-GRPO-qd-seed1-ckpt8000_NLS_estimation_T1(Model A).csv",
+        "sha256": "da5ee9f9b0a31470bee45d85e8f4677f0bb1d1b804ce589f912636f8625e2496"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt10000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt10000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt10000_NLS_estimation_T1(Model A).csv",
+        "sha256": "a059d8672b281fd0ad90f16c4b9d8bd6bd1fb30723b350df7dce1db2bf2b8a0d"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt12000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt12000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt12000_NLS_estimation_T1(Model A).csv",
+        "sha256": "20c08d70102953c04aebd63079ac1a36eea0aebb2d277faa3abf32e981e463aa"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt14000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt14000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt14000_NLS_estimation_T1(Model A).csv",
+        "sha256": "fceee3e165c3b65516c71718cc769ed2b6463d2f46ce9b3e1a7b1f10219abbeb"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt16000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt16000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt16000_NLS_estimation_T1(Model A).csv",
+        "sha256": "6cd4e4ead9f0b6b3f05ae19c524589ac99128d11f49afe89aaa29cf9455ca6dc"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt18000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt18000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt18000_NLS_estimation_T1(Model A).csv",
+        "sha256": "0af7e96d4992869a3d413c9e9871c6b552d19097c044e13b3dc64e0cfb3e9025"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt2000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt2000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt2000_NLS_estimation_T1(Model A).csv",
+        "sha256": "f649797f2a306277737045b5404ee6bd02a36eed5d26a1f3ba4968212fb3fbde"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt20000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt20000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt20000_NLS_estimation_T1(Model A).csv",
+        "sha256": "6a370c9895eecb65c836ccea1db0ff57a3e4e011366ce8b6df6bac9f9f280c0c"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt22000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt22000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt22000_NLS_estimation_T1(Model A).csv",
+        "sha256": "ae729352259abcfb8653962581382f6468da42dc08593c1e39c5ce135d1e2697"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt24000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt24000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt24000_NLS_estimation_T1(Model A).csv",
+        "sha256": "9ca806e268136e74bd9290aa4deb8cca12e3507c901a504a8d990b780c860aa7"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt26000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt26000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt26000_NLS_estimation_T1(Model A).csv",
+        "sha256": "557413fc86cf3fee848d14719d0729449f6484ff4cdacac73737a5744add9053"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt28000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt28000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt28000_NLS_estimation_T1(Model A).csv",
+        "sha256": "d994238c2996be7351fc2e54eac64a96b26ca971fa7b0b5f6b87fcfd68e51957"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt30000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt30000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt30000_NLS_estimation_T1(Model A).csv",
+        "sha256": "ed9dc9847ef4e2689fcf461be76ff8ac1ef5925b8fc91fcb921c84f1452e4fdf"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt4000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt4000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt4000_NLS_estimation_T1(Model A).csv",
+        "sha256": "ee66eb0a3e8844da97a661a72dea072f6640495902947ddc74675ea843890f25"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt6000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt6000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt6000_NLS_estimation_T1(Model A).csv",
+        "sha256": "e15980b2580a13fcfa03fa4d174451d7ddd409b11851cb9747f1c32d2ab952e3"
+      },
+      "Qwen-7B-GRPO-qd-seed2-ckpt8000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-seed2-ckpt8000/Model_1/Qwen-7B-GRPO-qd-seed2-ckpt8000_NLS_estimation_T1(Model A).csv",
+        "sha256": "d62f29c3cec82373a7e79559191741cf94d2bef9b887ae7c74b30f5deb103f63"
+      },
+      "Qwen-7B-GRPO-qd-ckpt10000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt10000/Model_1/Qwen-7B-GRPO-qd-ckpt10000_NLS_estimation_T1(Model A).csv",
+        "sha256": "0af3631d7a2c19b3ea1a021fdb15536a4a61ea26bae37b9d30c30caa6bf6185a"
+      },
+      "Qwen-7B-GRPO-qd-ckpt12000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt12000/Model_1/Qwen-7B-GRPO-qd-ckpt12000_NLS_estimation_T1(Model A).csv",
+        "sha256": "555e706da440b293c875f2a9d1371b551fbf2651b45f7be42ad16be02c2ed9ee"
+      },
+      "Qwen-7B-GRPO-qd-ckpt15000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt15000/Model_1/Qwen-7B-GRPO-qd-ckpt15000_NLS_estimation_T1(Model A).csv",
+        "sha256": "4222715b72938fc457a7d4e74e3ce29ed76d7b2eafe328f554b056bed0233cd3"
+      },
+      "Qwen-7B-GRPO-qd-ckpt20000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt20000/Model_1/Qwen-7B-GRPO-qd-ckpt20000_NLS_estimation_T1(Model A).csv",
+        "sha256": "79ca8a19231d05828a58646c9707bbf7983e78ce2d6a3f654a7d04705e15fe96"
+      },
+      "Qwen-7B-GRPO-qd-ckpt30000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt30000/Model_1/Qwen-7B-GRPO-qd-ckpt30000_NLS_estimation_T1(Model A).csv",
+        "sha256": "9113a34db13d0a5b3837e7de38038cd2a3ac05d7ca749462b68e93de7cc26e9d"
+      },
+      "Qwen-7B-GRPO-qd-ckpt5000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt5000/Model_1/Qwen-7B-GRPO-qd-ckpt5000_NLS_estimation_T1(Model A).csv",
+        "sha256": "b5a5a988749a9b97c0fc369a791cdb25d567f46ab5776ac38e7a3d506166de89"
+      },
+      "Qwen-7B-GRPO-qd-ckpt8000": {
+        "path": "baseline/Qwen-7B-GRPO-qd-ckpt8000/Model_1/Qwen-7B-GRPO-qd-ckpt8000_NLS_estimation_T1(Model A).csv",
+        "sha256": "ea4e1182391bb2e97ec9802a35e17726b2595e156b4a7f97e10fafdec8100a6d"
+      }
+    }
+  },
+  "analyses": {
+    "grpo_training_dynamics": {
+      "type": "post-hoc / non-gating (training diagnostic)",
+      "seeds": [
+        "seed1",
+        "seed2",
+        "seed42"
+      ],
+      "metrics": [
+        "reward",
+        "reward_std",
+        "loss",
+        "kl",
+        "entropy",
+        "frac_reward_zero_std",
+        "grad_norm",
+        "learning_rate"
+      ]
+    },
+    "reference_validation": {
+      "ran": true,
+      "all_ok": true,
+      "checks": {
+        "alpha_pearson": {
+          "got": 0.2402,
+          "expect": 0.24,
+          "ok": true
+        },
+        "alpha_spearman": {
+          "got": 0.843,
+          "expect": 0.843,
+          "ok": true
+        },
+        "alpha_excl_pearson": {
+          "got": 0.7733,
+          "expect": 0.773,
+          "ok": true
+        },
+        "beta_pearson": {
+          "got": 0.9757,
+          "expect": 0.976,
+          "ok": true
+        },
+        "utility_pearson": {
+          "got": 0.8058,
+          "expect": 0.806,
+          "ok": true
+        },
+        "utility_spearman": {
+          "got": 0.8392,
+          "expect": 0.839,
+          "ok": true
+        }
+      }
+    },
+    "structural_trajectory": {
+      "type": "lambda/eta/d = validation estimates; RSS/cond(J) = post-hoc diagnostic",
+      "n_rows": 38,
+      "rss_cond_available_for": [
+        "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+        "Qwen-7B-GRPO-qd-ckpt8000"
+      ]
+    },
+    "parameter_preservation": {
+      "type": "post-hoc / non-gating",
+      "alignment": "by Parameter name",
+      "rank_method": "scipy.stats.spearmanr (tie-aware)",
+      "references_excluded": [
+        "alpha_1=0",
+        "beta_1,1=0"
+      ],
+      "n_checkpoints": 37
+    },
+    "multistart": {
+      "type": "post-hoc / non-gating",
+      "present": false,
+      "targets": [
+        "Qwen-7B-Base-Local",
+        "Qwen-7B-GRPO-qd-ckpt8000",
+        "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+        "Qwen-7B-GRPO-qd-seed2-ckpt6000"
+      ]
+    }
+  },
+  "pending": [
+    "36/38 checkpoints lack RSS/cond(J) (estimator_diagnostics.py not yet run for them). Run: qsub train/submit_diagnostics_cpu.pbs",
+    "multistart diagnostics not run. Run: qsub train/submit_diagnostics_cpu.pbs"
+  ]
+}
