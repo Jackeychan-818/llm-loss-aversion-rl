@@ -1,0 +1,17 @@
+{
+  "note": "SHA-256 of large RAW framing predictions (NOT committed). Derived metrics.json / comparison_to_base.json / manifest.json ARE committed.",
+  "n_files": 2,
+  "total_MB": 6.7,
+  "raw_prediction_files": [
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json",
+      "bytes": 3503947,
+      "sha256": "9c92ec1e0f079001704bfb69913b1f6a519d3ac38bda9d7298d2be753f4372b9"
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/predictions.json",
+      "bytes": 3507240,
+      "sha256": "aee036f39c41b055a88dd4b454fa0ee5a7ec038e69077dbabaf144c54179d5ed"
+    }
+  ]
+}
