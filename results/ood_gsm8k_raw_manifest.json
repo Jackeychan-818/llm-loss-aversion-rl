@@ -1,0 +1,67 @@
+{
+  "note": "SHA-256 of the large RAW OOD/GSM8K prediction files (NOT committed; consistent with PAPER_READINESS #6). Derived estimation CSVs, GSM8K comparison.json, and seed_replication_report.json ARE committed.",
+  "n_files": 12,
+  "total_MB": 73.1,
+  "raw_prediction_files": [
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed1-ckpt2000-OOD50/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 9246367,
+      "sha256": "a494189b7979c0dea313153bd9a1b502ab0907c85ce538513b08cff100db109b"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed1-ckpt2000-OOD50/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 9285931,
+      "sha256": "941f0963cb8dfba0653b37ddae22c1ed5b1d3e910e11d828885e9573db4355d6"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed1-ckpt2000-OOD50/loss_aversion_X.json",
+      "bytes": 8525593,
+      "sha256": "1a625ef3cb0adeeb4d32e8656f2f308cb6b4931ffbea8fd31abc659acb595a4f"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed1-ckpt2000-OOD50/loss_aversion_Y.json",
+      "bytes": 8565569,
+      "sha256": "119b7050f43efa51c976e8fa1b34ccd5c4bb25a0088ff7a5b96c91fd37fda874"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed2-ckpt6000-OOD50/Model_1/loss_aversion_X_for_Model_A.json",
+      "bytes": 9253828,
+      "sha256": "c09fa150ab2efda4fd2e095c82f08d941b097cf63ecf54e1ae24cd7097e2959b"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed2-ckpt6000-OOD50/Model_1/loss_aversion_Y_for_Model_A.json",
+      "bytes": 9291983,
+      "sha256": "2b5c177cede713a910113bfaaf4a88251c39a71463334f2002b8cfdca415bbb0"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed2-ckpt6000-OOD50/loss_aversion_X.json",
+      "bytes": 8532026,
+      "sha256": "4270e53f53e0f8e62ca3c84c55a00659475908096516d5958ca36f522ea1c137"
+    },
+    {
+      "path": "ood/Qwen-7B-GRPO-qd-seed2-ckpt6000-OOD50/loss_aversion_Y.json",
+      "bytes": 8571520,
+      "sha256": "13217954e7da9b630aa914a1c57427a50474fb4a3a899c5ff314fea6dbafb84f"
+    },
+    {
+      "path": "results/gsm8k_seed1/base/predictions.jsonl",
+      "bytes": 1357065,
+      "sha256": "efb79eed359ddea66851983bc86f7f4a6e810c928da6db51a578f52c3a2cb0ad"
+    },
+    {
+      "path": "results/gsm8k_seed1/qwen_delta_8000/predictions.jsonl",
+      "bytes": 1358008,
+      "sha256": "4d3fc25c0e7fcd96d1121cc4a5749f94e1e39c9851c727b02e2c996248d75080"
+    },
+    {
+      "path": "results/gsm8k_seed2/base/predictions.jsonl",
+      "bytes": 1357065,
+      "sha256": "efb79eed359ddea66851983bc86f7f4a6e810c928da6db51a578f52c3a2cb0ad"
+    },
+    {
+      "path": "results/gsm8k_seed2/qwen_delta_8000/predictions.jsonl",
+      "bytes": 1356982,
+      "sha256": "b6162d8fa090a3abf1c74c9050d0f0bf3993c181b4262f565146999cf56e4e13"
+    }
+  ]
+}

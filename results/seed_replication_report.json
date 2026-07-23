@@ -4,33 +4,47 @@
       "seed": 1,
       "checks": {
         "S1": "PASS",
-        "S2": "pending",
-        "S3": "pending",
-        "S5": "pending"
+        "S2": "PASS (|lambda_OOD|=0.259 vs <= 0.5)",
+        "S3": "PASS (consist=0.50, keep=0.39, trade=0.11)",
+        "S5": "PASS (CI lower -1.14pp vs >= -3.0)"
       },
       "values": {
         "grid_complete": true,
         "selected_step": 2000,
-        "gsm8k": "no comparison.json"
+        "lambda_OOD": 0.25919545,
+        "lambda_OOD_se": 0.02296262,
+        "eta_OOD": 0.32297869,
+        "n": 9800,
+        "consistency": 0.5043877551020408,
+        "keep_both_rate": 0.3871428571428571,
+        "trade_both_rate": 0.10846938775510204,
+        "gsm8k": "delta=-0.15pp CI[-1.14,+0.83]"
       },
-      "status": "PENDING"
+      "status": "PASS"
     },
     {
       "seed": 2,
       "checks": {
         "S1": "PASS",
-        "S2": "pending",
-        "S3": "pending",
-        "S5": "pending"
+        "S2": "PASS (|lambda_OOD|=0.064 vs <= 0.5)",
+        "S3": "PASS (consist=0.60, keep=0.31, trade=0.09)",
+        "S5": "PASS (CI lower -1.44pp vs >= -3.0)"
       },
       "values": {
         "grid_complete": true,
         "selected_step": 6000,
-        "gsm8k": "no comparison.json"
+        "lambda_OOD": 0.06393829,
+        "lambda_OOD_se": 0.01588407,
+        "eta_OOD": 0.59305106,
+        "n": 9800,
+        "consistency": 0.598265306122449,
+        "keep_both_rate": 0.3110204081632653,
+        "trade_both_rate": 0.09071428571428572,
+        "gsm8k": "delta=-0.30pp CI[-1.44,+0.83]"
       },
-      "status": "PENDING"
+      "status": "PASS"
     }
   ],
-  "n_pass": 0,
-  "n_pending": 2
+  "n_pass": 2,
+  "n_pending": 0
 }

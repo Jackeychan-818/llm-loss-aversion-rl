@@ -1,0 +1,36 @@
+{
+  "paired_items": 1319,
+  "base": {
+    "correct": 1145,
+    "accuracy": 0.868081880212282,
+    "parse_failures": 0,
+    "predictions": "/scratch/users/nus/jackeyc0/lambda-zero/results/gsm8k_seed2/base/predictions.jsonl"
+  },
+  "tuned": {
+    "correct": 1141,
+    "accuracy": 0.865049279757392,
+    "parse_failures": 0,
+    "predictions": "/scratch/users/nus/jackeyc0/lambda-zero/results/gsm8k_seed2/qwen_delta_8000/predictions.jsonl"
+  },
+  "paired_change": {
+    "accuracy_delta": -0.0030326004548900665,
+    "percentage_point_delta": -0.30326004548900665,
+    "paired_bootstrap_95_ci": [
+      -0.014404852160727824,
+      0.008339651250947688
+    ],
+    "paired_bootstrap_95_ci_percentage_points": [
+      -1.4404852160727823,
+      0.8339651250947688
+    ],
+    "bootstrap_samples": 10000,
+    "mcnemar_exact_p_value": 0.6888797607233396,
+    "conclusion": "no_clear_change"
+  },
+  "paired_table": {
+    "both_correct": 1115,
+    "base_only_correct": 30,
+    "tuned_only_correct": 26,
+    "both_wrong": 148
+  }
+}
