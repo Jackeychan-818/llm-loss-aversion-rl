@@ -32,12 +32,13 @@ full methodological audit.
 
 ## Current Work
 
-- ID evaluation of the frozen 2k–30k grid and the frozen mechanical selection
-  are **complete** for both replication seeds: seed 1 → step 2,000, seed 2 →
-  step 6,000 (`results/checkpoint_selection/`). Their OOD/GSM8K outcomes are not
-  yet known.
-- Run exactly one OOD-50 and one GSM8K evaluation per selected seed checkpoint
-  (seed1@2000, seed2@6000); the replication verdict stays PENDING until then.
+- **Replication CONFIRMED: 2/2 seeds PASS.** ID selection (seed 1 → step 2,000,
+  seed 2 → step 6,000) plus one OOD-50 and one GSM8K per selected checkpoint are
+  complete, and the mechanical pre-registration verdict
+  (`results/seed_replication_report.json`) passes every gate for both seeds:
+  seed 1 λ_OOD=0.259, seed 2 λ_OOD=0.064 (both ≤0.5), consistency 0.50 / 0.60,
+  GSM8K paired-CI lower bounds −1.14pp / −1.44pp (both ≥ −3pp). seed 42 is
+  supporting exploratory evidence.
 - Training-process + structural-trajectory figures are posted under
   `results/training_dynamics/` (GRPO reward/loss/KL/entropy/filtering and the
   λ/η/d/α/β/utility trajectory vs the exact local base).

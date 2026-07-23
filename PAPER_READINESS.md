@@ -168,16 +168,21 @@ opening the frozen final suite only after selection.
 The Qwen-own-delta checkpoint curve is highly non-monotonic. Conditional NLS
 standard errors do not measure variation across training seeds.
 
-**Status (July 22, 2026): training + ID selection complete; OOD/GSM8K pending.**
-Both new seeds (`SEED=1,2`) finished cleanly at `MAX_STEPS=30000`, with the full
-15/15 grid from 2k through 30k plus a final adapter. The 30 ID evaluations and
-the frozen mechanical selection are **done**: seed 1 → **step 2,000**
-(λ̂_ID +0.032, η̂ 0.091, d 0.096; 15/15 eligible), seed 2 → **step 6,000**
+**Status (July 23, 2026): replication CONFIRMED — 2/2 confirmatory seeds PASS.**
+Both new seeds (`SEED=1,2`) finished cleanly at `MAX_STEPS=30000` with the full
+15/15 grid. Frozen mechanical selection: seed 1 → **step 2,000**
+(λ̂_ID +0.032, η̂ 0.091, d 0.096), seed 2 → **step 6,000**
 (λ̂_ID −0.042, η̂ 0.659, d 0.660; step 2,000 excluded, consistency 0.419 < 0.50).
-Both near-zero ID λ̂; η̂ diverges (0.091 vs 0.659). Selection manifests:
-`results/checkpoint_selection/qwen_delta_seed{1,2}.json`. **Still open:** one OOD
-evaluation per selected checkpoint and per-seed GSM8K — until those land the
-`seed_replication_report.json` verdict stays PENDING (S1 PASS, S2/S3/S5 pending).
+The one-shot OOD-50 and GSM8K per selected checkpoint are now done and the
+mechanical `seed_replication_report.json` verdict is **2/2 PASS**:
+- seed 1: S2 |λ_OOD|=0.259 ≤0.5; S3 consistency 0.50, keep 0.39, trade 0.11;
+  S5 GSM8K paired-CI lower −1.14pp ≥ −3 (Δ−0.15pp). η_OOD +0.323 (not gated).
+- seed 2: S2 |λ_OOD|=0.064 ≤0.5; S3 consistency 0.60, keep 0.31, trade 0.09;
+  S5 GSM8K paired-CI lower −1.44pp ≥ −3 (Δ−0.30pp). η_OOD +0.593 (not gated).
+Report every seed jointly; note seed 1's S3 consistency sits exactly at the 0.50
+floor and both λ_OOD are small-but-positive — a clean pass, not a blowout.
+Raw OOD/GSM8K predictions (73.1 MB) are checksummed in
+`results/ood_gsm8k_raw_manifest.json` but not committed (see #6).
 
 **BLOCKER FOUND AND FIXED (July 15, 2026) — read before launching seeds.**
 `grpo_train.py` had no seed handling at all: no `--seed`, no config key, nothing
@@ -446,9 +451,8 @@ final-evaluation, and reproducibility issues above.
 2. Archive and reproduce all Qwen-own-delta checkpoint and OOD artifacts.
 3. Validate Qwen-own delta against ownership-free Qwen preferences.
 4. Freeze the checkpoint-selection rule and primary/secondary outcomes.
-5. Complete the frozen ID-selection, OOD, and GSM8K evaluations for seeds 1 and
-   2; run a third fresh seed only if required by the pre-registered decision
-   rule.
+5. DONE — frozen ID-selection + OOD + GSM8K complete for seeds 1 and 2; verdict
+   is 2/2 PASS, so no third seed is required by the pre-registered rule.
 6. Train the matched SFT and flat-reward baselines.
 7. Add robust structural inference, multi-start optimization/utility
    diagnostics, and estimator-recovery checks.
