@@ -30,6 +30,21 @@ validation and retains a separately frozen evaluation for final claims. See
 `ATTRIBUTE_EFFECTS.md` for the split analysis and `PAPER_READINESS.md` for the
 full methodological audit.
 
+### Frozen prospective configuration test
+
+`data/frozen_unused_test_goods.json` is frozen, committed, and unevaluated. For
+each of the 4,945 main goods pairs, it removes all 12 configurations already
+used by validation/training, deterministically hash-shuffles the remaining 69
+with seed `20260723`, and takes 10. The result has **49,450 cases** and
+**98,900 X/Y prompts per model**, with zero overlap and predeclared balance
+gates passed.
+
+This test may not be used for training, reward construction, or checkpoint
+selection. Primary evaluation is limited to the exact local base, seed 1 at
+step 2,000, and seed 2 at step 6,000. It tests new configurations of familiar
+goods and pairs, not unseen goods. See `data/FROZEN_UNUSED_TEST.md` and
+`data/frozen_unused_test_goods.manifest.json`.
+
 ## Current Work
 
 - **Replication CONFIRMED: 2/2 seeds PASS.** ID selection (seed 1 → step 2,000,
@@ -39,6 +54,9 @@ full methodological audit.
   seed 1 λ_OOD=0.259, seed 2 λ_OOD=0.064 (both ≤0.5), consistency 0.50 / 0.60,
   GSM8K paired-CI lower bounds −1.14pp / −1.44pp (both ≥ −3pp). seed 42 is
   supporting exploratory evidence.
+- Evaluate the committed prospective unused-configuration test exactly once on
+  the matched local base and the two frozen seed selections. Do not inspect it
+  for further checkpoint or method selection.
 - Training-process + structural-trajectory figures are posted under
   `results/training_dynamics/` (GRPO reward/loss/KL/entropy/filtering and the
   λ/η/d/α/β/utility trajectory vs the exact local base).

@@ -36,7 +36,12 @@ from tqdm import tqdm
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "train"))
 
-GOODS_RUN_ORDER = ["trial_goods", "test_goods", "remaining_goods"]
+GOODS_RUN_ORDER = [
+    "trial_goods",
+    "test_goods",
+    "remaining_goods",
+    "frozen_unused_test_goods",
+]
 
 
 def parse_args() -> argparse.Namespace:

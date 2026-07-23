@@ -74,6 +74,17 @@ for external-validity analysis; no additional OOD run is required by the
 attribute result. Do not treat the compositional split itself as unseen-goods
 evidence. See `ATTRIBUTE_EFFECTS.md` and `eval/analyze_attribute_effects.py`.
 
+### Frozen Prospective Configuration Test
+
+`data/frozen_unused_test_goods.json` is frozen and unevaluated. It contains 10
+additional unused configurations for each of the 4,945 familiar goods pairs
+(49,450 cases; 98,900 X/Y prompts per model). All 12 existing codes per pair
+were removed before deterministic hash-shuffling with seed `20260723`. It is
+prohibited for training, reward construction, checkpoint selection, or method
+changes. Primary evaluation is limited to the matched local base and the frozen
+seed selections (seed 1 at 2,000; seed 2 at 6,000). This is configuration
+generalization, not unseen-goods OOD. See `data/FROZEN_UNUSED_TEST.md`.
+
 ---
 
 ## Experimental Paradigm
@@ -120,6 +131,10 @@ lambda-zero/
 │   ├── trial_goods.json
 │   ├── test_goods.json
 │   ├── remaining_goods.json
+│   ├── frozen_unused_test_goods.json
+│   ├── frozen_unused_test_goods.manifest.json
+│   ├── FROZEN_UNUSED_TEST.md
+│   ├── build_frozen_unused_test.py
 │   └── deltas/
 │       ├── delta_consensus_v3.json       # Frontier-consensus ablation reward
 │       ├── delta_qwen_base.json          # Primary Qwen-own pseudo-utility reward
@@ -223,7 +238,11 @@ python plot_training.py logs/<training-log>.out
 8. **Describe `test_goods.json` precisely.** It holds out exact attribute configurations/questions, while goods and goods-pair identities are shared with training. The separate 50-good OOD suite is external-validity evidence, not part of this split.
 9. **Keep optimization layers distinct.** GRPO's `beta=0.04` is a KL coefficient; structural beta denotes attribute-profile effects. The matched local base is behavioral step 0, while the historical Qwen utility table is the fixed reward source.
 10. **Do not add exploratory checkpoints to frozen selection.** Step 600 may be used to diagnose early training because saves occur every 200 steps, but confirmatory selection remains the 15 checkpoints from 2k to 30k at 2k intervals.
+11. **Do not peek at or adapt to the frozen unused-configuration test.** It may
+    be evaluated only on the matched local base and the two frozen selected
+    seed checkpoints; never use it for training, rewards, selection, or method
+    changes.
 
 ---
 
-*Last updated: July 21, 2026*
+*Last updated: July 23, 2026*

@@ -1,6 +1,6 @@
 # Full-Paper Readiness and Current Methodological Risks
 
-*Last updated: July 16, 2026*
+*Last updated: July 23, 2026*
 
 This document is the authoritative summary of the current paper direction,
 which results are final versus validation-only, and which methodological
@@ -39,6 +39,23 @@ story in the main paper without such evidence.
 The paper must not claim that Qwen-own delta dominates consensus on every
 dimension. It currently has lower estimated lambda, whereas consensus has
 lower eta and higher OOD consistency.
+
+### Frozen prospective configuration test (unevaluated)
+
+On July 23, 2026, after the confirmatory seed selections and OOD-50/GSM8K
+verdict were complete, `data/frozen_unused_test_goods.json` was constructed and
+frozen. It adds 10 previously unused joint attribute configurations for each of
+the 4,945 existing goods pairs: 49,450 cases and 98,900 paired-perspective
+prompts per model. All 12 codes previously present in `test_goods.json` and
+`remaining_goods.json` are excluded pair by pair.
+
+This set is prospectively untouched but is not new-goods OOD. It is prohibited
+for training, reward construction, checkpoint selection, and method changes.
+The primary evaluation set is fixed to the matched local base and the two
+already-selected confirmatory adapters (seed 1 at step 2,000; seed 2 at step
+6,000). Full construction and balance diagnostics are frozen in
+`data/FROZEN_UNUSED_TEST.md` and
+`data/frozen_unused_test_goods.manifest.json`.
 
 ## Priority 0: Must Resolve for the Main Claims
 

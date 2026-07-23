@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "dataset": "frozen_unused_test_goods.json",
+  "status": "FROZEN_PROSPECTIVE_UNEVALUATED",
+  "frozen_on": "2026-07-23",
+  "purpose": "Supplemental within-benchmark generalization test on previously unused attribute configurations for the same 100 goods and 4,945 goods pairs.",
+  "selection": {
+    "algorithm": "sha256_rank_shuffle_v1",
+    "seed": 20260723,
+    "candidate_codes": "integers 0..80 excluding each pair's 12 existing codes",
+    "rule": "sort the remaining 69 by SHA-256 key and take the first 10",
+    "hash_payload": "{seed}:{x}:{y}:{code}"
+  },
+  "inputs": {
+    "test_goods.json": {
+      "role": "existing validation configurations; 2 codes per pair",
+      "sha256": "6b47703a995169e92bee0da8b6d9b53cb2c04d6dbcc463ace63cf89a73e12476"
+    },
+    "remaining_goods.json": {
+      "role": "existing training configurations; 10 codes per pair",
+      "sha256": "67e4e95ee2d4feb7da32bed40c5f30af4b50126b46d48f945c2269ceea9ed75d"
+    }
+  },
+  "output": {
+    "path": "data/frozen_unused_test_goods.json",
+    "sha256": "793c472157fb46fbc53cb24df644b04b84ade7aa8a1a0b6ea93567b4838a55e5"
+  },
+  "validation": {
+    "pair_count": 4945,
+    "selected_codes_per_pair": 10,
+    "case_count": 49450,
+    "prompts_per_model": 98900,
+    "existing_codes_excluded_per_pair": 12,
+    "unused_candidates_per_pair": 69,
+    "zero_overlap_with_test_goods": true,
+    "zero_overlap_with_remaining_goods": true,
+    "all_selected_codes_unique_within_pair": true,
+    "all_pairs_have_exactly_10_selected_codes": true,
+    "joint_code_counts_0_to_80": [
+      583,
+      613,
+      636,
+      591,
+      665,
+      625,
+      649,
+      636,
+      638,
+      593,
+      637,
+      614,
+      573,
+      607,
+      619,
+      637,
+      644,
+      547,
+      617,
+      617,
+      582,
+      608,
+      622,
+      607,
+      628,
+      609,
+      622,
+      569,
+      596,
+      596,
+      664,
+      629,
+      598,
+      628,
+      597,
+      584,
+      639,
+      565,
+      581,
+      598,
+      604,
+      594,
+      595,
+      597,
+      594,
+      597,
+      626,
+      611,
+      593,
+      575,
+      604,
+      636,
+      623,
+      599,
+      611,
+      653,
+      617,
+      601,
+      624,
+      608,
+      617,
+      595,
+      614,
+      615,
+      602,
+      628,
+      583,
+      657,
+      639,
+      632,
+      604,
+      615,
+      578,
+      611,
+      596,
+      600,
+      597,
+      595,
+      590,
+      594,
+      663
+    ],
+    "joint_code_count_min": 547,
+    "joint_code_count_max": 665,
+    "joint_code_expected_count": 610.4938271604939,
+    "joint_uniform_chi_square": 73.09860465116279,
+    "joint_uniform_chi_square_df": 80,
+    "max_joint_relative_deviation": 0.10400404448938329,
+    "max_joint_relative_deviation_gate": 0.12,
+    "attribute_position_level_counts": [
+      [
+        16425,
+        16599,
+        16426
+      ],
+      [
+        16383,
+        16480,
+        16587
+      ],
+      [
+        16637,
+        16413,
+        16400
+      ],
+      [
+        16619,
+        16292,
+        16539
+      ]
+    ],
+    "attribute_position_uniform_chi_square": [
+      1.2175126390293227,
+      1.2633771486349847,
+      2.153973710819009,
+      3.5255409504550053
+    ],
+    "attribute_position_uniform_chi_square_df_each": 2,
+    "max_marginal_share_deviation": 0.0038692281766093406,
+    "max_marginal_share_deviation_gate": 0.005,
+    "balance_gates_pass": true
+  },
+  "freeze_policy": {
+    "checkpoint_selection": "PROHIBITED",
+    "training_or_reward_construction": "PROHIBITED",
+    "permitted_primary_models": [
+      "Qwen-7B-Base-Local",
+      "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+      "Qwen-7B-GRPO-qd-seed2-ckpt6000"
+    ],
+    "exploratory_model_rule": "Other already-trained checkpoints may be evaluated only if labelled exploratory and may not change the frozen selections or confirmatory verdict.",
+    "scope": "Same goods and goods-pair identities; this is not an unseen-goods OOD test."
+  }
+}

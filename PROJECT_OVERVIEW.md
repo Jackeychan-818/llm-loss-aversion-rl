@@ -1,5 +1,5 @@
 # Project Overview — lambda-zero
-*Last updated: July 21, 2026*
+*Last updated: July 23, 2026*
 
 ---
 
@@ -138,6 +138,26 @@ checkpoint selection. A separately frozen evaluation is therefore important
 for the full-paper claim. Full methods and reproducibility details are in
 `ATTRIBUTE_EFFECTS.md`, `eval/analyze_attribute_effects.py`, and
 `PAPER_READINESS.md`.
+
+### Frozen prospective unused-configuration test
+
+After all training, frozen checkpoint selection, and confirmatory OOD/GSM8K
+evaluation were complete, a second configuration test was constructed from
+questions never used by those processes. For each of the 4,945 familiar goods
+pairs, the 12 existing validation/training codes were removed, the remaining
+69 were deterministically hash-shuffled with seed `20260723`, and 10 were
+selected. The committed result contains 49,450 cases (98,900 paired-perspective
+prompts per model), has zero overlap with both original splits, and passes
+frozen joint-code and marginal-level balance gates.
+
+The file is prospectively frozen and unevaluated. It may be opened only for the
+matched local base and the already-selected seed 1 step-2,000 and seed 2
+step-6,000 checkpoints. It cannot be used for checkpoint selection, reward
+construction, training, or method changes. This remains a familiar-goods,
+familiar-pairs configuration test; OOD-50 is the distinct new-goods test.
+Construction, hashes, validation counts, and the freeze policy are recorded in
+`data/FROZEN_UNUSED_TEST.md` and
+`data/frozen_unused_test_goods.manifest.json`.
 
 ---
 
