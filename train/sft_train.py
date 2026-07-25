@@ -84,6 +84,15 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
+def git_commit() -> str:
+    import subprocess
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"],
+                                       cwd=PROJECT_ROOT, text=True).strip()
+    except Exception:
+        return "unknown"
+
+
 # ── dataset: reuse GRPO builder, map to SFT rational-choice targets ───────────
 def build_sft_records(data_file: Path, goods_json: Path, delta_path: Path, data_dir: Path):
     """Return a list of {prompt, perspective, delta, case_id, target} records.
@@ -176,6 +185,8 @@ def write_manifest(output_dir: Path, cfg: dict, args, stats: dict, sources: dict
     manifest = {
         "baseline": "matched SFT (Qwen-own-delta rational-choice targets)",
         "protocol": "CAUSAL_BASELINE_PROTOCOL.md",
+        "git_commit": git_commit(),
+        "model_name_or_path": cfg.get("model_name_or_path"),
         "output_dir": str(output_dir), "seed": seed,
         "loss": "completion-only (prompt tokens masked with -100)",
         "target_rule": "reward_functions.rational_choice(perspective, delta)",

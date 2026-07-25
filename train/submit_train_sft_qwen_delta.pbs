@@ -39,10 +39,14 @@ SEED="${SEED:-1}"
 MAX_STEPS="${MAX_STEPS:-30000}"   # =unique prompts at batch 1 (matches GRPO endpoint)
 OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/sft_qwen_delta_seed${SEED}}"
 RESUME_FROM_CHECKPOINT="${RESUME_FROM_CHECKPOINT:-auto}"
-# Guard: SFT must never write into a GRPO run dir.
+# Guard 1: SFT must never write into a GRPO run dir.
 case "$OUTPUT_DIR" in
   checkpoints/grpo_*) echo "REFUSED: OUTPUT_DIR '$OUTPUT_DIR' is a GRPO run dir."; exit 2 ;;
 esac
+# Guard 2: OUTPUT_DIR must encode this seed, so seed N can never write to / resume
+# from seed M's directory (auto-resume only ever looks inside OUTPUT_DIR).
+[[ "$OUTPUT_DIR" == *"seed${SEED}"* ]] || {
+    echo "REFUSED: OUTPUT_DIR '$OUTPUT_DIR' must contain 'seed${SEED}'."; exit 2; }
 mkdir -p "$OUTPUT_DIR"
 
 echo "Matched SFT | SEED=$SEED | MAX_STEPS=$MAX_STEPS | OUTPUT_DIR=$OUTPUT_DIR | resume=$RESUME_FROM_CHECKPOINT"

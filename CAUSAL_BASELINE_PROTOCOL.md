@@ -169,18 +169,23 @@ exploratory** and any cross-method comparison is labelled **post-hoc**.
 
 Anchored to the observed GRPO throughput (~6.1 s/step in the current config).
 
+Two very different per-step costs: **GRPO/sign-only ≈ 6.1 s/step** (16 HF
+generations + update, from the confirmatory run) vs **SFT ≈ 0.2–0.4 s/step**
+(one supervised forward/backward, no generation — an estimate the smoke test
+**measures and replaces**).
+
 | run | steps | est. wall |
 |---|---:|---:|
-| SFT smoke (10 steps) | 10 | ~5 min inc. load |
-| sign-only GRPO smoke (10 steps) | 10 | ~5 min inc. load |
-| **Pilot:** 1 SFT seed to 6,000 | 6,000 | SFT ~1 step ≪ GRPO step (no generation): est. **2–4 h** |
-| **Pilot:** 1 sign-only GRPO seed to 6,000 | 6,000 | ~6.1 s/step ⇒ **~10 h** |
-| Full SFT, 2 seeds × 30,000 | 60,000 | est. **10–20 h** total |
-| Full sign-only GRPO, 2 seeds × 30,000 | 60,000 | ~6.1 s/step ⇒ **~51 h/seed ⇒ ~102 h** (resumable across 72 h walltime) |
-| Checkpoint eval (per selected ckpt, test_goods 9,890) | — | ~0.5–1 h each; grid selection reads existing outputs |
+| SFT smoke | 10 | ~3–5 min (model load dominates) |
+| sign-only GRPO smoke | 10 | ~3–5 min (model load dominates) |
+| **Pilot** SFT seed 1 → 6,000 | 6,000 | ≈ 0.3 s/step ⇒ **~0.5–1 h** |
+| **Pilot** sign-only GRPO seed 1 → 6,000 | 6,000 | ≈ 6.1 s/step ⇒ **~10 h** |
+| Full SFT, 2 seeds × 30,000 | 60,000 | ≈ **2–3.5 h/seed ⇒ ~4–7 h** total |
+| Full sign-only GRPO, per seed × 30,000 | 30,000 | ≈ 6.1 s/step ⇒ **~51 h/seed — fits ONE 72 h job** (no resume needed); 2 seeds = 2 jobs |
+| Baseline checkpoint eval (per ckpt, test_goods 9,890) | — | ~0.5–1 h each (`submit_eval_baseline_ckpt.pbs`) |
 
-SFT is far cheaper per step (one supervised forward/backward vs 16 generations).
-These are estimates; the first pilot calibrates them.
+The SFT per-step figure is the least certain; the smoke test calibrates it before
+committing to the full runs. Sign-only inherits the confirmatory GRPO throughput.
 
 ## Confirmatory vs post-hoc (status of results)
 

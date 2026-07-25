@@ -28,8 +28,11 @@ PBS submission: see train/submit_sanity.pbs and train/submit_train.pbs
 
 import argparse
 import dataclasses
+import hashlib
+import json
 import logging
 import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Optional
@@ -91,6 +94,59 @@ def parse_args() -> argparse.Namespace:
 def load_config(config_path: str) -> dict:
     with open(config_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def _sha256(path: Path) -> str:
+    if not path.is_file():
+        return "unavailable"
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"],
+                                       cwd=PROJECT_ROOT, text=True).strip()
+    except Exception:
+        return "unknown"
+
+
+def write_run_manifest(output_dir: str, cfg: dict, args, reward_weighting: str,
+                       seed: int, data_file: Path, delta_path: Path, goods_json: Path,
+                       max_steps) -> None:
+    """Provenance manifest for a GRPO run (magnitude OR sign-only). Additive: a
+    single JSON in the output dir; does not affect training."""
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "run_type": "grpo",
+        "reward_weighting": reward_weighting,
+        "config": args.config,
+        "output_dir": str(output_dir),
+        "seed": seed,
+        "max_steps": max_steps,
+        "git_commit": _git_commit(),
+        "sources": {
+            "data_file": {"path": str(data_file), "sha256": _sha256(data_file)},
+            "delta_file": {"path": str(delta_path), "sha256": _sha256(delta_path)},
+            "goods_file": {"path": str(goods_json), "sha256": _sha256(goods_json)},
+        },
+        "lora": {"r": cfg.get("lora_r", 16), "alpha": cfg.get("lora_alpha", 32),
+                 "dropout": cfg.get("lora_dropout", 0.05),
+                 "target_modules": cfg.get("lora_target_modules")},
+        "grpo": {"num_generations": cfg.get("num_generations", 16),
+                 "temperature": cfg.get("temperature", 1.5), "beta": cfg.get("beta", 0.04),
+                 "epsilon": cfg.get("epsilon", 0.2), "loss_type": cfg.get("loss_type", "dapo"),
+                 "gradient_accumulation_steps": cfg.get("gradient_accumulation_steps", 16)},
+    }
+    p = out / "grpo_run_manifest.json"
+    with open(p, "w") as f:
+        json.dump(manifest, f, indent=2)
+        f.write("\n")
+    logger.info(f"Wrote run manifest: {p}")
 
 
 def resolve(path: str) -> Path:
@@ -372,6 +428,8 @@ def main():
     reward_fn = make_reward_fn(reward_weighting)
     logger.info(f"Reward weighting  : {reward_weighting} "
                 f"({'±|delta| (confirmatory default)' if reward_weighting == 'magnitude' else '±1 (sign-only ablation)'})")
+    write_run_manifest(args.output_dir, cfg, args, reward_weighting,
+                       grpo_config.seed, data_file, delta_path, goods_json, grpo_config.max_steps)
 
     logger.info(
         f"GRPO config: G={grpo_config.num_generations}, "
