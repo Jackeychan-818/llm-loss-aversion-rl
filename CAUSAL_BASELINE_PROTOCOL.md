@@ -132,6 +132,18 @@ identical to the GRPO column above at the same MAX_STEPS.
   **No new or modified selector.** If a future need arises it will be a separate
   file.
 - Selection uses **`test_goods.json` as VALIDATION only.**
+- **Selection-manifest provenance (required for the baselines).** When the frozen
+  selector is eventually run on a baseline full grid, it MUST be invoked with
+  `--provenance_note` recording that **the previous final suites (OOD-50 and the
+  frozen-unused configuration test) are already opened**, so the baseline
+  selection is **validation-based** and any cross-method comparison
+  (SFT vs GRPO, sign vs magnitude) is **post-hoc** unless a *new* untouched suite
+  is frozen in advance. Suggested text:
+  `"OOD-50 and frozen-unused final suites already opened (before these baselines);
+  selection is validation-only on test_goods; SFT-vs-GRPO / sign-vs-magnitude
+  comparisons are post-hoc until a new suite is frozen."`
+  (The pilot does **not** run the selector at all — its 3-point grid is
+  incomplete and the selector hard-fails on an incomplete grid.)
 
 ## Primary and secondary outcomes
 
@@ -184,8 +196,16 @@ generations + update, from the confirmatory run) vs **SFT ≈ 0.2–0.4 s/step**
 | Full sign-only GRPO, per seed × 30,000 | 30,000 | ≈ 6.1 s/step ⇒ **~51 h/seed — fits ONE 72 h job** (no resume needed); 2 seeds = 2 jobs |
 | Baseline checkpoint eval (per ckpt, test_goods 9,890) | — | ~0.5–1 h each (`submit_eval_baseline_ckpt.pbs`) |
 
+**Full-experiment evaluation cost:** the complete comparison evaluates the full
+grid for both methods and both seeds — 2 methods × 2 seeds × 15 checkpoints =
+**60 checkpoint evaluations ≈ 30–60 additional GPU-hours** (≈ 0.5–1 h each) on
+top of training. (The pilot evaluates only 2 methods × 1 seed × 3 checkpoints =
+6 evals.)
+
 The SFT per-step figure is the least certain; the smoke test calibrates it before
 committing to the full runs. Sign-only inherits the confirmatory GRPO throughput.
+*Measured in the smoke tests: SFT ≈ 0.28 s/step (full 30k ≈ 1.4 h/seed);
+sign-only ≈ 5.57 s/step (full 30k ≈ 47 h/seed, one 72 h job).*
 
 ## Confirmatory vs post-hoc (status of results)
 

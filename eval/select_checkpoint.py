@@ -154,6 +154,11 @@ def main():
     ap.add_argument("--feature", default="baseline")
     ap.add_argument("--pattern", required=True, help="e.g. 'Qwen-7B-GRPO-qd-ckpt*'")
     ap.add_argument("--run_name", default=None, help="label for the manifest")
+    ap.add_argument("--provenance_note", default=None,
+                    help="Free-text note added to the manifest (e.g. for the causal baselines: "
+                         "that OOD-50 and the frozen-unused suite are already opened, so this "
+                         "selection is validation-based and any cross-method comparison is "
+                         "post-hoc). Omitted -> not written (confirmatory manifests unchanged).")
     args = ap.parse_args()
 
     rows = []
@@ -223,6 +228,8 @@ def main():
         "rule": {"consistency_floor": CONSISTENCY_FLOOR, "primary": "min sqrt(lambda^2+eta^2)",
                  "d_tol": D_TOL, "cons_tol": CONS_TOL},
         "selection_data": "validation (test_goods); frozen final suite not opened",
+        # Optional provenance note (omitted -> confirmatory manifests are unchanged).
+        **({"provenance_note": args.provenance_note} if args.provenance_note else {}),
         "selected_step": best["step"], "selected": best,
         "grid": rows,
     }, open(out, "w"), indent=2, default=str)
