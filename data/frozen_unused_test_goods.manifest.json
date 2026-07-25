@@ -2,6 +2,8 @@
   "schema_version": 1,
   "dataset": "frozen_unused_test_goods.json",
   "status": "FROZEN_PROSPECTIVE_UNEVALUATED",
+  "status_note": "This status records the CONSTRUCTION snapshot at freeze time and is left immutable. The dataset was evaluated once on 2026-07-24 under the freeze policy (matched base + seed1@2000 + seed2@6000); evaluator, base-model, adapter, and PBS-job provenance are in the separate evaluation manifest.",
+  "evaluation_manifest": "results/frozen_unused_evaluation_manifest.json",
   "frozen_on": "2026-07-23",
   "purpose": "Supplemental within-benchmark generalization test on previously unused attribute configurations for the same 100 goods and 4,945 goods pairs.",
   "selection": {

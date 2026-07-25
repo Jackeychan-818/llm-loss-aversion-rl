@@ -1,0 +1,83 @@
+{
+  "manifest_type": "frozen_unused_test EVALUATION manifest",
+  "purpose": "Binds the frozen unused-configuration test dataset, evaluator, base model, adapters, PBS job IDs, and per-model NLS outputs. Complements the immutable CONSTRUCTION manifest (data/frozen_unused_test_goods.manifest.json).",
+  "evaluated_on": "2026-07-24",
+  "repo_commit_at_evaluation": "1a7eb99",
+  "results_summary_file": "results/frozen_unused_results.json",
+  "raw_predictions_manifest": "results/frozen_unused_raw_manifest.json (206 MB raw, not committed)",
+  "dataset": {
+    "path": "data/frozen_unused_test_goods.json",
+    "sha256": "793c472157fb46fbc53cb24df644b04b84ade7aa8a1a0b6ea93567b4838a55e5",
+    "n_cases": 49450,
+    "n_prompts_per_model": 98900
+  },
+  "construction_manifest": {
+    "path": "data/frozen_unused_test_goods.manifest.json",
+    "sha256": "2670980884dc2861faf7150671af7c328bd3b01ac8165bfdbdc845d97cc9dda5"
+  },
+  "base_model": {
+    "path": "models/Qwen2.5-7B-Instruct",
+    "config_json_sha256": "619fcb509e6900453e6ff5498733e43b4c6c46eb5013978b81f327be8717de39"
+  },
+  "evaluator": {
+    "decoding": "deterministic greedy (do_sample=False)",
+    "structural_link_scale_T": 1,
+    "estimator": "Model A NLS",
+    "run_qwen_local_sha256": "3ab71bf56b567c5058082ccfe9746bb9254dd30d1dbb02281aff1d9e8e1a3deb",
+    "estimate_qwen_checkpoint_sha256": "3a188cb2e8a73835ba18ba23871970eca285db24f8b3e39e9c520cae05e58bfe",
+    "pbs_script": "train/submit_eval_frozen_unused.pbs",
+    "pbs_script_sha256": "97e58af3a58fee4462c1d6dac41b7b49d28379c913751f5c2ce8047676034e49"
+  },
+  "freeze_policy": "Opened once for matched base + seed1@2000 + seed2@6000 only; never used for training, reward, selection, or method choices. Familiar-goods NEW-configuration test, not unseen-goods OOD.",
+  "models": [
+    {
+      "model_name": "Qwen-7B-Base-Local-frozenUC",
+      "pbs_job_id": "14973920",
+      "eval_output_dir": "frozen_unused/Qwen-7B-Base-Local-frozenUC",
+      "nls_estimation_csv_sha256": "64bb992ec4a76f865389b0c3031bd0f0eeef5cdedf13b308b59c698b5522cd3c",
+      "adapter_path": null,
+      "lambda": 5.9457,
+      "lambda_se": 0.1917,
+      "eta": 1.4584,
+      "eta_se": 0.0464,
+      "consistency": 0.0076,
+      "keep_both": 0.992,
+      "W": 0.7423,
+      "N": 49450
+    },
+    {
+      "model_name": "Qwen-7B-GRPO-qd-seed1-ckpt2000-frozenUC",
+      "pbs_job_id": "14973921",
+      "eval_output_dir": "frozen_unused/Qwen-7B-GRPO-qd-seed1-ckpt2000-frozenUC",
+      "nls_estimation_csv_sha256": "1a8e7e4ffb6c288207903a53c1aa6c9c4b2abc8d76a9571048ee60d16cc363e3",
+      "adapter_path": "checkpoints/grpo_qwen_delta_seed1/checkpoint-2000",
+      "adapter_config_sha256": "f0ba483f72af37207bdaa9495994c171d788f029a4995faeedc156d3864cb068",
+      "adapter_weights_sha256": "223b80bd16e7383b09c73287b60e3dde4c26608c64ce9365557d5a88199bc190",
+      "lambda": 0.0305,
+      "lambda_se": 0.0067,
+      "eta": 0.0889,
+      "eta_se": 0.0141,
+      "consistency": 0.6592,
+      "keep_both": 0.183,
+      "W": 0.8818,
+      "N": 49450
+    },
+    {
+      "model_name": "Qwen-7B-GRPO-qd-seed2-ckpt6000-frozenUC",
+      "pbs_job_id": "14973922",
+      "eval_output_dir": "frozen_unused/Qwen-7B-GRPO-qd-seed2-ckpt6000-frozenUC",
+      "nls_estimation_csv_sha256": "6e34d1294c1a2f350ba681d431eae85e42411ab5b7422a0dbd4d9dbe776ad028",
+      "adapter_path": "checkpoints/grpo_qwen_delta_seed2/checkpoint-6000",
+      "adapter_config_sha256": "ba7f74eb34558d27015a4aaf24decc5eb3e6377bbf67778a8003fb1e26ec688f",
+      "adapter_weights_sha256": "e6bd31a865d71aeb33d5db08ec86c4c9211aba55f1b181ca28026621686df52c",
+      "lambda": -0.0533,
+      "lambda_se": 0.0051,
+      "eta": 0.6934,
+      "eta_se": 0.0132,
+      "consistency": 0.7161,
+      "keep_both": 0.211,
+      "W": 0.9092,
+      "N": 49450
+    }
+  ]
+}

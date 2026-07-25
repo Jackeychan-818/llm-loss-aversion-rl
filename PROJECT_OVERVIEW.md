@@ -150,13 +150,17 @@ selected. The committed result contains 49,450 cases (98,900 paired-perspective
 prompts per model), has zero overlap with both original splits, and passes
 frozen joint-code and marginal-level balance gates.
 
-The file is prospectively frozen and unevaluated. It may be opened only for the
-matched local base and the already-selected seed 1 step-2,000 and seed 2
-step-6,000 checkpoints. It cannot be used for checkpoint selection, reward
-construction, training, or method changes. This remains a familiar-goods,
-familiar-pairs configuration test; OOD-50 is the distinct new-goods test.
-Construction, hashes, validation counts, and the freeze policy are recorded in
-`data/FROZEN_UNUSED_TEST.md` and
+It was opened **once** on July 24, 2026 for the matched local base and the
+already-selected seed 1 step-2,000 and seed 2 step-6,000 checkpoints (only). It
+cannot be used for checkpoint selection, reward construction, training, or
+method changes. **λ collapses from the matched base 5.946 → ≈0 on both seeds**
+(seed1 0.031, seed2 −0.053), with SEs ~3× tighter than `test_goods` and
+η/consistency/W matching the ID pattern (W within 0.001 of ID per model). This
+remains a familiar-goods, familiar-pairs **configuration** test; OOD-50 is the
+distinct new-goods test. Results: `results/frozen_unused_results.json`;
+provenance (dataset SHA, evaluator commit, adapter hashes, base model, PBS job
+IDs): `results/frozen_unused_evaluation_manifest.json`. Construction, hashes,
+and freeze policy: `data/FROZEN_UNUSED_TEST.md`,
 `data/frozen_unused_test_goods.manifest.json`.
 
 ---

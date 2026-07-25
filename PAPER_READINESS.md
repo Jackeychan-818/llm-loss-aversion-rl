@@ -40,22 +40,32 @@ The paper must not claim that Qwen-own delta dominates consensus on every
 dimension. It currently has lower estimated lambda, whereas consensus has
 lower eta and higher OOD consistency.
 
-### Frozen prospective configuration test (unevaluated)
+### Frozen prospective configuration test — EVALUATED (July 24, 2026)
 
 On July 23, 2026, after the confirmatory seed selections and OOD-50/GSM8K
 verdict were complete, `data/frozen_unused_test_goods.json` was constructed and
-frozen. It adds 10 previously unused joint attribute configurations for each of
-the 4,945 existing goods pairs: 49,450 cases and 98,900 paired-perspective
-prompts per model. All 12 codes previously present in `test_goods.json` and
-`remaining_goods.json` are excluded pair by pair.
+frozen: 10 previously unused joint attribute configurations for each of the
+4,945 existing goods pairs (49,450 cases, 98,900 paired-perspective prompts per
+model), excluding all 12 codes already in `test_goods.json`/`remaining_goods.json`.
 
-This set is prospectively untouched but is not new-goods OOD. It is prohibited
-for training, reward construction, checkpoint selection, and method changes.
-The primary evaluation set is fixed to the matched local base and the two
-already-selected confirmatory adapters (seed 1 at step 2,000; seed 2 at step
-6,000). Full construction and balance diagnostics are frozen in
-`data/FROZEN_UNUSED_TEST.md` and
-`data/frozen_unused_test_goods.manifest.json`.
+It was opened **once** on July 24, 2026 for the three policy-allowed models
+(Model A NLS, T=1, N=49,450):
+
+| model | λ (SE) | η (SE) | consistency | keep-both | W |
+|---|---|---|---|---|---|
+| matched base | 5.946 (0.192) | 1.458 (0.046) | 0.008 | 0.992 | 0.742 |
+| seed1 @2000 | 0.031 (0.007) | 0.089 (0.014) | 0.659 | 0.183 | 0.882 |
+| seed2 @6000 | −0.053 (0.005) | 0.693 (0.013) | 0.716 | 0.211 | 0.909 |
+
+**λ collapses base 5.946 → ≈0 on both confirmatory seeds**, with SEs ~3× tighter
+than `test_goods` (5× the data) and η/consistency/W matching the ID pattern (W
+within 0.001 of ID for every model). This is a within-benchmark **configuration**
+generalization result, **not** new-goods OOD — OOD-50 remains that test. Still
+prohibited for training, reward construction, checkpoint selection, and method
+changes. Results: `results/frozen_unused_results.json`. Full provenance (dataset
+SHA `793c4721…`, evaluator commit, base-model/adapter hashes, PBS job IDs):
+`results/frozen_unused_evaluation_manifest.json`. Construction (immutable):
+`data/FROZEN_UNUSED_TEST.md`, `data/frozen_unused_test_goods.manifest.json`.
 
 ## Priority 0: Must Resolve for the Main Claims
 

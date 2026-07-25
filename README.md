@@ -30,20 +30,26 @@ validation and retains a separately frozen evaluation for final claims. See
 `ATTRIBUTE_EFFECTS.md` for the split analysis and `PAPER_READINESS.md` for the
 full methodological audit.
 
-### Frozen prospective configuration test
+### Frozen prospective configuration test — EVALUATED
 
-`data/frozen_unused_test_goods.json` is frozen, committed, and unevaluated. For
-each of the 4,945 main goods pairs, it removes all 12 configurations already
-used by validation/training, deterministically hash-shuffles the remaining 69
-with seed `20260723`, and takes 10. The result has **49,450 cases** and
-**98,900 X/Y prompts per model**, with zero overlap and predeclared balance
-gates passed.
+`data/frozen_unused_test_goods.json` (10 new configs/pair, **49,450 cases**,
+**98,900 X/Y prompts/model**, zero overlap with validation/training) was opened
+once on 2026-07-24 for the three policy-allowed models. **λ collapses from the
+matched base 5.946 → ≈0 on both confirmatory seeds** (seed1 0.031, seed2 −0.053),
+with SEs ~3× tighter than `test_goods` and η/consistency/W matching the ID
+pattern (W within 0.001 of ID for every model):
 
-This test may not be used for training, reward construction, or checkpoint
-selection. Primary evaluation is limited to the exact local base, seed 1 at
-step 2,000, and seed 2 at step 6,000. It tests new configurations of familiar
-goods and pairs, not unseen goods. See `data/FROZEN_UNUSED_TEST.md` and
-`data/frozen_unused_test_goods.manifest.json`.
+| model | λ (SE) | η | consistency | W |
+|---|---|---|---|---|
+| matched base | 5.946 (0.192) | 1.458 | 0.008 | 0.742 |
+| seed1 @2000 | 0.031 (0.007) | 0.089 | 0.659 | 0.882 |
+| seed2 @6000 | −0.053 (0.005) | 0.693 | 0.716 | 0.909 |
+
+This tests **new configurations of familiar goods** — not unseen goods (OOD-50
+remains that test) — and may not be used for training/reward/selection. Results:
+`results/frozen_unused_results.json`; provenance (dataset SHA, evaluator commit,
+adapter hashes, base model, PBS job IDs): `results/frozen_unused_evaluation_manifest.json`;
+construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.manifest.json`.
 
 ## Current Work
 

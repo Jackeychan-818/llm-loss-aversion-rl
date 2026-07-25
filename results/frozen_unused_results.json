@@ -1,6 +1,8 @@
 {
   "test": "frozen prospective unused-configuration test (data/frozen_unused_test_goods.json)",
   "note": "FAMILIAR goods + pairs, NEW attribute configurations (10/pair). NOT unseen-goods OOD. Evaluated once per freeze policy on matched base + seed1@2000 + seed2@6000.",
+  "evaluation_manifest": "results/frozen_unused_evaluation_manifest.json",
+  "raw_predictions_manifest": "results/frozen_unused_raw_manifest.json",
   "n_cases": 49450,
   "n_prompts_per_model": 98900,
   "estimator": "Model A NLS, T=1",
