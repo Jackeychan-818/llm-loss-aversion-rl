@@ -60,23 +60,30 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
   seed 1 λ_OOD=0.259, seed 2 λ_OOD=0.064 (both ≤0.5), consistency 0.50 / 0.60,
   GSM8K paired-CI lower bounds −1.14pp / −1.44pp (both ≥ −3pp). seed 42 is
   supporting exploratory evidence.
-- Evaluate the committed prospective unused-configuration test exactly once on
-  the matched local base and the two frozen seed selections. Do not inspect it
-  for further checkpoint or method selection.
+- **Prospective unused-configuration evaluation DONE.** The matched base and
+  two frozen seed selections were evaluated exactly once; the set remains
+  closed to training, checkpoint selection, and method revision.
+- **Full framing evaluation DONE.** It is a non-gating specificity result:
+  exploratory step 8,000 is more framing-susceptible than the matched base
+  (hard flip rate 0.505 → 0.689; absolute probability gap 0.490 → 0.679).
 - Training-process + structural-trajectory figures are posted under
   `results/training_dynamics/` (GRPO reward/loss/KL/entropy/filtering and the
   λ/η/d/α/β/utility trajectory vs the exact local base).
-- Run the full framing benchmark as a non-gating behavioral-specificity test.
 - Diagnose training reward/loss, KL and DAPO filtering, and separately inspect
   NLS starting/final objective, multi-start stability, alpha/beta drift, and
   fitted utility preservation. Step 600 may be used only as an exploratory
   early-trajectory point; frozen selection remains 2k–30k @ 2k.
 - Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
   artifacts.
-- Add matched SFT and sign-only GRPO baselines; retain consensus delta as the
-  reward-source ablation.
-- Add robust structural inference and GSM8K/IFEval capability checks.
+- **Next experimental priorities:** matched SFT and sign-only GRPO, frozen
+  prompt-semantic counterbalancing, IFEval, and one compact
+  GSM-Symbolic-500 capability extension. Confidence calibration is explicitly
+  lower priority. See `RESEARCH_ROADMAP.md` for the frozen-design requirements
+  and ordering.
+- Add robust pair/good-aware structural inference and estimator-recovery
+  checks.
 
 See `PAPER_READINESS.md` for the authoritative blocker list,
+`RESEARCH_ROADMAP.md` for the next experimental program,
 `PROJECT_OVERVIEW.md` for the research narrative, and `HISTORY.md` for the
 commit-by-commit project history.

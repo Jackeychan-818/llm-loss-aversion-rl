@@ -1,5 +1,5 @@
 # Project Overview — lambda-zero
-*Last updated: July 23, 2026*
+*Last updated: July 25, 2026*
 
 ---
 
@@ -172,11 +172,11 @@ and freeze policy: `data/FROZEN_UNUSED_TEST.md`,
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
 | 1. Small-model baseline | ✅ Matched | Exact local base: λ̂ = 7.637, η̂ = 1.007 on the local scorer |
 | 2. Qwen-own reward design | 🟡 Partly validated | Ownership-free validation complete; leakage-clean reward construction remains open |
-| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k with the full frozen grid; evaluations pending |
-| 4. Primary-model evaluation | 🟡 Partially complete | ID validation and claimed OOD tables exist; raw OOD/checkpoint artifacts must be archived |
+| 3. Qwen-own GRPO training | ✅ Replication confirmed | Seeds 1 and 2 completed the frozen grid and passed ID selection, OOD-50, and GSM8K gates |
+| 4. Primary-model evaluation | 🟡 Evaluations complete; archival pending | Confirmatory OOD/GSM8K and the prospective unused-configuration test are complete; raw claim-carrying artifacts still need durable publication |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID results committed; reported OOD artifacts need archival |
-| 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
-| 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
+| 6. Baselines/robustness | ⏳ Next | Matched SFT, sign-only GRPO, prompt-semantic counterbalancing, IFEval, GSM-Symbolic-500 |
+| 7. Paper writeup | Deferred | Resume after the next experimental program clarifies the final scope |
 
 ---
 
@@ -281,18 +281,26 @@ Key main-run hyperparameters:
 2. DONE — one OOD-50 + one GSM8K per selected checkpoint (seed1@2000,
    seed2@6000) complete; mechanical verdict is **2/2 seeds PASS** (method
    replicates). See `results/seed_replication_report.json`.
-3. Run the full 120-scenario framing evaluation as a non-gating specificity
-   check.
+3. DONE — the prospective unused-configuration evaluation and the full
+   120-scenario framing specificity evaluation are complete. The latter is an
+   adverse-transfer boundary result rather than evidence of general debiasing.
 4. Add the post-hoc optimization, multi-start, alpha/beta, and utility-trajectory
    diagnostics without changing the frozen selection grid.
 5. Archive and reproduce all seed, OOD, framing, and capability artifacts.
-6. Add matched SFT and sign-only GRPO baselines; keep consensus as the
-   reward-source ablation.
-7. Add pair/good-aware structural robustness, estimator recovery, and
-   GSM8K/IFEval capability checks.
-8. Retain frontier or human comparisons only if their protocols and estimands
+6. **Next:** add matched SFT and sign-only GRPO baselines; keep consensus as
+   the reward-source ablation.
+7. Freeze and run a prompt-semantic robustness suite covering response tokens,
+   item labels, display order, attribute order, and paraphrases.
+8. Complete IFEval, then add one compact GSM-Symbolic-500 math robustness
+   check. Treat confidence calibration as a lower-priority side-effect test.
+9. Add pair/good-aware structural robustness and estimator recovery.
+10. Retain frontier or human comparisons only if their protocols and estimands
    are made comparable.
-9. Rewrite the full paper around the Qwen-own-delta primary result.
+11. Defer the full paper rewrite until these experiments clarify the final
+    scope.
+
+The design requirements, priority ordering, and safeguards against reusing
+opened test sets are recorded in `RESEARCH_ROADMAP.md`.
 
 ---
 
