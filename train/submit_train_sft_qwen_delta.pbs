@@ -1,0 +1,62 @@
+#!/bin/bash
+# ============================================================
+# PBS — Matched SFT baseline (Priority 1A, CAUSAL_BASELINE_PROTOCOL.md)
+#
+# Supervised fine-tuning on the Qwen-own-delta rational-choice targets. Separate
+# per-seed output dir; can never overwrite a GRPO run.
+#
+# Submit (do NOT run automatically):
+#   qsub -v SEED=1 train/submit_train_sft_qwen_delta.pbs
+#   qsub -v SEED=2 train/submit_train_sft_qwen_delta.pbs
+#   # pilot (1 seed, short): qsub -v SEED=1,MAX_STEPS=6000 ...
+# ============================================================
+#PBS -N lz-sft-qd
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=48:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/train_sft_qd_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/train_sft_qd_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+cd "$PBS_O_WORKDIR"
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
+
+echo "=== GPU Check ==="
+nvidia-smi
+python -c "import torch, transformers, peft; print(f'CUDA {torch.cuda.get_device_name(0)}, transformers {transformers.__version__}, peft {peft.__version__}')"
+
+cd "$PROJECT_DIR"
+SEED="${SEED:-1}"
+MAX_STEPS="${MAX_STEPS:-30000}"   # =unique prompts at batch 1 (matches GRPO endpoint)
+OUTPUT_DIR="${OUTPUT_DIR:-checkpoints/sft_qwen_delta_seed${SEED}}"
+RESUME_FROM_CHECKPOINT="${RESUME_FROM_CHECKPOINT:-auto}"
+# Guard: SFT must never write into a GRPO run dir.
+case "$OUTPUT_DIR" in
+  checkpoints/grpo_*) echo "REFUSED: OUTPUT_DIR '$OUTPUT_DIR' is a GRPO run dir."; exit 2 ;;
+esac
+mkdir -p "$OUTPUT_DIR"
+
+echo "Matched SFT | SEED=$SEED | MAX_STEPS=$MAX_STEPS | OUTPUT_DIR=$OUTPUT_DIR | resume=$RESUME_FROM_CHECKPOINT"
+echo "Start: $(date)"
+
+python train/sft_train.py \
+    --config train/configs/qwen25_7b_sft_qwen_delta.yaml \
+    --data_file data/remaining_goods.json \
+    --output_dir "$OUTPUT_DIR" \
+    --seed "$SEED" \
+    --max_steps "$MAX_STEPS" \
+    --save_steps 2000 \
+    --resume_from_checkpoint "$RESUME_FROM_CHECKPOINT" \
+    2>&1 | tee -a "logs/train_sft_qd_seed${SEED}_run.log"
+
+echo "=== Matched SFT complete (SEED=$SEED) ==="
+echo "End: $(date)"

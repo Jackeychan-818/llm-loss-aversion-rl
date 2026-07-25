@@ -287,8 +287,13 @@ Key main-run hyperparameters:
 4. Add the post-hoc optimization, multi-start, alpha/beta, and utility-trajectory
    diagnostics without changing the frozen selection grid.
 5. Archive and reproduce all seed, OOD, framing, and capability artifacts.
-6. **Next:** add matched SFT and sign-only GRPO baselines; keep consensus as
-   the reward-source ablation.
+6. **Priority-1 baselines — infrastructure built, not yet run** (frozen design:
+   `CAUSAL_BASELINE_PROTOCOL.md`). Matched **SFT** tests whether RL is necessary;
+   **sign-only GRPO** tests whether reward magnitude |δ̃| adds beyond the sign.
+   These are different experimental questions, and both are distinct from the
+   frontier-consensus-delta run, which remains a reward-*source* ablation. The
+   default GRPO reward is unchanged (`reward_weighting: magnitude`); no baseline
+   result exists until the jobs run, and the full paper rewrite stays deferred.
 7. Freeze and run a prompt-semantic robustness suite covering response tokens,
    item labels, display order, attribute order, and paraphrases.
 8. Complete IFEval, then add one compact GSM-Symbolic-500 math robustness

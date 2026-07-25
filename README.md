@@ -75,11 +75,16 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
   early-trajectory point; frozen selection remains 2k–30k @ 2k.
 - Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
   artifacts.
-- **Next experimental priorities:** matched SFT and sign-only GRPO, frozen
-  prompt-semantic counterbalancing, IFEval, and one compact
-  GSM-Symbolic-500 capability extension. Confidence calibration is explicitly
-  lower priority. See `RESEARCH_ROADMAP.md` for the frozen-design requirements
-  and ordering.
+- **Priority-1 causal baselines — infrastructure built, NOT yet run.**
+  Matched **SFT** (tests whether RL is necessary) and **sign-only GRPO** (tests
+  whether reward magnitude |δ̃| adds beyond the sign) — two different questions,
+  both distinct from the frontier-consensus-delta reward-*source* ablation. The
+  frozen design (incl. the SFT↔GRPO data-exposure calculation) is in
+  `CAUSAL_BASELINE_PROTOCOL.md`. Default GRPO behavior is unchanged
+  (`reward_weighting: magnitude`). No baseline result exists until the jobs run.
+- **Later priorities:** frozen prompt-semantic counterbalancing, IFEval, one
+  compact GSM-Symbolic-500 capability extension; confidence calibration is
+  explicitly lower priority. See `RESEARCH_ROADMAP.md` for ordering.
 - Add robust pair/good-aware structural inference and estimator-recovery
   checks.
 

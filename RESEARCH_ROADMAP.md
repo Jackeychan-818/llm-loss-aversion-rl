@@ -28,6 +28,18 @@ the existing GSM8K result.
 
 ## Priority 1: Matched causal baselines
 
+> **Implementation status (2026-07-25): infrastructure built, NOT yet run.**
+> The frozen design is in `CAUSAL_BASELINE_PROTOCOL.md`. Code: `train/sft_train.py`
+> (+ `configs/qwen25_7b_sft_qwen_delta.yaml`, `submit_train_sft_qwen_delta.pbs`) for
+> SFT; a `reward_weighting: magnitude|sign_only` option in the existing GRPO reward
+> path (default `magnitude`, unchanged) with `configs/qwen25_7b_qwen_delta_sign.yaml`
+> and `submit_train_glong_qwen_delta_sign.pbs` for sign-only. Tests:
+> `train/test_causal_baselines.py`. **SFT tests whether RL is necessary; sign-only
+> GRPO tests whether |δ̃| adds beyond the sign** — two different questions, and both
+> distinct from the frontier-consensus-delta run, which is a reward-*source* ablation.
+> **No baseline result exists until the jobs are run**, and full paper rewriting stays
+> deferred.
+
 ### 1A. Matched supervised fine-tuning
 
 Train a Qwen-own-delta SFT baseline using:

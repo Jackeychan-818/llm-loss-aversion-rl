@@ -52,35 +52,56 @@ def parse_response(completion: Any) -> str:
     return ""
 
 
-def compute_reward(response: str, perspective: str, delta: float) -> float:
+def rational_choice(perspective: str, delta: float) -> str:
+    """The rational (frozen-preferred) Yes/No answer for a perspective and δ̃.
+
+    SINGLE SOURCE OF TRUTH for "which answer is rational", reused by both the
+    GRPO reward (compute_reward) and the SFT target builder (train/sft_train.py)
+    so the two treatments cannot silently diverge.
+
+      X-perspective (endowed X, offered Y): δ̃>0 → X better → keep  → "No"
+                                            δ̃<0 → Y better → trade → "Yes"
+      Y-perspective (endowed Y, offered X): δ̃>0 → X better → trade → "Yes"
+                                            δ̃<0 → Y better → keep  → "No"
+
+    Both perspectives therefore encode the SAME preferred good (δ̃>0 ⇒ X, δ̃<0 ⇒ Y).
+    Returns "" for δ̃ == 0 (no preferred good; such cases are filtered upstream).
     """
-    Utility-weighted reward.
+    if delta == 0.0:
+        return ""
+    if perspective == "X":
+        return "No" if delta > 0 else "Yes"
+    return "Yes" if delta > 0 else "No"
 
-    delta = δ̃ = U_X - U_Y  (mean across 6 frontier models, from delta_consensus_v3.json)
+
+def compute_reward(response: str, perspective: str, delta: float,
+                   weighting: str = "magnitude") -> float:
+    """
+    Reward for a Yes/No response.
+
+    delta = δ̃ = U_X - U_Y  (Qwen-own or consensus, from the configured delta file)
     perspective: "X" (endowed with X, offered Y) or "Y" (endowed with Y, offered X)
+    weighting:
+      - "magnitude" (DEFAULT, the confirmatory behavior): ±|δ̃|.
+      - "sign_only" (roadmap Priority-1 ablation):        ±1, independent of |δ̃|.
 
-    Rational choices:
-      X-perspective: δ̃ > 0 → X better → keep X → "No"
-                     δ̃ < 0 → Y better → trade   → "Yes"
-      Y-perspective: δ̃ > 0 → X better → trade for X → "Yes"
-                     δ̃ < 0 → Y better → keep Y      → "No"
-
-    Unparseable responses ('') are treated as irrational → −|δ̃|.
-    δ̃ == 0.0 cases are filtered out in prompt_builder.py; guard here too.
+    In both modes the SIGN is +weight for the rational choice, -weight otherwise;
+    only the magnitude of the weight differs. Unparseable responses ('') are
+    irrational → -weight. δ̃ == 0.0 cases are filtered in prompt_builder.py;
+    guarded here too (return 0.0).
     """
     if delta == 0.0:
         return 0.0
+    if weighting not in ("magnitude", "sign_only"):
+        raise ValueError(f"unknown reward weighting {weighting!r}; "
+                         "expected 'magnitude' or 'sign_only'")
 
-    if perspective == "X":
-        rational = "No" if delta > 0 else "Yes"
-    else:
-        rational = "Yes" if delta > 0 else "No"
-
-    magnitude = abs(delta)
-    return magnitude if response == rational else -magnitude
+    rational = rational_choice(perspective, delta)
+    weight = abs(delta) if weighting == "magnitude" else 1.0
+    return weight if response == rational else -weight
 
 
-def make_reward_fn():
+def make_reward_fn(weighting: str = "magnitude"):
     """
     Return a reward function compatible with TRL's GRPOTrainer.
 
@@ -102,15 +123,21 @@ def make_reward_fn():
     Note: this saves gradient compute but not generation compute. For generation-
     level filtering, subclass GRPOTrainer and override _generate_completions.
     """
+    if weighting not in ("magnitude", "sign_only"):
+        raise ValueError(f"unknown reward weighting {weighting!r}; "
+                         "expected 'magnitude' or 'sign_only'")
+
     def reward_fn(completions, perspective, delta, **kwargs):
         parsed = [parse_response(c) for c in completions]
 
-        # DAPO-style: skip batches with zero diversity (all outputs identical)
+        # DAPO-style: skip batches with zero diversity (all outputs identical).
+        # Identical for both weightings — the diversity filter is orthogonal to
+        # the reward magnitude, so the sign-only contrast is purely the weight.
         if len(set(parsed)) == 1:
             return [0.0] * len(completions)
 
         return [
-            compute_reward(p, persp, float(d))
+            compute_reward(p, persp, float(d), weighting=weighting)
             for p, persp, d in zip(parsed, perspective, delta)
         ]
 

@@ -1,4 +1,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
+# SIGN-ONLY GRPO ablation config (Priority 1B, CAUSAL_BASELINE_PROTOCOL.md).
+# IDENTICAL to qwen25_7b_qwen_delta.yaml EXCEPT reward_weighting: sign_only.
+# The reward magnitude is the ONLY intended experimental difference.
+# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
 # lambda-zero GRPO training config — Qwen2.5-7B-Instruct
 # All hyperparameter rationale is documented in CLAUDE.md §Key Design Decisions
 # ─────────────────────────────────────────────────────────────────────────────
@@ -29,9 +34,9 @@ loss_type: dapo                  # "dapo" (default in TRL 1.3) | "dr_grpo" — b
 scale_rewards: "none"            # REQUIRED: avoid NaN when DAPO filter returns all-zero rewards (std=0 → 0/0)
                                  # Also aligns with Dr. GRPO recommendation (group std normalisation introduces bias)
 mask_truncated_completions: true # Exclude truncated completions from loss — good practice (DAPO paper)
-reward_weighting: magnitude      # ±|δ̃| (confirmatory default). 'sign_only' (±1) is the Priority-1
-                                 # reward-magnitude ablation; see qwen25_7b_qwen_delta_sign.yaml.
-                                 # This line is the CONFIRMATORY default and does NOT change behavior.
+reward_weighting: sign_only      # ±1 ablation (Priority-1): tests whether |δ̃| adds beyond the sign.
+                                 # Default (magnitude) is unchanged in the base config;
+                                 # only this ablation file sets sign_only.
 
 # ── Training ───────────────────────────────────────────────────────────────
 per_device_train_batch_size: 1

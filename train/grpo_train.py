@@ -77,6 +77,10 @@ def parse_args() -> argparse.Namespace:
                         "Overrides `seed` in the YAML config.")
     p.add_argument("--resume_from_checkpoint", default=None,
                    help="Checkpoint path to resume from, or 'auto' to use the latest checkpoint")
+    p.add_argument("--reward_weighting", choices=["magnitude", "sign_only"], default=None,
+                   help="Reward weight: 'magnitude' (default, confirmatory ±|delta|) or "
+                        "'sign_only' (roadmap Priority-1 ablation, ±1). Overrides the YAML "
+                        "'reward_weighting' key; if neither is set, defaults to 'magnitude'.")
     return p.parse_args()
 
 
@@ -362,7 +366,12 @@ def main():
     resume_checkpoint = find_resume_checkpoint(args)
     grpo_config = build_grpo_config(cfg, args, resume_checkpoint)
     lora_config = build_lora_config(cfg)
-    reward_fn   = make_reward_fn()
+    # Reward weighting: CLI overrides YAML; default 'magnitude' reproduces the
+    # confirmatory ±|delta| behavior exactly. 'sign_only' is the ±1 ablation.
+    reward_weighting = args.reward_weighting or cfg.get("reward_weighting", "magnitude")
+    reward_fn = make_reward_fn(reward_weighting)
+    logger.info(f"Reward weighting  : {reward_weighting} "
+                f"({'±|delta| (confirmatory default)' if reward_weighting == 'magnitude' else '±1 (sign-only ablation)'})")
 
     logger.info(
         f"GRPO config: G={grpo_config.num_generations}, "

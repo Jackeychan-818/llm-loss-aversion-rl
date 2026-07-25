@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Matched SFT baseline config (Priority 1A, CAUSAL_BASELINE_PROTOCOL.md).
+# Supervised fine-tuning on the Qwen-own-delta rational-choice targets.
+# Matched to qwen25_7b_qwen_delta.yaml on base model, LoRA, and optimizer.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Model ──────────────────────────────────────────────────────────────────
+model_name_or_path: models/Qwen2.5-7B-Instruct
+
+# ── LoRA (identical to the GRPO run) ────────────────────────────────────────
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# ── Optimizer / schedule (identical to the GRPO run) ────────────────────────
+learning_rate: 1.0e-6
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+max_grad_norm: 0.1
+bf16: true
+num_train_epochs: 1
+dataloader_num_workers: 0
+
+# ── Data exposure (primary matching rule = unique prompts) ──────────────────
+# batch 1 / accum 1  =>  1 step = 1 unique prompt = 1 optimizer update.
+# MAX_STEPS therefore matches the GRPO endpoint on the unique-prompt axis.
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 1
+max_steps: 30000                 # frozen endpoint (override with --max_steps for the pilot)
+save_steps: 2000                 # frozen 2k..30k checkpoint grid (matches confirmatory grid)
+logging_steps: 10
+report_to: none
+remove_unused_columns: false
+
+# ── Project-specific paths ──────────────────────────────────────────────────
+delta_file: data/deltas/delta_qwen_base.json   # Qwen-own δ̃ (same as the primary GRPO run)
+goods_file: everyday_goods_full.json
+treatment: baseline
+
+# ── Replication ─────────────────────────────────────────────────────────────
+# Override per run with --seed. Distinct seeds are required for independent runs.
+seed: 42
