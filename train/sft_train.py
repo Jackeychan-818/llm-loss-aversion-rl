@@ -121,12 +121,34 @@ def dataset_stats(records) -> dict:
 
 def build_sft_example(tokenizer, prompt: str, target: str) -> dict:
     """Tokenize one (prompt, target) into {input_ids, labels} with COMPLETION-ONLY
-    masking: prompt tokens get label -100, only the assistant answer tokens train."""
+    masking: prompt tokens get label -100, only the assistant answer tokens train.
+
+    Version-stable: render the chat to TEXT (tokenize=False, a str on both
+    transformers 4.x and 5.x) then tokenize the strings. `apply_chat_template(...,
+    tokenize=True)` returns a List[int] on 4.x but a BatchEncoding on 5.x, so we
+    avoid it entirely."""
     user = [{"role": "user", "content": prompt}]
-    prompt_ids = tokenizer.apply_chat_template(user, add_generation_prompt=True, tokenize=True)
-    full_ids = tokenizer.apply_chat_template(
-        user + [{"role": "assistant", "content": target}], tokenize=True)
-    labels = [-100] * len(prompt_ids) + list(full_ids[len(prompt_ids):])
+    prompt_text = tokenizer.apply_chat_template(user, add_generation_prompt=True, tokenize=False)
+    full_text = tokenizer.apply_chat_template(
+        user + [{"role": "assistant", "content": target}], tokenize=False)
+    prompt_ids = tokenizer(prompt_text, add_special_tokens=False)["input_ids"]
+    full_ids = tokenizer(full_text, add_special_tokens=False)["input_ids"]
+    n = len(prompt_ids)
+    # The generation-prompt text is a prefix of the full text (assistant turn just
+    # continues it), so full_ids should start with prompt_ids. If a boundary merge
+    # breaks that, fall back to the longest shared prefix so nothing prompt-side trains.
+    if full_ids[:n] != prompt_ids:
+        n = 0
+        while n < len(prompt_ids) and n < len(full_ids) and full_ids[n] == prompt_ids[n]:
+            n += 1
+    labels = [-100] * n + list(full_ids[n:])
+    # Fail loudly on any future tokenizer/template API change (rather than deep in
+    # the collator): input_ids must be ints, and at least the answer must train.
+    if not full_ids or not isinstance(full_ids[0], int):
+        raise TypeError(f"apply_chat_template/tokenizer did not yield int token ids "
+                        f"(got {type(full_ids[0]).__name__ if full_ids else 'empty'})")
+    if not any(l != -100 for l in labels):
+        raise ValueError("completion-only masking left no answer tokens to train")
     return {"input_ids": list(full_ids), "labels": labels}
 
 
