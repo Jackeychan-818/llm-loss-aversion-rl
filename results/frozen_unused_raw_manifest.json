@@ -1,0 +1,37 @@
+{
+  "note": "SHA-256 of large RAW frozen-test predictions (NOT committed).",
+  "n_files": 6,
+  "total_MB": 206.2,
+  "raw_prediction_files": [
+    {
+      "path": "frozen_unused/Qwen-7B-Base-Local-frozenUC/loss_aversion_X.json",
+      "bytes": 36003156,
+      "sha256": "d42775aa785102257bc53762f2535ce9d295c937b8ae62973e54aaf54de41bbf"
+    },
+    {
+      "path": "frozen_unused/Qwen-7B-Base-Local-frozenUC/loss_aversion_Y.json",
+      "bytes": 36110106,
+      "sha256": "c9f69bc374224af16658553649d6f5f28cc4e4c670f76e055945b476a1e3d5a2"
+    },
+    {
+      "path": "frozen_unused/Qwen-7B-GRPO-qd-seed1-ckpt2000-frozenUC/loss_aversion_X.json",
+      "bytes": 35951673,
+      "sha256": "8eac5ebf31fcd7cbb453cd016bbaaacccb15c57dabffda3713f33334e4d445c3"
+    },
+    {
+      "path": "frozen_unused/Qwen-7B-GRPO-qd-seed1-ckpt2000-frozenUC/loss_aversion_Y.json",
+      "bytes": 36049379,
+      "sha256": "75803ef20ba3d09805022d45a2af58199239e5259248b25a877e45d1ee5e8bab"
+    },
+    {
+      "path": "frozen_unused/Qwen-7B-GRPO-qd-seed2-ckpt6000-frozenUC/loss_aversion_X.json",
+      "bytes": 35993850,
+      "sha256": "87a4d73f1f2c6924db1d29c640e57d9d143c17db604cf53de8f997bb6ba321a2"
+    },
+    {
+      "path": "frozen_unused/Qwen-7B-GRPO-qd-seed2-ckpt6000-frozenUC/loss_aversion_Y.json",
+      "bytes": 36089959,
+      "sha256": "87667c635394fee9f9beab9f2d3fb4b2af81ebbc9e54f5e02034e9a84da8eb95"
+    }
+  ]
+}

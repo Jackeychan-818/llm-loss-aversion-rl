@@ -49,7 +49,8 @@ DEFAULT_UTILITY_FILE = (
     / "Qwen-7B_utility_of_each_goods_Model_A.csv"
 )
 DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
-GOODS_RUN_ORDER = ("trial_goods", "test_goods", "remaining_goods")
+GOODS_RUN_ORDER = ("trial_goods", "test_goods", "remaining_goods",
+                   "frozen_unused_test_goods")
 
 
 def resolve_project_path(value: str) -> Path:

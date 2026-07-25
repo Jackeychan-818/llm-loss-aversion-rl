@@ -1,6 +1,25 @@
 # Frozen Prospective Unused-Configuration Test
 
-**Status:** `FROZEN_PROSPECTIVE_UNEVALUATED`
+**Status:** `FROZEN_EVALUATED` (construction frozen; opened once on 2026-07-24 for
+the three policy-allowed models — matched base, seed1@2000, seed2@6000)
+
+## Evaluated results (2026-07-24, Model A NLS, T=1, N=49,450 cases each)
+
+Familiar-goods / NEW-configuration generalization (NOT unseen-goods OOD):
+
+| model | λ (SE) | η (SE) | consistency | keep-both | W |
+|---|---|---|---|---|---|
+| matched base | 5.946 (0.192) | 1.458 (0.046) | 0.008 | 0.992 | 0.742 |
+| seed1 @2000 | 0.031 (0.007) | 0.089 (0.014) | 0.659 | 0.183 | 0.882 |
+| seed2 @6000 | −0.053 (0.005) | 0.693 (0.013) | 0.716 | 0.211 | 0.909 |
+
+λ collapses from base **5.946 → ≈0** on both confirmatory seeds, with SEs ~3× tighter
+than on `test_goods` (5× the data). η, consistency, and W match the ID pattern
+closely (seed1 η 0.089 vs ID 0.091; seed2 η 0.693 vs ID 0.659; W within 0.001 of ID
+for every model). This is a within-benchmark **configuration** generalization result;
+OOD-50 remains the distinct unseen-goods test. Numbers:
+`results/frozen_unused_results.json`; raw predictions (206 MB) checksummed in
+`results/frozen_unused_raw_manifest.json`, not committed.
 
 **Freeze date:** July 23, 2026
 

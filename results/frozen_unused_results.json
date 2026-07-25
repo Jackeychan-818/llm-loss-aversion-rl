@@ -1,0 +1,48 @@
+{
+  "test": "frozen prospective unused-configuration test (data/frozen_unused_test_goods.json)",
+  "note": "FAMILIAR goods + pairs, NEW attribute configurations (10/pair). NOT unseen-goods OOD. Evaluated once per freeze policy on matched base + seed1@2000 + seed2@6000.",
+  "n_cases": 49450,
+  "n_prompts_per_model": 98900,
+  "estimator": "Model A NLS, T=1",
+  "rows": [
+    {
+      "role": "matched_base",
+      "model_name": "Qwen-7B-Base-Local-frozenUC",
+      "lambda": 5.9457,
+      "lambda_se": 0.1917,
+      "eta": 1.4584,
+      "eta_se": 0.0464,
+      "consistency": 0.0076,
+      "keep_both": 0.992,
+      "trade_both": 0.0,
+      "W": 0.7423,
+      "N": 49450
+    },
+    {
+      "role": "seed1_ckpt2000",
+      "model_name": "Qwen-7B-GRPO-qd-seed1-ckpt2000-frozenUC",
+      "lambda": 0.0305,
+      "lambda_se": 0.0067,
+      "eta": 0.0889,
+      "eta_se": 0.0141,
+      "consistency": 0.6592,
+      "keep_both": 0.183,
+      "trade_both": 0.158,
+      "W": 0.8818,
+      "N": 49450
+    },
+    {
+      "role": "seed2_ckpt6000",
+      "model_name": "Qwen-7B-GRPO-qd-seed2-ckpt6000-frozenUC",
+      "lambda": -0.0533,
+      "lambda_se": 0.0051,
+      "eta": 0.6934,
+      "eta_se": 0.0132,
+      "consistency": 0.7161,
+      "keep_both": 0.211,
+      "trade_both": 0.073,
+      "W": 0.9092,
+      "N": 49450
+    }
+  ]
+}
