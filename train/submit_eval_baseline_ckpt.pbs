@@ -49,8 +49,10 @@ case "$METHOD" in
   *) echo "REFUSED: METHOD='$METHOD' must be sft or sign."; exit 2 ;;
 esac
 # Defence in depth: never let this script touch OOD / frozen-unused data.
+# (match the actual dataset names, not any 'ood' substring — 'test_goods'
+#  contains 'ood'.)
 case "$DATA" in
-  *ood*|*frozen_unused*) echo "REFUSED: baseline eval must use test_goods only."; exit 2 ;;
+  *ood_new_goods*|*frozen_unused*) echo "REFUSED: baseline eval must use test_goods only."; exit 2 ;;
 esac
 
 echo "=== Baseline eval: METHOD=$METHOD SEED=$SEED CKPT=$CKPT ==="
