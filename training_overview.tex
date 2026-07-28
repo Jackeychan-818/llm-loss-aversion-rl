@@ -260,10 +260,11 @@ At each training step, given a prompt $q_i$:
 \begin{algorithmic}[1]
 \State Sample $G = 16$ completions $\{o_1, \ldots, o_G\}$ from the current policy $\pi_\theta$ at temperature 1.5
 \State Score each completion: $\mathcal{R}_j = \mathcal{R}(o_j, \tilde{\delta}_i)$ for $j = 1, \ldots, G$
-\State \textbf{DAPO filter:} if all $G$ rewards are identical (std $= 0$), skip this batch \Comment{avoids zero-advantage updates}
-\State Compute group-normalized advantages:
+\State \textbf{Zero-diversity groups:} if all $G$ completions are identical, the task rewards are set to $0$ \Comment{the group is not skipped; see \S\ref{sec:zero-adv}}
+\State Compute group-centered advantages:
     \[
-        A_j = \mathcal{R}_j \quad \text{(no std normalization; \texttt{scale\_rewards: none})}
+        A_j = \mathcal{R}_j - \frac{1}{G}\sum_{k=1}^{G}\mathcal{R}_k
+        \quad \text{(mean-centered, no std normalization; \texttt{scale\_rewards: none})}
     \]
 \State Compute clipped policy-gradient loss (DAPO variant):
     \[
@@ -295,22 +296,47 @@ Learning rate          & $10^{-6}$ & Conservative \\
 LoRA rank              & 16    & Standard for 7B models; only $\sim$0.5\% of params updated \\
 \texttt{max\_completion\_length} & 4 & Yes/No needs 1--2 tokens; 4 gives slack \\
 \texttt{loss\_type}    & \texttt{dapo} & Eliminates length bias for 1-token outputs \\
-\texttt{scale\_rewards} & \texttt{none} & Avoids NaN when DAPO filter returns all-zero rewards \\
+\texttt{scale\_rewards} & \texttt{none} & No group-std normalization (Dr.\ GRPO); mean-centering still applies \\
 \bottomrule
 \end{tabular}
 \caption{GRPO hyperparameters. All settings are stored in \texttt{train/configs/qwen25\_7b.yaml}.}
 \end{table}
 
-\subsection{Why DAPO Filtering Matters}
+\subsection{Zero Task-Reward Advantage Groups}
+\label{sec:zero-adv}
 
-Because the base model says ``No'' 99\% of the time, most early batches of
+Because the base model says ``No'' 99\% of the time, most early groups of
 $G=16$ completions are entirely ``No''---every response is identical. When all
-rewards are equal, the advantage $A_j = 0$ for all $j$, and the gradient
-update is zero. Training would stall.
+rewards within a group are equal, mean-centering gives $A_j = 0$ for all $j$,
+so the group contributes no policy-gradient signal. We refer to these as
+\emph{zero task-reward advantage groups}. Empirically the logged
+\texttt{frac\_reward\_zero\_std} sits near $0.8$, so most optimizer steps are of
+this kind.
 
-The DAPO filter (from \citealt{yu2025dapo}) discards any batch where all $G$
-completions are identical, preventing wasted compute and ensuring that every
-gradient step carries a meaningful signal.
+Our reward function returns all-zero task rewards for such groups. Three points
+are easy to state imprecisely, so we state them explicitly:
+
+\begin{enumerate}
+    \item \textbf{Nothing is skipped.} We use the stock TRL \texttt{GRPOTrainer}
+    (v1.3.0) without subclassing, so a zero-diversity group still consumes
+    generation compute, still runs the backward pass, and still triggers an
+    optimizer step. This is not generation-level dynamic sampling in the sense of
+    DAPO \citep{yu2025dapo}, which resamples until a group has reward variance;
+    implementing that would require overriding completion generation.
+    \item \textbf{Zeroing the rewards is not what makes the advantage zero.} An
+    all-identical group already has a constant reward vector, so mean-centering
+    would give $A_j = 0$ regardless. The all-zero return therefore changes the
+    \emph{logged} mean reward---such groups are recorded as $0$ rather than their
+    true $\pm|\tilde{\delta}_i|$---but not the gradient. This is one reason the
+    training-reward curve is treated as a diagnostic only, never as a
+    checkpoint-selection criterion; checkpoints are selected on held-out
+    structural $\hat{\lambda}$.
+    \item \textbf{Zero task advantage is not a zero update.} With
+    $\beta = 0.04$ the objective retains its KL term,
+    $\mathcal{L} = \mathcal{L}_{\text{GRPO}} + \beta\,D_{\text{KL}}(\pi_\theta \| \pi_{\text{ref}})$.
+    When $A_j = 0$ the policy-gradient term vanishes but the KL term does not, so
+    these steps still apply a gradient pulling the policy toward the reference.
+\end{enumerate}
 
 % =============================================================================
 \section{Training Infrastructure}

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
 import numpy as np
-from fpdf2 import FPDF
+from fpdf import FPDF          # package is "fpdf2" on PyPI, module is "fpdf"
 import tempfile, os
 
 # ── colour palette ──────────────────────────────────────────────────────────
@@ -62,8 +62,9 @@ def math(ax, y, expr, size=11, x=0.5):
             ha='center', math_fontfamily='dejavuserif')
 
 def hline(ax, y, lw=0.8, color=ACCENT, xmin=0.05, xmax=0.95):
-    ax.axhline(y, xmin=xmin, xmax=xmax, color=color, linewidth=lw,
-               transform=ax.transAxes)
+    # axhline rejects an explicit transform on current matplotlib; the axes are
+    # set to xlim/ylim (0, 1) with axis off, so axes coords == data coords here.
+    ax.axhline(y, xmin=xmin, xmax=xmax, color=color, linewidth=lw)
 
 def box(ax, x0, y0, w, h, text, size=8.5):
     rect = FancyBboxPatch((x0, y0-h), w, h,
@@ -313,9 +314,10 @@ def page4(ax):
         'For each training prompt qᵢ:\n\n'
         '  Step 1.  Sample G = 16 completions {o₁, …, o₁₆} from policy π_θ at temp = 1.5\n\n'
         '  Step 2.  Score each: ℛⱼ = ℛ(oⱼ, δ̃ᵢ)   for j = 1, …, G\n\n'
-        '  Step 3.  DAPO filter: if std({ℛⱼ}) = 0  →  skip batch\n'
-        '           (all G completions identical → zero advantage → zero gradient)\n\n'
-        '  Step 4.  Compute advantages:  Aⱼ = ℛⱼ   (no std normalisation)\n\n'
+        '  Step 3.  Zero-diversity group: if all G completions are identical,\n'
+        '           task rewards are set to 0  (the group is NOT skipped)\n\n'
+        '  Step 4.  Compute advantages:  Aⱼ = ℛⱼ − mean(ℛ)\n'
+        '           (mean-centred; no std normalisation)\n\n'
         '  Step 5.  Clipped policy-gradient loss (DAPO variant):\n\n'
     )
     ax.add_patch(FancyBboxPatch((0.04, y-0.44), 0.92, 0.44,
@@ -337,14 +339,15 @@ def page4(ax):
             fontfamily='monospace', linespacing=1.6)
     y -= 0.46
 
-    title_text(ax, y, '6.3  Why DAPO Filtering Matters', size=11, color=TEXT, bold=False); y -= 0.035
+    title_text(ax, y, '6.3  Zero Task-Reward Advantage Groups', size=11, color=TEXT, bold=False); y -= 0.035
     body(ax, y, (
-        'Because the base model says "No" 99% of the time, most early batches of G = 16\n'
-        'completions are entirely "No" — every response is identical.  When all rewards are\n'
-        'equal, the advantage Aⱼ = 0 for all j, and the gradient update is zero.  Training\n'
-        'would stall.  The DAPO filter discards any such batch, ensuring every gradient\n'
-        'step carries a meaningful signal.'
-    )); y -= 0.12
+        'Because the base model says "No" 99% of the time, most early groups of G = 16\n'
+        'completions are entirely "No".  Mean-centring a constant reward vector gives\n'
+        'Aⱼ = 0 for all j, so the group carries no policy-gradient signal (~80% of steps).\n'
+        'Nothing is skipped: stock TRL GRPOTrainer still generates, backprops and steps,\n'
+        'and at β = 0.04 a zero task advantage still leaves a KL-only update.  Zeroing the\n'
+        'rewards changes the LOGGED reward, not the gradient.'
+    )); y -= 0.135
 
     title_text(ax, y, '6.4  Hyperparameters', size=11, color=TEXT, bold=False); y -= 0.038
     table(ax, y,
@@ -357,7 +360,7 @@ def page4(ax):
            ['LoRA rank',            '16',        '~0.5% of params updated'],
            ['max_completion_length','4',         'Yes/No needs 1–2 tokens; 4 gives slack'],
            ['loss_type',            'dapo',      'Eliminates length bias for 1-token outputs'],
-           ['scale_rewards',        'none',      'Avoids NaN when DAPO filter returns all-zero rewards']],
+           ['scale_rewards',        'none',      'No group-std normalisation; mean-centring still applies']],
           [0.26, 0.18, 0.51], row_h=0.036)
 
 # ═══════════════════════════════════════════════════════════════════════════

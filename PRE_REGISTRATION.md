@@ -141,6 +141,17 @@ Eval budget: 15 ID selection evals + 1 OOD + 1 GSM8K per new seed ≈ **34 evals
 
 ## Amendments
 
+### July 28, 2026 — terminology correction (no design change)
+
+The phrase "zero-reward/DAPO filtering" used in the July 21 amendment below is
+imprecise and is superseded by **"zero task-reward advantage fraction"**
+(the logged `frac_reward_zero_std`). The frozen text is left unedited; only the
+name of the diagnostic changes. Nothing is filtered or skipped: zero-diversity
+groups still generate, backprop, and take an optimizer step; `scale_rewards:
+"none"` still mean-centres advantages; and `beta=0.04` leaves a KL-only update at
+zero task advantage. No threshold, outcome, selection rule, or confirmatory
+checkpoint is affected. See `KNOWN_ISSUES.md` #4.
+
 ### July 21, 2026 — non-gating optimization and utility diagnostics
 
 We will inspect GRPO training dynamics and structural-estimator stability as a

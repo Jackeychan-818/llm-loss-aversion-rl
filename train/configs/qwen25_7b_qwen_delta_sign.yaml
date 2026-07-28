@@ -31,8 +31,10 @@ epsilon: 0.2                     # PPO clip ratio
 beta: 0.04                       # KL penalty coefficient; tighter than DeepSeek-R1's 0.001
 max_completion_length: 4         # Yes/No needs ~1–2 tokens; 4 gives slack
 loss_type: dapo                  # "dapo" (default in TRL 1.3) | "dr_grpo" — both eliminate length bias for 1-token outputs
-scale_rewards: "none"            # REQUIRED: avoid NaN when DAPO filter returns all-zero rewards (std=0 → 0/0)
-                                 # Also aligns with Dr. GRPO recommendation (group std normalisation introduces bias)
+scale_rewards: "none"            # Dr. GRPO recommendation: group std normalisation introduces bias.
+                                 # NOTE: "none" does NOT mean advantages are raw rewards — TRL still
+                                 # mean-centres (advantages = rewards - group mean); it only skips the
+                                 # /std step. It is also not a NaN guard: TRL divides by (std + 1e-4).
 mask_truncated_completions: true # Exclude truncated completions from loss — good practice (DAPO paper)
 reward_weighting: sign_only      # ±1 ablation (Priority-1): tests whether |δ̃| adds beyond the sign.
                                  # Default (magnitude) is unchanged in the base config;

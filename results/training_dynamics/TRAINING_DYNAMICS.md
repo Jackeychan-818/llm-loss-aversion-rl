@@ -6,8 +6,8 @@
 Two layers are kept strictly separate:
 
 - **GRPO training optimization** — reward, DAPO/policy loss, KL, entropy,
-  zero-reward/DAPO filtering, gradient norm, learning rate. These are **noisy
-  training diagnostics**, not results.
+  zero task-reward advantage fraction, gradient norm, learning rate. These are
+  **noisy training diagnostics**, not results.
 - **Structural NLS estimation** — λ, η, d = √(λ²+η²), RSS, Jacobian
   conditioning, and α/β/utility preservation vs the **exact local step-0 base**
   `baseline/Qwen-7B-Base-Local` (λ=7.637, η=1.007). λ/η/d are **validation
@@ -45,10 +45,15 @@ raw observations are shown faintly underneath.
   and then stays there.
 - **Reward std** and **entropy** spike early (~step 1,500) then decay — early
   exploration collapsing toward a more deterministic policy.
-- **Zero-reward/DAPO filtering fraction** dips early, then settles around
-  **~0.6**: at any step ~60% of the G=16 groups have zero reward-std (all-No /
-  all-Yes) and are filtered — consistent with the known peaked base
-  distribution. It **stabilizes** rather than diverging.
+- **Zero task-reward advantage fraction** (`frac_reward_zero_std`) dips early,
+  then settles around **~0.6**: at any step ~60% of the G=16 groups have zero
+  reward-std (all-No / all-Yes), so mean-centering leaves them with zero
+  advantage — consistent with the known peaked base distribution. These groups
+  are **not** filtered or skipped: they still generate, backprop, and take an
+  optimizer step, and at `beta=0.04` they still apply a KL-only update (see
+  `KNOWN_ISSUES.md` #4). Note the logged reward is a conditional statistic —
+  such groups are recorded as 0.0, not their true ±|δ̃|. The fraction
+  **stabilizes** rather than diverging.
 - **KL from base** stays small (~0.5) with occasional spikes; **policy loss**
   stays near 0 with a slow drift to ~0.02; **gradient norm** is low (~2–5) with
   intermittent spikes; **learning rate** follows warmup → cosine decay to 0.

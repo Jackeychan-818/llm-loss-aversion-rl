@@ -69,7 +69,8 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
 - Training-process + structural-trajectory figures are posted under
   `results/training_dynamics/` (GRPO reward/loss/KL/entropy/filtering and the
   λ/η/d/α/β/utility trajectory vs the exact local base).
-- Diagnose training reward/loss, KL and DAPO filtering, and separately inspect
+- Diagnose training reward/loss, KL and the zero task-reward advantage fraction,
+  and separately inspect
   NLS starting/final objective, multi-start stability, alpha/beta drift, and
   fitted utility preservation. Step 600 may be used only as an exploratory
   early-trajectory point; frozen selection remains 2k–30k @ 2k.

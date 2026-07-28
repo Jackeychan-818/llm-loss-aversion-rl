@@ -193,7 +193,7 @@ def build_grpo_dataset(
 
             if delta == 0.0:
                 n_zero_delta += 1
-                continue  # zero gradient signal either way
+                continue  # zero task reward either way; dropped before training
 
             i, j, k, l = decode_attr(attr_code)
 

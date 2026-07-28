@@ -162,9 +162,9 @@ ax1 = make_ax(gs[0, 0],
 ax1.axhspan(ax1.get_ylim()[0], 0, color=RED, alpha=0.04)
 ax1.axhspan(0, ax1.get_ylim()[1], color=GREEN, alpha=0.04)
 
-# 2 — DAPO filter rate
+# 2 — zero task-reward advantage rate (nothing is filtered out; see KNOWN_ISSUES #4)
 ax2 = make_ax(gs[0, 1],
-              "DAPO Filter Rate  (want → 0)",
+              "Zero-Advantage Group Rate  (want → 0)",
               "frac_reward_zero_std",
               dapo, ORANGE,
               hline=0.5, hline_label="50% threshold",

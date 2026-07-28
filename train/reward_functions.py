@@ -114,14 +114,28 @@ def make_reward_fn(weighting: str = "magnitude"):
       - perspective: ["X"]*16 or ["Y"]*16  (same value repeated G times)
       - delta: [float]*16                  (same value repeated G times)
 
-    DAPO-style dynamic sampling (KNOWN_ISSUES.md #2):
+    Zero-diversity groups (KNOWN_ISSUES.md #4):
     If all G completions in a group are identical (all "No" at initialization,
-    likely), standard GRPO gets zero advantage and zero gradient. This wastes
-    a gradient step. We return all-zero rewards explicitly to avoid numerical
-    noise from normalizing a constant reward vector.
+    likely), we return all-zero task rewards. This does NOT skip the batch —
+    nothing here can. Be precise about what actually happens downstream in the
+    stock TRL GRPOTrainer (trl 1.3.0, `grpo_trainer.py`):
 
-    Note: this saves gradient compute but not generation compute. For generation-
-    level filtering, subclass GRPOTrainer and override _generate_completions.
+      - Advantages are mean-centred, NOT raw rewards, even with
+        `scale_rewards: "none"`:  `advantages = rewards - mean_grouped_rewards`
+        (with "none" the std is computed for logging only, never divided out).
+      - An all-identical group already has a constant reward vector, so its
+        advantage is 0 with or without this branch. Numerically the branch is a
+        no-op on the gradient; what it changes is the LOGGED mean reward, which
+        is reported as 0.0 instead of the group's true ±|δ̃|.
+      - Zero task advantage is not a zero update. With `beta = 0.04` the loss is
+        `per_token_loss + beta * per_token_kl`, so the group still contributes a
+        KL-only gradient toward the reference policy. Since
+        generation_batch_size = 1 x 16 = G, one group IS one optimizer step.
+
+    Call these "zero task-reward advantage groups" — not "skipped batches" and
+    not "zero-update batches". Neither generation nor gradient compute is saved.
+    True generation-level filtering (DAPO dynamic sampling) requires subclassing
+    GRPOTrainer and overriding _generate_completions; it is not implemented.
     """
     if weighting not in ("magnitude", "sign_only"):
         raise ValueError(f"unknown reward weighting {weighting!r}; "
@@ -130,9 +144,11 @@ def make_reward_fn(weighting: str = "magnitude"):
     def reward_fn(completions, perspective, delta, **kwargs):
         parsed = [parse_response(c) for c in completions]
 
-        # DAPO-style: skip batches with zero diversity (all outputs identical).
-        # Identical for both weightings — the diversity filter is orthogonal to
-        # the reward magnitude, so the sign-only contrast is purely the weight.
+        # Zero-diversity group (all outputs identical) → all-zero task rewards.
+        # The batch is NOT skipped; see the docstring above for what TRL does
+        # with these. Identical for both weightings — the diversity branch is
+        # orthogonal to reward magnitude, so the sign-only contrast is purely
+        # the weight.
         if len(set(parsed)) == 1:
             return [0.0] * len(completions)
 
@@ -148,11 +164,11 @@ if __name__ == "__main__":
     # Quick sanity check
     fn = make_reward_fn()
 
-    # All "No" → DAPO filter → all zeros
+    # All "No" → zero-diversity group → all-zero task rewards (batch still runs)
     completions_all_no = ["No"] * 16
     r = fn(completions_all_no, ["X"] * 16, [-1.81] * 16)
-    assert all(x == 0.0 for x in r), "DAPO filter should zero out all-identical batches"
-    print("DAPO filter (all No): OK — all zeros")
+    assert all(x == 0.0 for x in r), "all-identical group should give zero task rewards"
+    print("zero-diversity group (all No): OK — all-zero task rewards")
 
     # Mixed batch with X-perspective, delta < 0 → rational = "Yes"
     completions_mixed = ["Yes", "No"] + ["No"] * 14

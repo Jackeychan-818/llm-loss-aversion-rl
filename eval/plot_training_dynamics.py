@@ -4,7 +4,7 @@
 Two clearly separated layers (never conflated):
 
   (A) GRPO TRAINING optimization — reward, reward_std, DAPO/policy loss, KL from
-      base, entropy, zero-reward/DAPO filtering fraction, gradient norm, learning
+      base, entropy, zero task-reward advantage fraction, gradient norm, learning
       rate. Parsed from trainer_state.json log_history (explicit training steps),
       with a text-log fallback. These are NOISY TRAINING DIAGNOSTICS.
 
@@ -387,7 +387,7 @@ SEED_COLOR = {"seed1": "#1f77b4", "seed2": "#d62728", "seed42": "#7f7f7f"}
 def plot_grpo(dfs: dict, window: int, path: Path):
     panels = [("reward", "mean reward"), ("reward_std", "reward std"),
               ("loss", "GRPO/DAPO policy loss"), ("kl", "KL from base"),
-              ("entropy", "entropy"), ("frac_reward_zero_std", "zero-reward/DAPO filter frac"),
+              ("entropy", "entropy"), ("frac_reward_zero_std", "zero task-reward advantage frac"),
               ("grad_norm", "gradient norm"), ("learning_rate", "learning rate")]
     fig, axes = plt.subplots(2, 4, figsize=(20, 9))
     for ax, (col, title) in zip(axes.ravel(), panels):

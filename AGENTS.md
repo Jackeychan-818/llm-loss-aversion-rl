@@ -234,7 +234,8 @@ python plot_training.py logs/<training-log>.out
 4. **Keep train prompts aligned with eval prompts.**
 5. **Prefer LoRA over full fine-tuning** because the memory budget is a single A100.
 6. **vLLM is optional, not the working dependency.** NSCC-compatible vLLM failed; the working path uses plain HF generation/evaluation.
-7. **Do not select checkpoints from training reward alone.** Recent plots show high zero-std/DAPO filtering, weak reward trend, and nontrivial KL drift; validate with held-out structural λ̂.
+7. **Do not select checkpoints from training reward alone.** Recent plots show a high zero-std fraction, weak reward trend, and nontrivial KL drift; validate with held-out structural λ̂. Note the logged reward is a conditional statistic: zero-diversity groups are recorded as 0.0, not their true ±|δ̃|.
+7a. **Call them "zero task-reward advantage groups"** — never "skipped batches" or "zero-update batches". `make_reward_fn()` returns zero task rewards but skips nothing; `scale_rewards: "none"` still mean-centres advantages; and `beta=0.04` leaves a KL-only update at zero advantage. Generation-level dynamic sampling is NOT implemented. See KNOWN_ISSUES.md #4.
 8. **Describe `test_goods.json` precisely.** It holds out exact attribute configurations/questions, while goods and goods-pair identities are shared with training. The separate 50-good OOD suite is external-validity evidence, not part of this split.
 9. **Keep optimization layers distinct.** GRPO's `beta=0.04` is a KL coefficient; structural beta denotes attribute-profile effects. The matched local base is behavioral step 0, while the historical Qwen utility table is the fixed reward source.
 10. **Do not add exploratory checkpoints to frozen selection.** Step 600 may be used to diagnose early training because saves occur every 200 steps, but confirmatory selection remains the 15 checkpoints from 2k to 30k at 2k intervals.

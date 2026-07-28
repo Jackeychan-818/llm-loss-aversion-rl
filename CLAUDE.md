@@ -347,7 +347,12 @@ delta_consensus_v3.json ──────────────────�
    `PAPER_READINESS.md`. Do not claim Qwen-own δ̃ dominates consensus on every
    axis — it has lower λ̂ but consensus has lower η̂ and higher OOD consistency.
 5. **TRL's `GRPOTrainer` is the training library.** Check TRL docs for the exact API — it evolves fast.
-6. **Dynamic sampling is critical** — 99% of base outputs are "No", so many G=16 batches may be all-identical → zero advantage → zero gradient. Recent plots show high zero-std filtering; treat training reward as a diagnostic and select checkpoints by held-out structural λ̂. See KNOWN_ISSUES.md items #3-4.
+6. **Dynamic sampling is critical and NOT implemented** — 99% of base outputs are "No", so most G=16 groups are all-identical and become **zero task-reward advantage groups** (~80% of steps). Say it that way; never "skipped batches" or "zero-update batches". Three facts to keep straight (details in KNOWN_ISSUES.md #4):
+   - `make_reward_fn()` returns all-zero task rewards, but **nothing is skipped** — stock TRL `GRPOTrainer` still generates, backprops, and steps.
+   - `scale_rewards: "none"` still **mean-centres**: `advantages = rewards − group mean`. Advantages are never raw rewards. (It is also not a NaN guard — TRL divides by `std + 1e-4`.)
+   - With `beta: 0.04`, zero task advantage still leaves a **KL-only update** toward the reference policy.
+
+   Because zeroed groups are logged as reward 0.0 rather than their true ±|δ̃|, treat training reward as a diagnostic and select checkpoints by held-out structural λ̂. See KNOWN_ISSUES.md items #3-4.
 7. **Temperature must be ≥ 1.0** — temp < 1 makes the 99% No distribution even more peaked. Config uses 1.5.
 8. **T is the structural LINK SCALE — not a sampling temperature.** Two different
    things are easily conflated; keep them apart:

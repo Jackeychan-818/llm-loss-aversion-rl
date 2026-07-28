@@ -95,7 +95,7 @@ consistency.
 **Status:** Open after full run and new convergence plots (July 2026)
 **Risk:** Medium-high — structural result is strong, but training metrics are not clean convergence evidence.
 
-Recent plots show high zero-std/DAPO filtering, flat-ish positive reward, and nontrivial KL drift. This does not invalidate the held-out λ̂_after result, but it means checkpoint selection and ablation claims need care.
+Recent plots show a high zero task-reward advantage fraction (`frac_reward_zero_std`), flat-ish positive reward, and nontrivial KL drift. This does not invalidate the held-out λ̂_after result, but it means checkpoint selection and ablation claims need care.
 
 **Action needed:**
 - Evaluate several checkpoints, not only the final checkpoint.
@@ -104,21 +104,26 @@ Recent plots show high zero-std/DAPO filtering, flat-ish positive reward, and no
 - Treat training reward as a diagnostic, not the final model-selection metric.
 
 ### 4. Dynamic sampling implementation
-**Status:** Partially handled during training; still important for ablations.
-**Risk:** Medium — generation-level filtering still missing.
+**Status:** NOT implemented. Correct terminology audited and fixed July 28, 2026.
+**Risk:** Medium — generation-level filtering is absent, and earlier docs overstated what exists.
 
-99% of model outputs are "No." Without DAPO-style dynamic sampling, almost every training batch has zero advantage and zero gradient.
+99% of model outputs are "No", so most G=16 groups are all-identical and produce **zero task-reward advantage**. Use that phrase. Earlier wording here ("skip batches", "prevents degenerate gradient updates") was wrong and has been corrected — nothing is skipped and no update is prevented.
 
-**What's done:** `train/reward_functions.py` `make_reward_fn()` returns all-zero rewards for any group where all G completions are identical (detected after parsing). This prevents degenerate gradient updates.
+**What actually happens** (stock TRL `GRPOTrainer`, v1.3.0, no subclass — see `train/grpo_train.py`):
+- `make_reward_fn()` returns all-zero task rewards for a zero-diversity group.
+- TRL computes `advantages = rewards - mean_grouped_rewards` (`grpo_trainer.py`). With `scale_rewards: "none"` the std is computed **for logging only** and never divided out — advantages are mean-centred, **not** raw rewards.
+- An all-identical group already has a constant reward vector, so its advantage is 0 **with or without** our zero-return branch. The branch is a numerical no-op on the gradient; what it changes is the **logged mean reward** (reported as 0.0 instead of the group's true ±|δ̃|). This is an extra reason the training-reward curve is diagnostic only — it is a conditional statistic over diverse groups.
+- With `beta: 0.04` the loss is `per_token_loss + beta * per_token_kl`. At zero advantage the policy term vanishes but the KL term does not, so the group still applies a **KL-only gradient** toward the reference policy. Since `generation_batch_size = 1 × 16 = G`, one group is one optimizer step: these are **not** zero-update steps.
 
-**What's still missing:** Generation-level filtering. The current implementation still spends generation compute on all-identical batches before discarding them. A proper fix subclasses `GRPOTrainer` and overrides `_generate_completions` or `compute_loss` to skip batches entirely.
+**What's still missing:** Generation-level filtering (true DAPO dynamic sampling — resample until a group has reward variance). Both generation and gradient compute are still spent on zero-diversity groups. A proper fix subclasses `GRPOTrainer` and overrides `_generate_completions`.
 
-**Empirical result:** The April 27 full run logged `frac_reward_zero_std: 0.8` at step 10, meaning ~80% of prompt groups were all-identical and produced zero useful GRPO signal.
+**Empirical result:** The April 27 full run logged `frac_reward_zero_std: 0.8` at step 10, meaning ~80% of prompt groups were all-identical and carried no policy-gradient signal. This metric is computed by TRL from the rewards themselves (`is_std_zero`), so our zero-return branch does not distort it.
 
 **Action needed:**
 - If rerunning training, consider generation-level filtering via a GRPOTrainer subclass.
 - If zero-std fraction stays near 80%, test higher temperature, larger G, or a more targeted prompt/reward setup.
-- Report the high filtering rate transparently if it remains part of the final training recipe.
+- Report the high zero-advantage rate transparently if it remains part of the final training recipe.
+- In any writeup, say "zero task-reward advantage groups" — never "skipped batches" or "zero-update batches".
 
 ### 5. T=0 vs T=1 estimation bug
 **Status:** ✅ Resolved (April 14, 2026)

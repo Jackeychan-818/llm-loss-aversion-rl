@@ -236,7 +236,8 @@ evaluated as an explicitly post-hoc early-training diagnostic because saves are
 every 200 steps; it cannot enter selection or receive OOD candidate testing.
 
 Diagnostics will report GRPO reward/loss, KL, entropy, gradient norm, learning
-rate, reward dispersion and DAPO filtering, plus NLS starting/final RSS,
+rate, reward dispersion and the zero task-reward advantage fraction, plus NLS
+starting/final RSS,
 conditioning, multi-start stability, alpha/beta drift, fitted-utility
 distributions, and preference-rank preservation. The default NLS starts at
 `lambda=eta=0` with pooled-OLS alpha/beta values. The current estimator's
