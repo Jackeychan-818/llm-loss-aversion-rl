@@ -48,23 +48,19 @@ where λ is loss aversion, η is status-quo bias, and U is estimated from item/a
 
 ### Baseline Qwen2.5-7B-Instruct
 
-Estimated from the baseline treatment with Model A NLS, `T=1`. This is a
-historical Together-hosted baseline. It used a different endpoint, sample, and
-probability scorer from the local adapter evaluation, so the exact local base
-checkpoint must be rerun before this is used as the causal before/after value.
+The causal baseline is the exact local Qwen checkpoint evaluated on the same
+9,890 rows with the same teacher-forced scorer and Model-A estimator as the
+adapters.
 
 | Parameter | Estimate | Std. Error |
 |---|---:|---:|
-| λ, loss aversion | **11.7519** | 1.2219 |
-| η, status-quo bias | **1.5178** | 0.0852 |
+| λ, loss aversion | **7.637** | 0.627 |
+| η, status-quo bias | **1.007** | 0.120 |
 
-Raw choice fractions show the base model almost never trades:
-
-| X \\ Y | Yes | tie | No |
-|---|---:|---:|---:|
-| Yes | 0.00 | 0.00 | 0.48 |
-| tie | 0.00 | 0.00 | 0.00 |
-| No | 0.45 | 0.00 | 99.07 |
+The matched base has 99.13% keep-both behavior and 0.87% paired consistency.
+The older Together-hosted estimate (`lambda = 11.7519`, `eta = 1.5178`) used a
+different endpoint, sample, and probability scorer. It is retained for
+provenance only and must not be used as the causal before/after comparator.
 
 ### Primary: Qwen-Own-Delta GRPO
 
@@ -284,16 +280,17 @@ Key main-run hyperparameters:
 3. DONE — the prospective unused-configuration evaluation and the full
    120-scenario framing specificity evaluation are complete. The latter is an
    adverse-transfer boundary result rather than evidence of general debiasing.
-4. Add the post-hoc optimization, multi-start, alpha/beta, and utility-trajectory
-   diagnostics without changing the frozen selection grid.
+4. DONE — post-hoc optimization, multi-start, alpha/beta, conditioning, and
+   utility-trajectory diagnostics are recorded without changing the frozen
+   selection grid. Pair/good-aware inference remains open.
 5. Archive and reproduce all seed, OOD, framing, and capability artifacts.
-6. **Priority-1 baselines — infrastructure built, not yet run** (frozen design:
-   `CAUSAL_BASELINE_PROTOCOL.md`). Matched **SFT** tests whether RL is necessary;
-   **sign-only GRPO** tests whether reward magnitude |δ̃| adds beyond the sign.
-   These are different experimental questions, and both are distinct from the
-   frontier-consensus-delta run, which remains a reward-*source* ablation. The
-   default GRPO reward is unchanged (`reward_weighting: magnitude`); no baseline
-   result exists until the jobs run, and the full paper rewrite stays deferred.
+6. **Priority-1 baselines — exploratory pilot complete; confirmatory runs
+   pending** (frozen design: `CAUSAL_BASELINE_PROTOCOL.md`). Matched **SFT**
+   tests whether RL is necessary; **sign-only GRPO** tests a combined change in
+   reward weighting and scale. Both one-seed pilots reduce lambda on
+   `test_goods`, and SFT reaches `d≈0.05` at 4k–6k, but no frozen selector or
+   untouched comparison suite was used. Full two-seed 30k runs, a newly frozen
+   suite, and a scale-matched sign control remain required.
 7. Freeze and run a prompt-semantic robustness suite covering response tokens,
    item labels, display order, attribute order, and paraphrases.
 8. Complete IFEval, then add one compact GSM-Symbolic-500 math robustness
@@ -301,8 +298,8 @@ Key main-run hyperparameters:
 9. Add pair/good-aware structural robustness and estimator recovery.
 10. Retain frontier or human comparisons only if their protocols and estimands
    are made comparable.
-11. Defer the full paper rewrite until these experiments clarify the final
-    scope.
+11. Keep the manuscript venue-agnostic and defer the full rewrite until these
+    experiments clarify the final scope. `draft/aaai27/` is historical.
 
 The design requirements, priority ordering, and safeguards against reusing
 opened test sets are recorded in `RESEARCH_ROADMAP.md`.

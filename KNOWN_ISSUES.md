@@ -4,22 +4,59 @@ A running log of problems encountered, potential risks, and things to verify
 before they become bugs. `PAPER_READINESS.md` is the authoritative prioritized
 summary for the current full-paper plan.
 
-## Current Paper Direction — July 15, 2026
+## Current Paper Direction — July 28, 2026
 
 - **Primary model:** Qwen-own-delta GRPO, with checkpoint 8,000 as the current
-  selected candidate.
+  exploratory selected candidate.
 - **Reward-source ablation:** frontier-consensus-delta GRPO.
 - **Primary validation estimate:** Qwen-own-delta step 8,000 has
   `lambda = 0.111`, `eta = 0.504` on `test_goods.json`. Because this dataset
   was used to select the checkpoint, 0.111 is a validation result, not
   untouched final-test performance.
-- **Intended final result:** the separately frozen new-goods evaluation. The
-  current draft reports Qwen-own-delta OOD `lambda = 0.226`, `eta = 0.790`,
-  and consistency `49.46%`, but the raw outputs and estimator artifacts must
-  be archived before this is paper-ready.
+- **Confirmatory replication:** 2/2 fresh seeds passed the frozen selection,
+  OOD-50, and GSM8K gates; seed 1 selected step 2,000 and seed 2 selected step
+  6,000.
+- **Prospective configuration result:** the frozen unused-configuration suite
+  was opened once on the matched base and two selected seeds. Lambda was 5.946
+  for base, 0.031 for seed 1, and −0.053 for seed 2. This is new
+  configurations of familiar goods/pairs, not unseen-goods OOD.
+- **Causal baselines:** infrastructure and a one-seed 6k pilot now exist. Both
+  SFT and sign-only GRPO reduce lambda on validation, but the pilot cannot
+  establish a winner or a confirmatory method comparison.
 - **Economic rationale:** use Qwen's own estimated preference ordering rather
   than imposing the preferences of frontier models. Both reward sources remain
   pseudo-utility signals, not objective cardinal ground truth.
+- **Venue status:** the project is no longer targeting AAAI-27;
+  `draft/aaai27/` is a historical submission workspace.
+
+---
+
+## Active audit ledger — July 28, 2026
+
+This is the canonical live problem ledger. `PAPER_READINESS.md` decides what
+the paper may claim; `RESEARCH_ROADMAP.md` orders the work; `HISTORY.md` records
+what already happened.
+
+| ID | Severity | Status | Problem and evidence | Closure condition |
+|---|---|---|---|---|
+| `INFER-001` | P0 scientific | Open | Model-A SEs come from iid `scipy.curve_fit` covariance in `eval/core_exp_refactored.py`, despite paired perspectives, repeated pairs, and shared goods. | Pair-clustered bootstrap plus good-aware/leave-one-good-out inference and estimator-recovery coverage are implemented and reported. |
+| `PAIR-001` | P0 correctness | Open | `eval/core_exp_refactored.py` pairs X/Y rows by list index, without joining or asserting `case_id`, attributes, lengths, or order. Current tracked pairs align, but a partial/asymmetric run can silently corrupt a fit. | Join by stable ID; assert one X and one Y row, matching goods/attributes, no duplicates, and expected sample size before estimation. |
+| `PROV-001` | P0 provenance | Open | `eval/select_checkpoint.py` always writes “frozen final suite not opened,” while baseline provenance must state that OOD-50 and frozen-unused are already opened. A future manifest can contradict its own note. | Make suite state a required structured field and derive console/manifest text from it; regression-test both states. |
+| `SELECT-001` | P0 reporting | Open | `eval/seed_replication_report.py` compares every manifest step with the 15-step grid. Adding an allowed off-grid diagnostic such as step 600 can falsely turn a complete run into `PENDING`. | Filter to `_on_grid` checkpoints before completeness checks and add an off-grid regression test. |
+| `BUILD-001` | P0 reproducibility | Open | `draft/aaai27/main.tex` requires `figures/task_overview.pdf`, but the figure is untracked. The submission checker passes only because local untracked figures mask the clean-checkout failure. | Track the required vector figures or make the default documented build generate them before checking; verify from `git archive`. |
+| `RESUME-001` | P1 correctness | Open | Explicit resume paths in `train/grpo_train.py` and `train/sft_train.py` are not required to belong to the current output directory and are not checked against immutable seed/config/data manifests. | Validate ancestry and the prior manifest before loading; never overwrite provenance before the check passes. |
+| `ABLATION-001` | P0 identification | Open | Sign-only GRPO changes `±|delta|` to `±1` while reward-scale normalization is disabled. It therefore changes both relative case weighting and global gradient scale. | Describe the current contrast precisely and add a scale-matched sign control, or otherwise match effective reward/gradient scale. |
+| `PILOT-001` | P0 provenance | Open | `results/causal_baseline_pilot/` contains only a summary JSON and hand-facing table. W, Jacobian condition numbers, and runtimes are not in the JSON; raw predictions, fit CSVs, hashes, commands, and a deterministic generator are absent. | Add immutable run/eval manifests, machine-readable inputs for every table cell, and a deterministic aggregation command before citation beyond exploratory status. |
+| `ENV-001` | P1 reproducibility | Open | `train/grpo_train.py` warns and silently drops unsupported GRPO fields on library-version mismatch, including scientifically defining options. There is no repository-wide environment lock. | Hard-fail for critical keys; record exact Torch/Transformers/TRL/PEFT versions and model revision/hash in immutable run manifests. |
+| `EVAL-001` | P1 correctness | Open | `eval/run_qwen_local.py` resumes an output directory keyed mainly by model name without validating adapter, base, dataset, treatment, or hashes. Different evaluations can be silently mixed. | Create and validate an immutable evaluation manifest before resume; refuse mismatches and concurrent directory reuse. |
+| `PBS-001` | P1 operations | Open | Several original PBS scripts pipe Python through `tee` without `set -o pipefail`, so a failed job can appear successful and leave stale/partial inputs for estimation. | Add failure propagation consistently and test representative failing commands. |
+| `ARTIFACT-001` | P0 reproducibility | Partial | Derived manifests make headline numbers traceable, but raw OOD/GSM8K generations, selected adapters, and a durable environment/package are not all available from a clean clone. | Publish or archive every claim-carrying raw artifact and adapter with hashes, licenses, exact commands, and environment metadata. |
+| `DOC-001` | P1 governance | In progress | Project status has drifted across `AGENTS.md`, `CLAUDE.md`, `PROJECT_OVERVIEW.md`, the canonical manuscript, and the historical AAAI workboard. | All mirrors point to this ledger/readiness/roadmap and contain no contradictory current statuses or prohibited claims. |
+| `REPO-001` | P2 hygiene | Open | Generated outputs, numbered duplicate copies, redundant delta builders/data, stale stashes/worktrees, and large loose Git objects obscure source state. | Classify or remove each item safely, update scoped ignores/build rules, then verify a clean worktree and clean-clone build. |
+
+The full two-seed causal-baseline launch should not begin until at least
+`PAIR-001`, `PROV-001`, `SELECT-001`, `RESUME-001`, `ABLATION-001`, and
+`ENV-001` are resolved or explicitly frozen as documented design limitations.
 
 ---
 
@@ -79,17 +116,35 @@ consistency.
 
 ### 2A. Full-paper blockers not captured by the original issue numbering
 
-**Status:** Open; see `PAPER_READINESS.md` for full specifications.
+**Status:** Reconciled July 28; see `PAPER_READINESS.md` for full specifications.
 
-- Rerun the exact local base with the same 9,890 rows and local scorer as the
-  adapters.
-- Treat `test_goods` as validation because it informed Qwen-own reward
-  construction and checkpoint selection.
-- Freeze a joint lambda/eta/consistency checkpoint-selection rule.
-- Run at least three Qwen-own-delta training seeds.
-- Archive raw checkpoint and OOD outputs, estimator artifacts, checkpoint
-  identities/checksums, and reproduction commands.
-- Add matched SFT and preferably sign-only GRPO baselines.
+**Resolved:**
+
+- exact matched local base evaluation;
+- validation-only treatment of `test_goods`;
+- frozen joint checkpoint-selection rule;
+- genuinely independent seed propagation;
+- 2/2 confirmatory seed result under the pre-registered rule;
+- ownership-free reward-anchor validation; and
+- one-shot prospective unused-configuration evaluation with provenance.
+
+**Partially resolved:**
+
+- derived result manifests are committed, but the full raw prediction,
+  adapter, environment, and durable-release package is incomplete;
+- matched SFT and sign-only GRPO code is hardened and a pilot exists, but the
+  confirmatory two-seed 30k comparison and new untouched suite do not; and
+- multi-start/conditioning diagnostics exist, but pair/good-aware inference
+  and estimator-recovery validation remain incomplete.
+
+**Open:**
+
+- direct preservation of frozen ownership-free preferences after training;
+- prompt-semantic counterbalancing;
+- IFEval or another complementary capability benchmark; and
+- a leakage-clean reward-source rerun if the paper requires a fully clean
+  Qwen-own construction rather than transparent validation/final-test
+  separation.
 
 ### 3. Training-health interpretation
 **Status:** Open after full run and new convergence plots (July 2026)
@@ -107,13 +162,26 @@ Recent plots show high zero-std/DAPO filtering, flat-ish positive reward, and no
 **Status:** Partially handled during training; still important for ablations.
 **Risk:** Medium — generation-level filtering still missing.
 
-99% of model outputs are "No." Without DAPO-style dynamic sampling, almost every training batch has zero advantage and zero gradient.
+The base model produces "No" almost all the time. When all completions in a
+prompt group receive the same task reward, the normalized **task-reward
+advantage** is zero.
 
-**What's done:** `train/reward_functions.py` `make_reward_fn()` returns all-zero rewards for any group where all G completions are identical (detected after parsing). This prevents degenerate gradient updates.
+**What's done:** `train/reward_functions.py` `make_reward_fn()` returns
+all-zero task rewards for any group where all G completions are identical
+(detected after parsing). This prevents that group from supplying a misleading
+task-reward direction.
+
+**Important qualification:** this is not necessarily a zero **total** update.
+The GRPO objective also uses `beta = 0.04` for KL regularization, so an
+all-identical/zero-advantage group may still contribute a KL-only gradient.
+Documentation and diagnostics should say “zero task advantage,” not “zero
+gradient.”
 
 **What's still missing:** Generation-level filtering. The current implementation still spends generation compute on all-identical batches before discarding them. A proper fix subclasses `GRPOTrainer` and overrides `_generate_completions` or `compute_loss` to skip batches entirely.
 
-**Empirical result:** The April 27 full run logged `frac_reward_zero_std: 0.8` at step 10, meaning ~80% of prompt groups were all-identical and produced zero useful GRPO signal.
+**Empirical result:** The April 27 full run logged `frac_reward_zero_std: 0.8`
+at step 10, meaning roughly 80% of prompt groups supplied no differentiated
+task-reward signal.
 
 **Action needed:**
 - If rerunning training, consider generation-level filtering via a GRPOTrainer subclass.
@@ -170,8 +238,11 @@ Rank 16 is standard for 7B models, but this task may require very specific behav
 ## Low — Monitor during evaluation
 
 ### 9. Generalization beyond training goods
-**Status:** ✅ Resolved for the core within-benchmark claim (July 15, 2026). `test_goods.json` is an in-distribution compositional holdout, not a novel-goods holdout. A separate 50-good OOD suite is available for optional external-validity analysis in `data/ood_new_goods_50.json` and `data/ood_new_goods_50_test.json`.
-**Risk:** Low for the core configuration-generalization claim; external validity to unseen goods remains a separate question.
+**Status:** ✅ Resolved for the core within-benchmark claim; confirmatory
+configuration and OOD-50 evidence now exist. `test_goods.json` remains
+validation, not a novel-goods holdout.
+**Risk:** Low for the narrow configuration-generalization claim; broader
+external validity and method-comparison validity remain separate questions.
 
 An exact split audit found no duplicated `(goods pair, attribute configuration)` cases between `remaining_goods.json` and `test_goods.json`. However, both files use exactly the same 100 goods, the same 4,945 goods pairs, and the same global set of 81 attribute codes. For every shared pair, training contains 10 configurations and test contains 2 different configurations. The current test therefore measures interpolation to unseen configurations of familiar goods pairs, not generalization to new goods or attributes.
 
@@ -189,9 +260,13 @@ The Qwen-delta ablation has an additional indirect leakage path: Qwen's base uti
 - Use `test_goods.json` as validation for the primary Qwen-own-delta model.
 - Describe it as within-benchmark configuration generalization, not
   unseen-goods transfer.
-- Use a separately frozen suite for final primary-model claims.
-- Do not use the new-goods OOD suite for checkpoint selection, and archive its
-  raw outputs before presenting it as paper-ready evidence.
+- The separately frozen unused-configuration suite has now been evaluated
+  once. Preserve it as opened evidence and never use it for training,
+  checkpoint selection, or method revision.
+- OOD-50 provides the unseen-goods evidence for the two frozen selected seeds;
+  do not reuse it for method selection.
+- A claim comparing SFT, sign-only GRPO, and magnitude-weighted GRPO requires a
+  newly frozen untouched suite.
 
 ### 10. KL penalty β = 0.04 — calibration
 **Status:** Assumed reasonable
@@ -206,20 +281,66 @@ The Qwen-delta ablation has an additional indirect leakage path: Qwen's base uti
 - Include β sweep in Phase 6 ablations
 
 ### 11. Cross-model comparability
-**Status:** Next major paper step
-**Risk:** Low — but important for the paper narrative.
+**Status:** Matched before/after comparison resolved; frontier/human comparison
+still open.
+**Risk:** Medium for broad superiority claims; low for the exact-local-base
+causal comparison.
 
-Qwen-7B λ̂_before = 11.75 was estimated with Model A (NLS), T=1. The frontier model λ̂ values from Phase 0 may have used different estimators (Model B or C) or different T values. If estimation methods differ, the λ̂ values aren't directly comparable.
+The paper now uses the exactly matched local base (`lambda = 7.637`,
+`eta = 1.007`) for before/after claims. The historical Qwen value 11.75 and
+frontier values may use different endpoints, samples, probability scorers, or
+estimators and are not headline comparators.
 
 **Action needed:**
 - Check what estimator and T value was used for each frontier model in loss_aversion/
-- If methods differ, either re-estimate with consistent methods or note the caveat in the paper
+- If broad comparison is retained, re-estimate with consistent methods;
+  otherwise omit the superiority claim rather than relying on a footnote.
 
 ### 12. Reward function assumes single rational answer per case
 **Status:** Acknowledged
 **Risk:** Low — but worth noting for the paper.
 
 The utility-based reward assumes δ̃ definitively determines which good is better. In reality, preferences are subjective — there may not be a single "rational" answer. The structural model estimates average utility, not ground truth. This is a modeling assumption worth discussing in the paper's limitations section.
+
+### 13. Structural outcome semantics are easy to mislabel
+**Status:** Documentation correction in progress
+**Risk:** Medium — a Yes/No label reversal can invert the verbal
+interpretation without changing a numerical fit.
+
+`eval/core_exp_refactored.py` assigns the dependent variable to the second
+entry of `[P(Yes), P(No)]`. The logistic structural equation therefore models
+`P(No)`, i.e. the probability of keeping the currently endowed good. Some
+comments and older documents call the modeled quantity `P(Yes)`.
+
+**Action needed:**
+
+- use `P(No)` consistently in the manuscript and protocol documents;
+- add an estimator semantic/unit test with hand-constructed X/Y cases; and
+- avoid changing the shared estimator until the test fixes the intended
+  convention explicitly.
+
+### 14. Repository source/output hygiene
+**Status:** Source-of-truth problem substantially resolved July 28; local
+cleanup remains.
+**Risk:** Low scientifically, medium for reproducibility and safe merging.
+
+Commit `6c31e81` tracks the canonical manuscript source tree. The July 28
+follow-up reconciliation reduces the redundant root `training_overview.tex` to
+a deprecated pointer. The remaining untracked files are mostly generated
+TeX/PDF outputs, local visual assets, and duplicate files whose names end in
+` 2`.
+
+**Action needed:**
+
+- decide which generated figures are required to build the paper from a clean
+  clone and either track them or make generation part of the build;
+- keep logs, PDFs, scratch outputs, and duplicate ` 2` copies out of commits;
+- review `draft/archive/` and `draft/assets/` before adding them; and
+- reconcile `train/build_utility_delta_file.py` with
+  `data/deltas/build_delta_qwen_base.py`; they overlap in purpose but use
+  different paths/schema, and the former is currently unreferenced; and
+- push local main only after reviewing the documentation changes and the
+  untracked list.
 
 ---
 
@@ -237,4 +358,4 @@ vLLM was disabled after compatible versions failed on NSCC. The working path use
 
 ---
 
-*Last updated: July 15, 2026*
+*Last updated: July 28, 2026*

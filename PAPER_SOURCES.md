@@ -1,6 +1,6 @@
 # Paper Sources — Canonical vs Derived
 
-*Established July 15, 2026*
+*Established July 15, 2026; venue status updated July 28, 2026*
 
 This policy exists because the repository already suffered **model-role drift**:
 after the primary model changed to Qwen-own delta, `draft/training_overview.tex` still
@@ -10,10 +10,13 @@ stale one was the one a reader would have believed.
 
 ## Canonical source
 
-**`draft/training_overview.tex` is the single source of truth for the comprehensive
-descriptive working draft.** The compact seven-page-oriented manuscript in
-`draft/aaai27/main.tex` is a derived submission draft and intentionally omits
-some project-record tables for space.
+**`draft/training_overview.tex` is the single source of truth for the
+comprehensive descriptive working draft.** The compact manuscript in
+`draft/aaai27/main.tex` is a separate, venue-specific submission source whose
+numerical blocks are generated from its result registry. It is not generated
+wholesale from the long draft. The project is no longer targeting AAAI-27, so
+that directory is retained as a historical workspace rather than an active
+deadline or venue commitment.
 
 Everything else — PDFs, slide decks, exported figures, any `*_merged.tex`,
 notebooks that render tables — is **derived**. Derived artifacts are
@@ -22,8 +25,8 @@ notebooks that render tables — is **derived**. Derived artifacts are
 | Artifact | Status |
 |---|---|
 | `draft/training_overview.tex` | **CANONICAL** — tracked, reviewed, edited directly |
-| `draft/aaai27/main.tex` | Derived concise AAAI draft — regenerate numerical blocks from its result registry |
-| `training_overview.tex` | Legacy `origin/main` version retained for comparison; not canonical |
+| `draft/aaai27/main.tex` | Historical concise submission source — numerical blocks come from its result registry |
+| `training_overview.tex` | Deprecated root pointer; never edit as manuscript source |
 | PDFs / slides / figures | Derived — regenerate; build outputs are gitignored |
 | `notebooks/compare_lambdas.ipynb` | Referenced historically; does not exist |
 
@@ -53,5 +56,6 @@ notebooks that render tables — is **derived**. Derived artifacts are
    or the superseded 11.75 baseline. (A causal before/after reduction IS now
    supported, against the matched base only.) See the tex section "Claims We Do
    Not Make" and PAPER_READINESS #11.
-4. **Stale artifact found?** Regenerate it or archive it under `archive/` with a
-   dated note. Do not edit it in place — that is how two sources of truth start.
+4. **Stale artifact found?** Regenerate it or archive it under `draft/archive/`
+   with a dated note. Do not edit it in place — that is how two sources of
+   truth start.

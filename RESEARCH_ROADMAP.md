@@ -1,11 +1,12 @@
 # Research Roadmap
 
-*Decision recorded: July 25, 2026*
+*Decision recorded: July 25, 2026; status reconciled July 28, 2026*
 
 This document records the next experimental priorities after the confirmatory
 seed replication and the prospective unused-configuration evaluation. It is a
-research plan, not a paper-writing schedule. A full manuscript rewrite is
-deliberately deferred until the next experiments clarify the final scope.
+venue-independent research plan, not an AAAI-27 schedule. A full manuscript
+rewrite is deliberately deferred until the next experiments clarify the final
+scope.
 
 ## Current evidence
 
@@ -21,14 +22,33 @@ deliberately deferred until the next experiments clarify the final scope.
   framing-susceptible than the matched base.
 - GSM8K shows no material capability loss for either confirmatory seed under
   the frozen non-inferiority rule.
+- A one-seed, 6k-step causal-baseline pilot is complete on validation data.
+  Both SFT and sign-only GRPO sharply reduce lambda; SFT reaches
+  `d = sqrt(lambda^2 + eta^2)` near 0.05 at steps 4k–6k, while sign-only GRPO
+  is noisier. This is an exploratory pilot, not evidence that SFT wins.
 
 The next work should therefore test why the intervention works, whether it is
 robust to prompt semantics, and whether capability retention extends beyond
 the existing GSM8K result.
 
+## Cross-cutting paper gates
+
+Before treating any new comparison as a headline paper result:
+
+1. freeze the comparison design, seeds, selector, and analysis;
+2. reserve a new untouched suite, because the prospective unused-configuration
+   suite has already been opened and cannot guide method development;
+3. archive raw predictions, adapter identity, environment details, and exact
+   reproduction commands;
+4. report lambda and eta with direct choice outcomes and frozen
+   preference-preservation measures;
+5. use pair/good-aware uncertainty and estimator-recovery diagnostics; and
+6. preserve negative evidence, especially the adverse framing result.
+
 ## Priority 1: Matched causal baselines
 
-> **Implementation status (2026-07-25): infrastructure built, NOT yet run.**
+> **Implementation status (2026-07-28): infrastructure hardened; exploratory
+> pilot complete; confirmatory runs NOT yet complete.**
 > The frozen design is in `CAUSAL_BASELINE_PROTOCOL.md`. Code: `train/sft_train.py`
 > (+ `configs/qwen25_7b_sft_qwen_delta.yaml`, `submit_train_sft_qwen_delta.pbs`) for
 > SFT; a `reward_weighting: magnitude|sign_only` option in the existing GRPO reward
@@ -37,8 +57,11 @@ the existing GSM8K result.
 > `train/test_causal_baselines.py`. **SFT tests whether RL is necessary; sign-only
 > GRPO tests whether |δ̃| adds beyond the sign** — two different questions, and both
 > distinct from the frontier-consensus-delta run, which is a reward-*source* ablation.
-> **No baseline result exists until the jobs are run**, and full paper rewriting stays
-> deferred.
+> The seed-1, 6k pilot is recorded in
+> `results/causal_baseline_pilot/pilot_table.md`. It used three validation
+> checkpoints per method, did not run the frozen selector, and cannot declare a
+> winner. Confirmatory claims require the full two-seed, 30k runs and a newly
+> frozen untouched comparison suite.
 
 ### 1A. Matched supervised fine-tuning
 
@@ -51,7 +74,9 @@ Train a Qwen-own-delta SFT baseline using:
 - independent seeds and a checkpoint rule frozen before training.
 
 This tests whether ordinary supervised learning is sufficient to produce the
-observed behavioral change.
+observed behavioral change. The pilot makes this the most consequential current
+question: if matched SFT confirms the same effect, the paper should claim that
+targeted post-training works, not that GRPO is necessary.
 
 ### 1B. Sign-only GRPO
 
@@ -69,6 +94,12 @@ ablation and should not be conflated with this reward-magnitude ablation.
 
 ### Required discipline
 
+- Before launching full runs, close the pre-run correctness gates in
+  `KNOWN_ISSUES.md`: ID-based X/Y pairing (`PAIR-001`), structured opened-suite
+  provenance (`PROV-001`), off-grid-safe replication reporting
+  (`SELECT-001`), manifest-validated resume (`RESUME-001`), scale-matched reward
+  ablation (`ABLATION-001`), and hard failure on unsupported algorithm-defining
+  options (`ENV-001`).
 - Freeze seeds, checkpoints, eligibility rules, metrics, and inference before
   launching.
 - Report lambda and eta jointly with consistency, keep-both, trade-both,
@@ -81,6 +112,13 @@ ablation and should not be conflated with this reward-magnitude ablation.
 - If the paper claims that one training method outperforms another, replicate
   the relevant baseline across independent seeds rather than relying on a
   single favorable run.
+- Treat the pilot runtime gap—about 17.5 minutes for SFT versus 8.7 hours for
+  sign-only GRPO at 6k steps on one A100—as a practical result only after
+  confirming that exposure budgets and endpoints are genuinely comparable.
+- Add a scale-matched sign-only control. The current `±1` condition changes
+  both relative weighting across cases and global reward scale versus
+  `±|delta|`, so by itself it cannot isolate the informational value of reward
+  magnitude.
 
 ## Priority 2: Prompt-semantic robustness
 
@@ -171,6 +209,26 @@ would reveal a post-training side effect.
 
 The P(True) design follows:
 <https://arxiv.org/abs/2207.05221>.
+
+## Deferred extension: reasoning effort and visible rationales
+
+An unmerged branch (`codex/reasoning-effort-experiment`, commit `d0c58c7`)
+contains a useful experimental sketch separating internal reasoning effort
+from visible rationale generation. It is not yet an active protocol:
+
+- it was authored from an old repository base;
+- its README change conflicts with the current main branch; and
+- its framing around “Reward Design v2” must be reconciled with the current
+  Qwen-own-delta paper direction.
+
+If retained, extract only `REASONING_EFFORT_EXPERIMENT.md` from that commit
+(or cherry-pick with an explicit README conflict resolution), then rewrite the
+outdated Reward-v2 framing before adoption. Do not merge the old branch
+wholesale. Keep this extension behind the matched baselines, semantic
+counterbalancing, robust inference, and broader capability checks.
+The defensible question is whether extra inference-time computation changes
+paired ownership-invariant choices; visible explanations are a separate
+prompt/output treatment and cannot be treated as faithful hidden reasoning.
 
 ## Supporting analysis
 

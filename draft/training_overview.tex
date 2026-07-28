@@ -59,9 +59,12 @@ validation cases, rising to 85.5\% for high-magnitude comparisons. Two
 confirmatory seeds both pass the frozen ID-selection, OOD-50, and GSM8K gates.
 On a once-opened prospective suite of 49,450 previously unused configurations,
 their loss-aversion estimates are $0.031$ and $-0.053$, versus $5.946$ for the
-matched base. These are results completed so far, not a finished thesis: a
-matched SFT baseline, robust structural inference, IFEval, trained-policy
-preference agreement, and complete OOD artifact archival remain pending.
+matched base. A one-seed 6,000-step pilot suggests that both matched SFT and
+sign-only GRPO can also sharply reduce the validation estimate; this is
+exploratory and weakens any GRPO-necessity claim. These are results completed
+so far, not a finished thesis: confirmatory matched baselines, robust
+structural inference, IFEval, trained-policy preference agreement, and
+complete OOD artifact archival remain pending.
 \end{abstract}
 
 \noindent\fbox{%
@@ -119,7 +122,7 @@ Consensus-delta GRPO & Reward-source ablation & \done & Lower $\eta$ and higher 
 Pseudo-utility validation & Reward-signal check & \done & Cross-elicitation agreement within the Qwen family; not external ground truth. \\
 GSM8K & Capability check & \done & No clear statistically significant change for seed 42. \\
 Seeds 1 and 2 & Confirmatory replication & \done & Both passed frozen ID selection, OOD-50, and GSM8K gates. \\
-Matched SFT and sign-only GRPO & Optimization baselines & \pending & Required to determine whether GRPO and reward magnitude add value. \\
+Matched SFT and sign-only GRPO & Optimization baselines & \partdone & One-seed 6k validation pilot complete; full two-seed 30k runs and a new untouched suite remain. \\
 Prospective unused configurations & Confirmatory within-benchmark test & \done & Once-opened 49,450-case suite gives $\lambda\approx0$ for both selected seeds. \\
 Robust inference, IFEval, trained-policy agreement & Robustness and retention & \pending & Needed before final claims. \\
 \bottomrule
@@ -453,9 +456,11 @@ The model is Qwen2.5-7B-Instruct \citep{qwen2024qwen25}. Training updates LoRA
 adapters \citep{hu2021lora} with GRPO \citep{shao2024deepseekmath}. For each
 prompt, 16 completions are sampled, scored with Equation~\ref{eq:reward}, and
 compared within the group. Groups with no reward variation produce no useful
-relative advantage and are filtered. This DAPO-style behavior
-\citep{yu2025dapo} avoids invalid updates but does not avoid the generation
-cost of all-identical groups.
+task-reward advantage and are filtered. This DAPO-style behavior
+\citep{yu2025dapo} avoids a misleading task-reward direction but does not avoid
+the generation cost of all-identical groups. Because the objective retains a
+KL coefficient of 0.04, such a group can still contribute a KL-only gradient;
+``zero task advantage'' does not imply a guaranteed zero total update.
 
 \begin{table}[htbp]
 \centering
@@ -472,7 +477,7 @@ Learning rate & $10^{-6}$ & Conservative update. \\
 Clip parameter & 0.2 & Policy-ratio clipping. \\
 KL coefficient & 0.04 & Keeps the adapter near the base policy. \\
 Completion length & 4 tokens & Sufficient for Yes/No output. \\
-Loss and scaling & DAPO; no reward scaling & Zero-variance groups carry no update. \\
+Loss and scaling & DAPO; no reward scaling & Zero-variance groups carry no differentiated task advantage; KL-only update may remain. \\
 Effective batch & batch 1, accumulation 16 & One A100-40GB. \\
 Precision & bfloat16 & Plain Hugging Face path; no working vLLM dependency. \\
 Exploratory seed & 42 & Inferred from the original default. \\
@@ -645,6 +650,44 @@ rigidity. The consensus ablation has a somewhat larger $\widehat\lambda$ but
 near-zero $\widehat\eta$ and 90.65\% consistency. The reward sources therefore
 trade off rather than dominate one another.
 
+\subsection{Exploratory causal-baseline pilot}
+
+A predeclared low-cost pilot trained one SFT seed and one sign-only GRPO seed
+through 6,000 steps, then evaluated steps 2,000, 4,000, and 6,000 on
+\texttt{test\_goods}. No frozen selector, OOD-50 evaluation, or prospective
+unused-configuration evaluation was run for these models.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\begin{tabular}{llrrrrr}
+\toprule
+Method & Step & $\widehat\lambda$ & $\widehat\eta$ & $d$ & Cons. & $W$ \\
+\midrule
+SFT & 2k & $-0.160$ & $-0.466$ & 0.493 & 0.623 & 0.875 \\
+SFT & 4k & 0.059 & 0.012 & 0.060 & 0.718 & 0.900 \\
+SFT & 6k & 0.047 & 0.023 & 0.052 & 0.725 & 0.901 \\
+Sign-only GRPO & 2k & 0.147 & 0.062 & 0.160 & 0.664 & 0.885 \\
+Sign-only GRPO & 4k & 0.558 & $-0.064$ & 0.562 & 0.633 & 0.887 \\
+Sign-only GRPO & 6k & 0.388 & 0.039 & 0.390 & 0.660 & 0.891 \\
+\bottomrule
+\end{tabular}
+\caption{Exploratory seed-1 causal-baseline pilot on validation data, where
+$d=\sqrt{\lambda^2+\eta^2}$. It does not select a checkpoint or establish a
+method winner.}
+\label{tab:causal-pilot}
+\end{table}
+
+Both methods move the validation behavior far from the matched base
+($\widehat\lambda=7.637$). SFT reaches $d\approx0.05$ by 4k--6k, while the
+sign-only trajectory is noisier. If the SFT pattern replicates, the defensible
+claim is that targeted post-training works, not that GRPO is necessary. The
+current sign-only contrast also changes the global reward scale from
+$\pm|\dd|$ to $\pm1$ while reward-scale normalization is disabled, so it does
+not isolate magnitude information from update scale. Full two-seed 30k runs,
+a scale-matched sign control, a newly frozen comparison suite, and complete
+pilot provenance remain required.
+
 \subsection{Frozen new-goods results}
 
 \begin{table}[htbp]
@@ -813,6 +856,39 @@ Forced random switch & 0.173 & 0.006 & $-0.379$ & 0.022 & 89.26\% & 5.36\% / 4.9
 \label{tab:treatments}
 \end{table}
 
+\subsection{Framing specificity: adverse transfer}
+
+A separate non-gating benchmark holds the decision content fixed while varying
+positive versus negative framing across 120 scenarios and 23 paired
+realizations per scenario. The exploratory Qwen-derived step-8k model is
+\emph{more}, not less, framing-sensitive than the exact local base.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Metric & Exact local base & Qwen-derived GRPO step 8k \\
+\midrule
+Hard choice flip rate & 0.505 & 0.689 \\
+Mean absolute probability gap & 0.490 & 0.679 \\
+Probability monotonicity violation rate & 0.245 & 0.258 \\
+Hard-choice monotonicity violation rate & 0.0055 & 0.0061 \\
+\bottomrule
+\end{tabular}
+\caption{Completed framing-specificity benchmark. Larger values are worse for
+all four metrics. This is an adverse boundary result, not a failure of the
+paired endowment result.}
+\label{tab:framing}
+\end{table}
+
+The result rules out a broad ``general debiasing'' interpretation. The current
+intervention is specific to the ownership-conditioned decision policy it was
+trained on and may worsen sensitivity to other surface frames. Derived
+comparison metrics are committed under
+\texttt{framing/full\_qd8k\_120x23/}; raw predictions are checksummed but not
+committed.
+
 \FloatBarrier
 % =============================================================================
 \section{Capability Retention}
@@ -904,14 +980,14 @@ Key reproduction entry points include:
 \toprule
 Work item & Priority & What it answers \\
 \midrule
-Matched Qwen-derived SFT & Required & Are binary supervised targets sufficient without GRPO? \\
+Matched Qwen-derived SFT & Required; pilot complete & Are binary supervised targets sufficient without GRPO across seeds and untouched data? \\
 Pair-cluster bootstrap & Required & How sensitive are $\lambda$ and $\eta$ intervals to paired dependence? \\
 Leave-one-good-out structural inference & Required & Do the structural estimates depend on a small number of goods? \\
 Estimator-recovery simulation & Required & Can Model A recover known $\lambda$ and $\eta$ under the benchmark design? \\
 IFEval & Required & Is instruction following retained alongside GSM8K? \\
 Trained-policy preference agreement & Required & Does the final policy preserve the frozen ownership-free ordering? \\
 OOD raw/archive completion & Required & Can a reviewer independently regenerate the OOD tables? \\
-Sign-only GRPO & Optional & Does pseudo-utility magnitude add value beyond the target sign? \\
+Sign-only and scale-matched GRPO & Required; pilot partial & Does pseudo-utility magnitude add value beyond target sign and global reward scale? \\
 Human anchor subset & Optional & Does the Qwen-derived ordering agree with an external preference source? \\
 \bottomrule
 \end{tabular}
@@ -939,15 +1015,18 @@ shown that the reward source matters: the Qwen-derived and consensus rewards
 occupy different points in the joint space of $\lambda$, $\eta$, consistency,
 and pseudo-utility alignment.
 
-The evidence does not yet establish that GRPO is necessary because the matched
-SFT comparison is unfinished. Training reliability is supported by two
+The evidence does not establish that GRPO is necessary. The exploratory SFT
+pilot produces a comparable validation shift by 4k--6k, so a GRPO-specific
+claim is currently disfavored unless the full comparison changes that result.
+Training reliability is supported by two
 confirmatory seeds that pass the frozen rule, but all seed-level outcomes must
 be reported jointly. The seed-42 ID result remains validation-only, and the
 OOD evidence is not fully reproducible until its raw artifacts are archived.
 Conditional NLS errors do not
 replace pair-aware, good-aware, and seed-level uncertainty. The Qwen-derived
 reward is a cross-endpoint model-family signal rather than objective cardinal
-ground truth.
+ground truth. The adverse framing result also prevents interpreting the
+intervention as general debiasing.
 
 We therefore do not claim:
 \begin{itemize}
@@ -962,12 +1041,14 @@ We therefore do not claim:
 \end{itemize}
 
 The narrow conclusion is descriptive: the implemented Qwen-derived GRPO
-intervention substantially changes ownership-dependent choice in one
-exploratory run and generalizes partially to new goods. GSM8K shows no clear
-statistically significant change under the current paired comparison. The next phase determines
-whether those observations replicate, whether GRPO adds value over supervised
-training, and whether the structural and capability conclusions survive more
-appropriate uncertainty estimates.
+intervention substantially changes ownership-dependent choice across one
+exploratory and two confirmatory runs, and retains low estimates on new goods
+and prospectively unused configurations. GSM8K shows no material loss under
+the frozen seed gates, whereas the framing benchmark exposes an adverse
+boundary condition. The next phase determines whether GRPO adds value over
+supervised training and whether the structural, semantic-robustness, and
+capability conclusions survive stronger uncertainty estimates and reproducible
+artifact release.
 
 \clearpage
 % =============================================================================

@@ -17,7 +17,15 @@ This file combines the recent git commits into a project-level history, so the r
 | Jul 3, 2026 | `b511e53` | Added full held-out Phase 4 evaluation results and PBS eval scripts. | Phase 4 result: `lambda_after = 0.177` with SE `0.005`, a 98.5% reduction from `11.75`. |
 | Jul 7, 2026 | `c643617` | Added debias and forced treatment results, Qwen-delta ablation data/config, and training docs. | Treatment robustness looks strong: baseline `0.177`, debias `0.205`, forced `0.173`. Qwen-own-delta reward became the active ablation. |
 | Jul 9, 2026 | `f2a8710` | Added `monitor.sh`, `plot_training.py`, and log append fixes in PBS scripts. | Training-health monitoring became easier and log history is preserved across job restarts. |
-| Jul 15, 2026 | Working-tree paper decision | Made Qwen-own-delta checkpoint 8,000 the primary paper model and the frontier-consensus model the reward-source ablation; documented selection-on-test, reward leakage, matched-base, seed, inference, capability, and reproducibility risks. | `test_goods` is validation for the primary model; the separately frozen evaluation is intended to carry final claims after artifacts are archived. |
+| Jul 15–16, 2026 | `ee42141`–`bbc1ae2` | Corrected the Model-A link-scale language, made Qwen-own-delta checkpoint 8,000 the exploratory primary model, validated the Qwen-derived reward against ownership-free anchors, ran the exactly matched local base, froze checkpoint selection and seed criteria, and fixed missing seed propagation. | The historical 11.75 estimate was retired as the causal baseline; `test_goods` became validation-only; seeds 1 and 2 became genuinely independent confirmatory runs. |
+| Jul 16, 2026 | `171d283`, `0b964e4` | Added pseudo-utility alignment `W` as a descriptive third outcome alongside lambda and eta. | Preference alignment became measurable, but direct agreement with frozen ownership-free choices remains the stronger preservation test. |
+| Jul 21–22, 2026 | `c7ae293`–`aade3ee` | Added frozen checkpoint selection, full-grid structural diagnostics, multi-start checks, Jacobian conditioning, and training/utility trajectories. | The selection procedure became auditable and estimator instability became visible rather than being hidden by a single fit. |
+| Jul 23, 2026 | `2cd72cc`, `255687f` | Completed the two confirmatory seeds and their one-shot OOD-50 plus GSM8K evaluations. | Replication passed 2/2 under the frozen rule; seed 1 selected step 2,000 and seed 2 selected step 6,000. |
+| Jul 23, 2026 | `ec9d84b` | Completed the framing-specificity evaluation. | The intervention must not be sold as general debiasing: the exploratory step-8,000 model was more framing-susceptible than the matched base. |
+| Jul 23–25, 2026 | `6e0f480`–`9edd76d` | Froze, evaluated once, and documented the prospective unused-configuration suite. | On 49,450 new configurations of familiar pairs, matched-base lambda 5.946 fell to 0.031 and −0.053 for the two selected seeds. This is configuration generalization, not unseen-goods OOD. |
+| Jul 25, 2026 | `2ecf68d` | Added a venue-independent research roadmap. | Causal baselines, prompt-semantic robustness, broader capability checks, and stronger inference became the ordered next program. |
+| Jul 26–27, 2026 | `909cb15`–`c1ab3da` | Added and hardened matched SFT and sign-only GRPO infrastructure, then recorded a seed-1, 6k-step pilot. | Both pilots sharply reduce lambda on validation; SFT is especially strong at 4k–6k, but no method winner is established without the frozen full runs and a new untouched suite. |
+| Jul 28, 2026 | `6c31e81` plus status reconciliation | Committed the manuscript source tree, result registry, paper scripts, and Qwen-utility delta builder; the follow-up reconciliation reduced the redundant root TeX manuscript to a deprecated pointer. | The earlier untracked/canonical-source problem is substantially resolved. Generated outputs, duplicate local copies, and the overlapping utility-delta builders still require classification. |
 
 ## Current Research Snapshot
 
@@ -25,30 +33,44 @@ This file combines the recent git commits into a project-level history, so the r
 - Primary ID validation result: `lambda = 0.111`, `eta = 0.504`. It is not an
   untouched final-test estimate because `test_goods` was used for checkpoint
   selection.
-- Primary OOD result reported in the draft: `lambda = 0.226`, `eta = 0.790`,
-  consistency `49.46%`; raw outputs and estimator artifacts must be archived.
+- Confirmatory replication passed for both fresh seeds under the frozen
+  procedure. Seed 1 selected step 2,000 and seed 2 selected step 6,000; both
+  passed OOD-50 and GSM8K gates.
+- The prospective unused-configuration result is complete: matched-base
+  `lambda = 5.946` versus `0.031` and `-0.053` for the two selected seeds.
+  This is strong within-benchmark configuration evidence, not new-goods
+  generalization.
 - Reward-source ablation: consensus-delta GRPO, ID `lambda = 0.1765`,
   `eta = -0.0477`; reported OOD `lambda = 0.395`, `eta = 0.502`, consistency
   `64.89%`.
-- Historical Together-hosted base: `lambda = 11.7519`, `eta = 1.5178`; a
-  matched exact-local-base evaluation remains required.
+- Exactly matched local base: `lambda = 7.637`, `eta = 1.007`; use this for
+  before/after claims. The historical Together-hosted estimate of 11.7519 is
+  retained only as provenance for the pipeline-mismatch lesson.
 - Held-out evaluation used 9,890 attribute configurations from `test_goods.json`; there are zero repeated prompts/configurations across train and test, while the 100 goods and 4,945 goods pairs are shared.
 - Held-out attribute profiles are jointly significant under a leave-one-good-out jackknife (χ²(8) = 756.05, p < 10^-150), explain 48.8% of within-pair/perspective variation, and flip at least one perspective's answer for 42.18% of goods pairs.
-- The split supports configuration generalization, but `test_goods` is
-  validation for Qwen-own delta because it informed reward construction and
-  checkpoint selection.
+- The exploratory causal-baseline pilot is complete on `test_goods`: SFT and
+  sign-only GRPO both reduce lambda, but the one-seed, three-checkpoint pilot
+  is hypothesis-generating only.
+- The framing result is adverse for any broad “general debiasing” claim.
 - Human and frontier-superiority claims are paused pending comparable tasks,
   estimands, model endpoints, samples, scorers, and estimators.
 
 ## Remaining Work
 
-- Rerun the exact local base checkpoint with the adapter evaluation pipeline.
-- Archive all Qwen-own checkpoint-sweep and OOD raw/model/estimator artifacts.
-- Validate Qwen-own pseudo-utility against ownership-free Qwen preferences.
-- Freeze a joint lambda/eta/consistency checkpoint-selection rule and run at
-  least three seeds.
-- Add matched SFT and sign-only GRPO baselines, robust inference and estimator
-  recovery, plus GSM8K/IFEval capability checks.
-- Use consensus delta as the reward-source ablation and rewrite the paper around
-  Qwen-own delta. Full ordering and claim restrictions are in
-  `PAPER_READINESS.md`.
+- Complete the predeclared two-seed, 30k matched SFT and sign-only GRPO runs;
+  do not promote the pilot into a confirmatory result.
+- Freeze a new untouched comparison suite before using it to choose among
+  training methods. The already-opened prospective suite cannot be reused for
+  method development.
+- Finish raw prediction, adapter, environment, and reproduction archival for
+  every claim-carrying result.
+- Add pair/good-aware inference, estimator-recovery simulations, and explicit
+  sensitivity to weakly identified goods and extreme fitted utilities.
+- Directly test preservation of frozen ownership-free preferences, not only
+  the in-sample pseudo-utility alignment score `W`.
+- Run prompt-semantic counterbalancing and at least one broader capability
+  benchmark such as IFEval; retain the adverse framing result.
+- Build a venue-agnostic manuscript around the causal mechanism and its
+  boundary conditions. Do not describe `draft/aaai27/` as the active target.
+  Full ordering and claim restrictions are in `PAPER_READINESS.md` and
+  `RESEARCH_ROADMAP.md`.

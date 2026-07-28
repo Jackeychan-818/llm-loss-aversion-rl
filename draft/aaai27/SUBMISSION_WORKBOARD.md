@@ -1,6 +1,12 @@
-# AAAI-27 Submission Workboard
+# AAAI-27 Submission Workboard — Historical Snapshot
 
 *Prepared July 16, 2026 (Asia/Singapore).*
+
+> **Archived planning record.** The project is no longer targeting AAAI-27.
+> Status labels and deadlines below are intentionally preserved as a dated
+> snapshot and must not be used as the current project roadmap. See
+> `../../RESEARCH_ROADMAP.md`, `../../PAPER_READINESS.md`, and
+> `../../KNOWN_ISSUES.md` for current decisions.
 
 AAAI deadlines are Anywhere on Earth (UTC-12). In Singapore time:
 
