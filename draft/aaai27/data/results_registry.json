@@ -1,0 +1,215 @@
+{
+  "schema_version": 2,
+  "last_updated": "2026-07-28",
+  "paper_source_ref": "main@c1ab3da plus merged local paper work",
+  "notes": [
+    "Values reflect the current checked-out project artifacts and the descriptive working draft; the worktree also contains uncommitted paper files.",
+    "ID/test_goods is validation for the historical-Qwen-derived delta because it informed pseudo-utility construction and checkpoint selection.",
+    "OOD models must be compared with the OOD base, never with the ID base.",
+    "W is an ID-only descriptive pseudo-utility-alignment metric added after seed pre-registration; it is not a confirmatory outcome.",
+    "Preference agreement cells are reserved for the trained policy's agreement with frozen ownership-free preferences. The 71.1% signal-validation figure is not substituted into those cells."
+  ],
+  "models": [
+    {
+      "key": "base",
+      "label": "Exact local base",
+      "status": "complete",
+      "id": {
+        "lambda": 7.63679813,
+        "lambda_se": 0.62698434,
+        "eta": 1.00702456,
+        "eta_se": 0.11979881,
+        "w": 0.7436334919879894,
+        "consistency_pct": 0.87,
+        "keep_both_pct": 99.13,
+        "trade_both_pct": 0.0,
+        "preference_agreement_pct": null
+      },
+      "ood": {
+        "lambda": 2.20876166,
+        "lambda_se": 0.2612378,
+        "eta": 5.35823706,
+        "eta_se": 0.08147656,
+        "consistency_pct": 0.04,
+        "keep_both_pct": 99.96,
+        "trade_both_pct": 0.0,
+        "preference_agreement_pct": null
+      },
+      "provenance": [
+        "results/manifests/matched_local_base.json",
+        "results/manifests/ood50_base.json"
+      ]
+    },
+    {
+      "key": "sft",
+      "label": "Qwen-derived SFT",
+      "status": "pending",
+      "id": null,
+      "ood": null,
+      "provenance": []
+    },
+    {
+      "key": "grpo_seed1",
+      "label": "Qwen-derived GRPO seed 1, step 2k",
+      "status": "complete",
+      "selected_step": 2000,
+      "id": {
+        "lambda": 0.03175071,
+        "lambda_se": 0.01529175,
+        "eta": 0.09098552,
+        "eta_se": 0.03123809,
+        "w": 0.8832,
+        "consistency_pct": 66.14762386248736,
+        "keep_both_pct": 18.240647118301315,
+        "trade_both_pct": 15.611729019211323,
+        "preference_agreement_pct": null
+      },
+      "ood": {
+        "lambda": 0.25919545,
+        "lambda_se": 0.02296262,
+        "eta": 0.32297869,
+        "eta_se": 0.0354889,
+        "consistency_pct": 50.43877551020408,
+        "keep_both_pct": 38.71428571428571,
+        "trade_both_pct": 10.846938775510203,
+        "preference_agreement_pct": null
+      },
+      "provenance": [
+        "results/checkpoint_selection/qwen_delta_seed1.json",
+        "results/seed_replication_report.json",
+        "results/pseudo_utility_alignment_trajectory.json"
+      ]
+    },
+    {
+      "key": "grpo_seed2",
+      "label": "Qwen-derived GRPO seed 2, step 6k",
+      "status": "complete",
+      "selected_step": 6000,
+      "id": {
+        "lambda": -0.04242123,
+        "lambda_se": 0.01184691,
+        "eta": 0.65850618,
+        "eta_se": 0.02907882,
+        "w": 0.9101,
+        "consistency_pct": 71.75935288169869,
+        "keep_both_pct": 20.980788675429726,
+        "trade_both_pct": 7.259858442871588,
+        "preference_agreement_pct": null
+      },
+      "ood": {
+        "lambda": 0.06393829,
+        "lambda_se": 0.01588407,
+        "eta": 0.59305106,
+        "eta_se": 0.03447543,
+        "consistency_pct": 59.826530612244895,
+        "keep_both_pct": 31.10204081632653,
+        "trade_both_pct": 9.071428571428571,
+        "preference_agreement_pct": null
+      },
+      "provenance": [
+        "results/checkpoint_selection/qwen_delta_seed2.json",
+        "results/seed_replication_report.json",
+        "results/pseudo_utility_alignment_trajectory.json"
+      ]
+    },
+    {
+      "key": "grpo_seed42",
+      "label": "Qwen-derived GRPO seed 42 (exploratory)",
+      "status": "partial",
+      "selected_step": 8000,
+      "id": {
+        "lambda": 0.11099538,
+        "lambda_se": 0.01421005,
+        "eta": 0.50408026,
+        "eta_se": 0.02913343,
+        "w": 0.9091606373337557,
+        "consistency_pct": 69.67644084934277,
+        "keep_both_pct": 24.16582406471183,
+        "trade_both_pct": 6.1577350859454,
+        "preference_agreement_pct": null
+      },
+      "ood": {
+        "lambda": 0.22635415,
+        "lambda_se": 0.0203425,
+        "eta": 0.78990203,
+        "eta_se": 0.03801497,
+        "consistency_pct": 49.46,
+        "keep_both_pct": 46.01,
+        "trade_both_pct": 4.53,
+        "preference_agreement_pct": null
+      },
+      "provenance": [
+        "results/checkpoint_selection/qwen_delta_seed0.json",
+        "results/manifests/primary_qwen_delta_step8000.json",
+        "results/manifests/ood50_primary_qwen_delta_step8000.json"
+      ]
+    },
+    {
+      "key": "consensus",
+      "label": "Consensus GRPO ablation",
+      "status": "complete",
+      "id": {
+        "lambda": 0.1765277,
+        "lambda_se": 0.00502222,
+        "eta": -0.04773904,
+        "eta_se": 0.02399583,
+        "w": 0.8901375810428692,
+        "consistency_pct": 90.65,
+        "keep_both_pct": 7.84,
+        "trade_both_pct": 1.3,
+        "preference_agreement_pct": null
+      },
+      "ood": {
+        "lambda": 0.39515732,
+        "lambda_se": 0.01819498,
+        "eta": 0.50181502,
+        "eta_se": 0.04345867,
+        "consistency_pct": 64.89,
+        "keep_both_pct": 34.74,
+        "trade_both_pct": 0.37,
+        "preference_agreement_pct": null
+      },
+      "provenance": [
+        "baseline/Qwen-7B-GRPO/Model_1/Qwen-7B-GRPO_NLS_estimation_T1(Model A).csv",
+        "results/manifests/ood50_consensus_ablation.json"
+      ]
+    }
+  ],
+  "capability": [
+    {
+      "label": "Exact local base",
+      "gsm8k_pct": 86.88400303260045,
+      "ifeval_pct": null
+    },
+    {
+      "label": "Qwen-derived GRPO seed 42",
+      "gsm8k_pct": 85.89840788476119,
+      "ifeval_pct": null
+    },
+    {
+      "label": "Confirmatory paired base",
+      "gsm8k_pct": 86.8081880212282,
+      "ifeval_pct": null
+    },
+    {
+      "label": "Qwen-derived GRPO seed 1, step 2k",
+      "gsm8k_pct": 86.6565579984837,
+      "ifeval_pct": null
+    },
+    {
+      "label": "Qwen-derived GRPO seed 2, step 6k",
+      "gsm8k_pct": 86.5049279757392,
+      "ifeval_pct": null
+    }
+  ],
+  "gsm8k_paired": {
+    "n": 1319,
+    "delta_percentage_points": -0.9855951478392688,
+    "bootstrap_95_ci_percentage_points": [
+      -2.122820318423048,
+      0.1516300227445034
+    ],
+    "mcnemar_exact_p": 0.11116111910399348,
+    "provenance": "results/gsm8k/comparison.json"
+  }
+}

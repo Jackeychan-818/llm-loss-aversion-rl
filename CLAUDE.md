@@ -10,7 +10,7 @@ This file gives Claude Code context about this project so it can help effectivel
 > relying on older “main run,” “ablation,” or paper-readiness descriptions
 > below.
 >
-> **Canonical paper source:** `training_overview.tex` (see `PAPER_SOURCES.md`).
+> **Canonical paper source:** `draft/training_overview.tex` (see `PAPER_SOURCES.md`).
 > PDFs/slides are derived — regenerate, never hand-edit.
 
 ---
@@ -26,10 +26,10 @@ A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve l
 
 ---
 
-## Current Status (July 21, 2026)
+## Current Status (July 28, 2026)
 
-**The exploratory primary run and two confirmatory training runs are complete;
-confirmatory evaluation remains open.**
+**The exploratory primary run and two confirmatory runs are complete; both
+confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
 
 ### Completed
 - Qwen-own-delta checkpoint 8,000 selected as the primary candidate.

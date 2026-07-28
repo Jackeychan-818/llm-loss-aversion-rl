@@ -187,7 +187,7 @@ its `lambda = 0.111`.
 Artifact: `results/checkpoint_selection/qwen_delta_seed0.json`.
 
 **Remaining action:** describe `test_goods` as validation, not final test
-(done in `training_overview.tex`), and apply the frozen rule to each new seed,
+(done in `draft/training_overview.tex`), and apply the frozen rule to each new seed,
 opening the frozen final suite only after selection.
 
 ### 5. Training-seed replication
@@ -230,11 +230,11 @@ Each run logs `Training seed: <N>` so the seed is auditable afterwards.
 **The original completed run used seed=42.** It remains exploratory and is not
 part of the confirmatory denominator. The two new runs use seeds 1 and 2.
 
-**Required action:** complete the frozen evaluation pipeline for seeds 1 and 2
-and apply the decision rule in `PRE_REGISTRATION.md`. Report seed-level lambda,
-eta, consistency, target agreement, and final-evaluation performance, plus
-their range. If the two new seeds disagree, run the pre-declared third fresh
-seed; do not use exploratory seed 42 as the tie-breaker.
+**Completed action:** the frozen evaluation pipeline and decision rule in
+`PRE_REGISTRATION.md` were applied to seeds 1 and 2. Both passed, so the
+pre-registered rule does not require a third fresh seed. Continue to report
+seed-level lambda, eta, consistency, final-evaluation performance, and
+capability-retention metrics jointly.
 
 **Pre-register the success criterion BEFORE launching** (otherwise the read-out
 is another post-hoc judgement): each seed must reduce lambda far below the
@@ -289,7 +289,7 @@ be opened on OOD as a candidate.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
-**Status (July 15, 2026): PARTIALLY resolved. Be precise about which half.**
+**Status (July 17, 2026): PARTIALLY resolved. Be precise about which half.**
 
 **Committed (derived results — every reported number is traceable):**
 - `results/manifests/*.json` — per result: the parsed estimate, SHA-256 of every
@@ -301,23 +301,27 @@ be opened on OOD as a candidate.
   CSVs), the GSM8K summaries + `comparison.json`, `ood50_summary.html`,
   `results/qwen_delta_anchor_validation.json`,
   `results/checkpoint_selection/*.json`.
+- Raw ID `loss_aversion_X/Y.json` predictions for the exact matched local base
+  and selected Qwen-own-delta checkpoint, plus the corresponding consensus and
+  prompt-treatment ID predictions.
 
-**NOT committed (raw data — the reported numbers are NOT reproducible from the
-repository alone):**
-- Raw `loss_aversion_X/Y.json` predictions for every eval (~167 MB total; `.git`
-  is already 1.6 GB). A SHA-256 verifies a file someone **already has**; it does
-  **not** make the file downloadable or the result independently re-derivable.
-  Anyone cloning this repo can read the numbers and the commands, but cannot
-  re-run the estimator on the raw predictions.
+**NOT committed (the complete reported result set is therefore not reproducible
+from the repository alone):**
+- Raw OOD `loss_aversion_X/Y.json` predictions for the base, selected
+  Qwen-own-delta checkpoint, and consensus ablation. A SHA-256 verifies a file
+  someone **already has**; it does **not** make the file downloadable or the
+  result independently re-derivable.
+- Per-item GSM8K prediction records needed to reproduce the paired comparison
+  from model outputs.
 - Adapter weights for the selected checkpoints (checksummed in the manifests
   only).
 
-**Required action (decision pending):** either commit the raw predictions for the
-claim-carrying results (primary ID, matched base, primary OOD ≈ 95 MB), or
-publish them to an external archive (e.g. Zenodo/HF dataset) and record the DOI +
-checksums here. Until one of these happens, the honest status is: **derived
-results archived, raw data not publicly reproducible.** Do not describe artifact
-archival as complete.
+**Required action (decision pending):** commit the missing OOD and per-item
+capability records, or publish them to an anonymous submission archive and
+record stable identifiers plus checksums here. Package the selected adapters as
+supplementary artifacts. Until then, the honest status is: **ID structural raw
+predictions and derived results are archived; OOD/capability raw evidence and
+adapter weights are incomplete.** Do not describe artifact archival as complete.
 
 ## Priority 1: Needed for a Competitive Full Paper
 

@@ -3,14 +3,17 @@
 *Established July 15, 2026*
 
 This policy exists because the repository already suffered **model-role drift**:
-after the primary model changed to Qwen-own delta, `training_overview.tex` still
+after the primary model changed to Qwen-own delta, `draft/training_overview.tex` still
 presented the *consensus* result (λ̂ = 0.177) as the headline and retained
 superiority claims the evidence does not support. Two sources disagreed, and the
 stale one was the one a reader would have believed.
 
 ## Canonical source
 
-**`training_overview.tex` is the single source of truth for the paper.**
+**`draft/training_overview.tex` is the single source of truth for the comprehensive
+descriptive working draft.** The compact seven-page-oriented manuscript in
+`draft/aaai27/main.tex` is a derived submission draft and intentionally omits
+some project-record tables for space.
 
 Everything else — PDFs, slide decks, exported figures, any `*_merged.tex`,
 notebooks that render tables — is **derived**. Derived artifacts are
@@ -18,7 +21,9 @@ notebooks that render tables — is **derived**. Derived artifacts are
 
 | Artifact | Status |
 |---|---|
-| `training_overview.tex` | **CANONICAL** — tracked, reviewed, edited directly |
+| `draft/training_overview.tex` | **CANONICAL** — tracked, reviewed, edited directly |
+| `draft/aaai27/main.tex` | Derived concise AAAI draft — regenerate numerical blocks from its result registry |
+| `training_overview.tex` | Legacy `origin/main` version retained for comparison; not canonical |
 | PDFs / slides / figures | Derived — regenerate; build outputs are gitignored |
 | `notebooks/compare_lambdas.ipynb` | Referenced historically; does not exist |
 
