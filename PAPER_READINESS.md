@@ -1,10 +1,13 @@
 # Full-Paper Readiness and Current Methodological Risks
 
-*Last updated: July 23, 2026*
+*Last updated: July 28, 2026*
 
 This document is the authoritative summary of the current paper direction,
 which results are final versus validation-only, and which methodological
 problems must be addressed before making full-paper claims.
+
+The project is currently venue-agnostic. `draft/aaai27/` is a historical
+submission workspace, not the active target or schedule.
 
 ## Current Paper Decision
 
@@ -31,7 +34,7 @@ story in the main paper without such evidence.
 |---|---|---|
 | Qwen-own delta, step 8,000: ID lambda = 0.111, eta = 0.504, W = 0.909 | Primary-model validation result | `test_goods.json` was used for checkpoint selection; 0.111 is not an untouched final-test estimate. |
 | Qwen-own delta, step 8,000: OOD lambda = 0.226, eta = 0.790, consistency = 49.46% | Intended final generalization result | May carry the final claim only after raw outputs, estimator artifacts, checkpoint identity, and reproduction commands are archived and the suite's frozen status is documented. |
-| Consensus-delta: ID lambda = 0.177, eta = -0.048, W = 0.890 | Reward-source ablation/reference | Completed and committed, but its historical pre/post comparison still needs a matched local-base rerun. |
+| Consensus-delta: ID lambda = 0.177, eta = -0.048, W = 0.890 | Reward-source ablation/reference | Completed and committed. Use the existing exact matched local base—not the historical 11.75 estimate—for any before/after comparison. |
 | Consensus-delta: OOD lambda = 0.395, eta = 0.502, consistency = 64.89% | Reward-source ablation on OOD | Shows a trade-off: higher lambda than Qwen-own delta, but lower eta and stronger consistency. Raw OOD artifacts must also be archived. |
 | **Matched local base: lambda = 7.637 (SE 0.627), eta = 1.007, W = 0.744** | **Causal baseline — use this** | Exact local weights, same 9,890 rows, same teacher-forced scorer, same estimator. Behaviour: keep-both 99.13%, consistency 0.87%. |
 | Historical base Qwen: lambda = 11.75, eta = 1.52 | Superseded — do not use for before/after | Together Turbo endpoint, 9,950 cases, top-5 first-token probs. Inflated ~54% vs the matched base by pipeline mismatch, not training. |
@@ -69,9 +72,15 @@ SHA `793c4721…`, evaluator commit, base-model/adapter hashes, PBS job IDs):
 
 ## Priority 0: Must Resolve for the Main Claims
 
+The live implementation and reproducibility defects are tracked by stable ID
+in `KNOWN_ISSUES.md`. Before launching or interpreting the full causal
+baselines, close `PAIR-001`, `PROV-001`, `SELECT-001`, `RESUME-001`,
+`ABLATION-001`, and `ENV-001`. Before final paper claims, also close
+`INFER-001`, `BUILD-001`, `PILOT-001`, and `ARTIFACT-001`.
+
 ### 1. Matched local base evaluation
 
-The current `lambda_before = 11.75` and post-training estimates are not a
+The original `lambda_before = 11.75` and post-training estimates were not a
 strictly matched before/after comparison. The former used Together's
 `Qwen/Qwen2.5-7B-Instruct-Turbo`, 9,950 cases, and top-five first-token
 probabilities. The post-training evaluator uses a local
@@ -187,7 +196,7 @@ its `lambda = 0.111`.
 Artifact: `results/checkpoint_selection/qwen_delta_seed0.json`.
 
 **Remaining action:** describe `test_goods` as validation, not final test
-(done in `training_overview.tex`), and apply the frozen rule to each new seed,
+(done in `draft/training_overview.tex`), and apply the frozen rule to each new seed,
 opening the frozen final suite only after selection.
 
 ### 5. Training-seed replication
@@ -230,11 +239,11 @@ Each run logs `Training seed: <N>` so the seed is auditable afterwards.
 **The original completed run used seed=42.** It remains exploratory and is not
 part of the confirmatory denominator. The two new runs use seeds 1 and 2.
 
-**Required action:** complete the frozen evaluation pipeline for seeds 1 and 2
-and apply the decision rule in `PRE_REGISTRATION.md`. Report seed-level lambda,
-eta, consistency, target agreement, and final-evaluation performance, plus
-their range. If the two new seeds disagree, run the pre-declared third fresh
-seed; do not use exploratory seed 42 as the tie-breaker.
+**Completed action:** the frozen evaluation pipeline and decision rule in
+`PRE_REGISTRATION.md` were applied to seeds 1 and 2. Both passed, so the
+pre-registered rule does not require a third fresh seed. Continue to report
+seed-level lambda, eta, consistency, final-evaluation performance, and
+capability-retention metrics jointly.
 
 **Pre-register the success criterion BEFORE launching** (otherwise the read-out
 is another post-hoc judgement): each seed must reduce lambda far below the
@@ -253,7 +262,8 @@ loss, KL, entropy, gradient norm, learning rate, and the zero-reward/DAPO
 filtering rate for every seed.
 
 Model A subsequently estimates behavior by NLS, minimizing squared error
-between teacher-forced `P(Yes)` and the logistic link of
+between teacher-forced `P(No)` (the probability of keeping the endowed good)
+and the logistic link of
 `z=(1+lambda)U_X-U_Y+eta`, with
 `U=exp(alpha_item+beta_attribute_profile)`. Here `alpha_1=0` and
 `beta_1,1=0` are reference levels. The default `--starting ols` uses
@@ -289,7 +299,7 @@ be opened on OOD as a candidate.
 
 ### 6. Archive the claimed checkpoint and OOD evidence
 
-**Status (July 15, 2026): PARTIALLY resolved. Be precise about which half.**
+**Status (July 17, 2026): PARTIALLY resolved. Be precise about which half.**
 
 **Committed (derived results — every reported number is traceable):**
 - `results/manifests/*.json` — per result: the parsed estimate, SHA-256 of every
@@ -301,23 +311,27 @@ be opened on OOD as a candidate.
   CSVs), the GSM8K summaries + `comparison.json`, `ood50_summary.html`,
   `results/qwen_delta_anchor_validation.json`,
   `results/checkpoint_selection/*.json`.
+- Raw ID `loss_aversion_X/Y.json` predictions for the exact matched local base
+  and selected Qwen-own-delta checkpoint, plus the corresponding consensus and
+  prompt-treatment ID predictions.
 
-**NOT committed (raw data — the reported numbers are NOT reproducible from the
-repository alone):**
-- Raw `loss_aversion_X/Y.json` predictions for every eval (~167 MB total; `.git`
-  is already 1.6 GB). A SHA-256 verifies a file someone **already has**; it does
-  **not** make the file downloadable or the result independently re-derivable.
-  Anyone cloning this repo can read the numbers and the commands, but cannot
-  re-run the estimator on the raw predictions.
+**NOT committed (the complete reported result set is therefore not reproducible
+from the repository alone):**
+- Raw OOD `loss_aversion_X/Y.json` predictions for the base, selected
+  Qwen-own-delta checkpoint, and consensus ablation. A SHA-256 verifies a file
+  someone **already has**; it does **not** make the file downloadable or the
+  result independently re-derivable.
+- Per-item GSM8K prediction records needed to reproduce the paired comparison
+  from model outputs.
 - Adapter weights for the selected checkpoints (checksummed in the manifests
   only).
 
-**Required action (decision pending):** either commit the raw predictions for the
-claim-carrying results (primary ID, matched base, primary OOD ≈ 95 MB), or
-publish them to an external archive (e.g. Zenodo/HF dataset) and record the DOI +
-checksums here. Until one of these happens, the honest status is: **derived
-results archived, raw data not publicly reproducible.** Do not describe artifact
-archival as complete.
+**Required action (decision pending):** commit the missing OOD and per-item
+capability records, or publish them to an anonymous submission archive and
+record stable identifiers plus checksums here. Package the selected adapters as
+supplementary artifacts. Until then, the honest status is: **ID structural raw
+predictions and derived results are archived; OOD/capability raw evidence and
+adapter weights are incomplete.** Do not describe artifact archival as complete.
 
 ## Priority 1: Needed for a Competitive Full Paper
 
@@ -334,6 +348,21 @@ ordinary supervised LoRA fine-tuning is sufficient.
 4. frontier-consensus-delta GRPO as the reward-source ablation; and
 5. preferably sign-only flat-reward GRPO to test whether delta magnitude adds
    value.
+
+**Status (July 28, 2026): infrastructure complete; exploratory pilot complete;
+confirmatory comparison still open.** The seed-1 pilot evaluated steps
+2k/4k/6k on `test_goods` validation. Both methods reduce lambda sharply; SFT
+reaches `d = sqrt(lambda^2 + eta^2)` of 0.060 and 0.052 at 4k and 6k, while
+sign-only GRPO is less stable across the three checkpoints. These results do
+not show that SFT wins: the pilot has one seed, no frozen selector, an
+incomplete grid, and no untouched method-comparison suite. See
+`results/causal_baseline_pilot/pilot_table.md`.
+
+**Required next action:** complete the predeclared two-seed, 30k runs and freeze
+a new untouched comparison suite before opening it. If matched SFT confirms the
+effect, narrow the central claim from “GRPO is necessary” to “targeted
+post-training can remove ownership dependence,” with GRPO versus SFT treated as
+a mechanism and efficiency comparison.
 
 ### 8. Predeclare the primary outcome and report the full behavior
 
@@ -469,20 +498,31 @@ and checkpoint selection used information from `test_goods`.
 > loss aversion, status-quo bias, choice consistency, and preference preservation
 > jointly.
 
-This wording remains conditional on resolving the matched-base, seed,
-final-evaluation, and reproducibility issues above.
+This wording is supported by the matched-base, replication, OOD-50, and
+prospective-configuration results. A top-conference claim about mechanism or
+method superiority remains conditional on completing the matched baselines,
+stronger inference, direct preference-preservation analysis, and
+reproducibility work above.
 
 ## Execution Order
 
-1. Rerun the exact local base with the local post-training evaluator.
-2. Archive and reproduce all Qwen-own-delta checkpoint and OOD artifacts.
-3. Validate Qwen-own delta against ownership-free Qwen preferences.
-4. Freeze the checkpoint-selection rule and primary/secondary outcomes.
-5. DONE — frozen ID-selection + OOD + GSM8K complete for seeds 1 and 2; verdict
+1. DONE — rerun the exact local base with the local post-training evaluator.
+2. DONE — validate Qwen-own delta against ownership-free Qwen preferences.
+3. DONE — freeze the checkpoint-selection rule and primary/secondary outcomes.
+4. DONE — frozen ID-selection + OOD + GSM8K complete for seeds 1 and 2; verdict
    is 2/2 PASS, so no third seed is required by the pre-registered rule.
-6. Train the matched SFT and flat-reward baselines.
-7. Add robust structural inference, multi-start optimization/utility
+5. DONE — open the frozen unused-configuration suite once on only the matched
+   base and two frozen seed selections; preserve it as an opened final result.
+6. IN PROGRESS — archive and reproduce all Qwen-own-delta checkpoint and OOD
+   artifacts. Derived results are traceable; complete raw predictions,
+   adapters, environment, and durable release remain incomplete.
+7. IN PROGRESS — train the matched SFT and sign-only GRPO baselines. The
+   one-seed 6k pilot is exploratory; full two-seed 30k runs and a new untouched
+   method-comparison suite remain.
+8. Add robust structural inference, multi-start optimization/utility
    diagnostics, and estimator-recovery checks.
-8. Run GSM8K and IFEval or an equivalent capability pair.
-9. Rewrite the paper with Qwen-own delta as primary and consensus delta as the
-   reward-source ablation.
+9. Add direct frozen preference-preservation and prompt-semantic robustness
+   tests.
+10. DONE for GSM8K; run IFEval or an equivalent complementary capability test.
+11. Rewrite a venue-agnostic paper with Qwen-own delta as primary and consensus
+    delta as the reward-source ablation.

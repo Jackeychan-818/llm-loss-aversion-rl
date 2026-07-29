@@ -2,7 +2,7 @@
 
 This file gives Claude Code context about this project so it can help effectively without re-reading everything from scratch.
 
-> **Current paper-direction override (July 15, 2026):** The primary model is
+> **Current paper-direction override (July 28, 2026):** The primary model is
 > Qwen-own-delta GRPO checkpoint 8,000; frontier-consensus delta is the
 > reward-source ablation. Its `test_goods` estimate (`lambda = 0.111`,
 > `eta = 0.504`) is validation-only because this set informed reward
@@ -10,26 +10,34 @@ This file gives Claude Code context about this project so it can help effectivel
 > relying on older “main run,” “ablation,” or paper-readiness descriptions
 > below.
 >
-> **Canonical paper source:** `training_overview.tex` (see `PAPER_SOURCES.md`).
+> **Canonical paper source:** `draft/training_overview.tex` (see `PAPER_SOURCES.md`).
 > PDFs/slides are derived — regenerate, never hand-edit.
+> The project is venue-agnostic; `draft/aaai27/` is historical. Use
+> `KNOWN_ISSUES.md` for the live problem ledger and `RESEARCH_ROADMAP.md` for
+> execution order.
 
 ---
 
 ## Project Overview
 
-**lambda-zero** (`loss_aversion_rl`) — a reinforcement learning project that fine-tunes Qwen2.5-7B-Instruct using **GRPO (Group Relative Policy Optimization)** to reduce loss aversion below frontier models.
+**lambda-zero** (`loss_aversion_rl`) — a post-training project that fine-tunes
+Qwen2.5-7B-Instruct using **GRPO (Group Relative Policy Optimization)** to
+reduce measured ownership-dependent choice while preserving the model's own
+estimated preference ordering.
 
 This project builds on an existing behavioral economics study (separate repo, `loss_aversion/`) that measures **λ** (loss aversion coefficient) across 9 LLMs using an endowment-effect paradigm. That study established that frontier LLMs show measurable loss aversion. This project asks whether targeted RL can correct it.
 
 ### Thesis in one sentence
-A 7B model, fine-tuned with GRPO using a rationality-based reward, can achieve lower loss aversion (λ → 0) than frontier models 10–100× its size.
+A 7B model can be post-trained to reduce ownership-dependent choice while
+preserving its own estimated preference ordering. Human/frontier superiority
+is not a current claim because those comparisons are not harmonized.
 
 ---
 
-## Current Status (July 21, 2026)
+## Current Status (July 28, 2026)
 
-**The exploratory primary run and two confirmatory training runs are complete;
-confirmatory evaluation remains open.**
+**The exploratory primary run and two confirmatory runs are complete; both
+confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
 
 ### Completed
 - Qwen-own-delta checkpoint 8,000 selected as the primary candidate.
@@ -53,7 +61,9 @@ confirmatory evaluation remains open.**
 - Raw-prediction archival (derived results + manifests ARE committed; the raw
   X/Y predictions, ~167 MB, are not — numbers are traceable but not
   independently re-derivable from the repo alone).
-- Matched SFT/sign-only baselines, robust inference, IFEval.
+- Matched SFT/sign-only full baselines, robust inference, prompt-semantic
+  robustness, and IFEval. A one-seed 6k pilot exists for both baselines, but is
+  exploratory validation evidence only.
 
 The complete blocker ordering and claim restrictions are in
 `PAPER_READINESS.md`.
@@ -99,10 +109,10 @@ Estimation methods (in `core_exp_refactored.py`):
 | 0. Econ baseline (9 frontier models) | ✅ Done in `loss_aversion/` | λ̂ for GPT-5, GPT-4o, GPT-3.5, Claude, Gemini, Llama-70B, DeepSeek-R1, Apertus-70B, GPT-OSS-120B |
 | 1. Small-model baseline | ✅ Matched | **λ̂ = 7.637** (SE 0.627), η̂ = 1.007 — exact local base, 9,890 rows, teacher-forced. Historical 11.75 (Together Turbo) superseded: inflated ~54% by pipeline mismatch |
 | 2. Qwen-own reward design | ✅ Validated | δ̃ vs frozen ownership-free anchor: 71.1% test / 70.8% train sign agreement (85.5% at \|δ̃\|>1.0); α 91.9% / β 100% significant. `eval/validate_qwen_delta_anchor.py` |
-| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k with complete frozen grids; evaluations pending |
-| 4. Primary evaluation | 🟡 Partially complete | ID validation + OOD table exist; derived results & manifests committed, raw X/Y predictions not (PAPER_READINESS #6) |
+| 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen ID/OOD/GSM8K verdicts pass |
+| 4. Primary evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and once-opened prospective configuration results exist; raw/durable artifacts remain incomplete |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | ⏳ | SFT, sign-only GRPO, robust inference, capability retention |
+| 6. Baselines/robustness | 🟡 Pilot only | SFT/sign-only seed-1 pilot complete; full runs, scale-matched sign control, robust inference, prompt robustness, IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
@@ -112,11 +122,11 @@ Estimation methods (in `core_exp_refactored.py`):
 ```
 lambda-zero/
 ├── data/
-│   ├── trial_goods.json              # Validation prompts (990 cases)
-│   ├── test_goods.json               # Evaluation prompts (8,910 cases)
-│   ├── remaining_goods.json          # Training prompts (49,500 cases — largest set)
+│   ├── trial_goods.json              # Trial prompts (60 cases)
+│   ├── test_goods.json               # Validation prompts (9,890 cases)
+│   ├── remaining_goods.json          # Training prompts (49,450 cases)
 │   └── deltas/
-│       ├── delta_consensus_v3.json   # ★ Ground truth δ̃ from 6 frontier models (59,400 entries)
+│       ├── delta_consensus_v3.json   # Frontier-consensus pseudo-utility reward
 │       ├── delta_deepseek.json       # DeepSeek-R1 standalone δ̃ (for ablation)
 │       └── _summary.json             # Survey of all 9 models' Yes rates & estimator info
 │
@@ -358,7 +368,8 @@ delta_consensus_v3.json ──────────────────�
    things are easily conflated; keep them apart:
    - **LLM decoding**: deterministic greedy (`do_sample=False` in `run_qwen_local.py`);
      the Yes/No choice is read from teacher-forced logprobs. Nothing is sampled.
-   - **Estimator T**: the scale in the structural link `P(Yes) = 1/(1+exp(-z/T))`
+   - **Estimator T**: the scale in the structural link
+     `P(No) = 1/(1+exp(-z/T))`, where No means keeping the endowed good
      (`_calculate_y_hat` in `core_exp_refactored.py`). A property of the econometric
      model only.
 
@@ -378,7 +389,8 @@ delta_consensus_v3.json ──────────────────�
    do not write "temperature=0 was used" or "Model A NLS at T=0".)
 9. **The prompts in train/ must match eval/ exactly** — `prompt_builder.py` replicates `generate_prompt()` from `run_all_models.py`. If you change one, change both.
 10. **On NSCC, always `module purge` first** — stale modules cause conflicts. Load `pytorch/2.6.0-py3-cu11.8` fresh (cu12.6 is too new for the gdev/g1 driver).
-11. **`everyday_goods_full.json` must be a real file on NSCC** — it's a symlink locally pointing to `../Loss_Aversion/`. Copy the actual file when deploying to NSCC.
+11. **`everyday_goods_full.json` must be a real file on NSCC.** It is a regular
+    JSON file in the current repository; preserve that property when deploying.
 
 ---
 
@@ -408,7 +420,7 @@ python eval/run_qwen_local.py \
   --yes
 
 python eval/estimate_qwen_grpo.py
-# Compare λ̂_after vs λ̂_before = 11.75
+# Compare against the exactly matched local base λ̂=7.637, η̂=1.007.
 ```
 
 ### Run baseline for a new model
@@ -427,21 +439,20 @@ python eval/estimate_qwen_base.py
 
 ---
 
-## Baseline Results — Qwen2.5-7B-Instruct (λ̂_before)
+## Baseline Results — Qwen2.5-7B-Instruct
 
-Estimated April 14, 2026. Treatment: baseline. Estimator: Model A (NLS), T=1.
+Use the exact local base evaluated on the same rows, scorer, and Model-A
+estimator as the adapters.
 
 | Parameter | Estimate | Std. Error |
 |---|---|---|
-| λ (loss aversion) | **11.75** | 1.22 |
-| η (status-quo bias) | 1.52 | 0.09 |
+| λ (loss aversion) | **7.637** | 0.627 |
+| η (status-quo bias) | **1.007** | 0.120 |
 
-**Raw choice data** (9,950 cases):
-- X-perspective: Yes = 48, No = 9,902 (keeps endowed good 99.5% of the time)
-- Y-perspective: Yes = 45, No = 9,905 (same pattern)
-- Cross-tab: 99.07% are (No, No) — model almost never trades regardless of perspective
-
-**Interpretation:** Qwen-7B is massively loss-averse. λ̂ = 11.75 is roughly 5× the human benchmark (Kahneman & Tversky: λ ≈ 2–2.5) and expected to be well above frontier models from Phase 0. The "No Bias" counterfactual shows a ~53/47 split, confirming underlying utilities are balanced — the refusal to trade is driven by loss aversion and status-quo bias, not by the goods themselves. This provides a strong training signal for GRPO.
+The exact local base has 99.13% keep-both behavior and 0.87% paired
+consistency. The historical Together-hosted estimate (λ=11.75, η=1.52) is
+retained only to document endpoint/scorer mismatch and must not be used for
+before/after or human/frontier claims.
 
 ---
 
@@ -457,12 +468,13 @@ Estimated April 14, 2026. Treatment: baseline. Estimator: Model A (NLS), T=1.
 
 ---
 
-## Publication Timeline
+## Publication Direction
 
-- **NeurIPS 2026 workshop** (~August 2026 deadline): Preliminary results, 4-6 pages, non-archival
-- **ICML 2027 main track** (~January 2027 deadline): Full paper with ablations
-- Workshop submission does NOT block ICML submission
+The project is venue-agnostic. Choose a target only after the causal baselines,
+robust inference, prompt-semantic tests, capability extension, and reproducible
+artifact package determine the actual contribution. Do not infer deadlines
+from the historical `draft/aaai27/` workspace.
 
 ---
 
-*Last updated: July 9, 2026*
+*Last updated: July 28, 2026*

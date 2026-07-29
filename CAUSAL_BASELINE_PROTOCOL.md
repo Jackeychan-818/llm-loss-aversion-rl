@@ -4,8 +4,9 @@
 `RESEARCH_ROADMAP.md`. This document is the pre-registration; the numbers and
 rules below are fixed in advance and applied mechanically.*
 
-**No baseline result exists until the jobs are actually run.** This file freezes
-the *design only*.
+**Freeze-time statement:** no baseline result existed when this protocol was
+frozen. This file freezes the *design only*; the append-only execution record at
+the end documents later runs without rewriting the rules.
 
 ## Purpose (two different questions)
 
@@ -222,3 +223,34 @@ sign-only ≈ 5.57 s/step (full 30k ≈ 47 h/seed, one 72 h job).*
 pre-declared checkpoint subset {2000, 4000, 6000}. **No OOD-50 or frozen-unused
 evaluation.** The pilot calibrates throughput and sanity, and does **not** enter
 any frozen selection or confirmatory claim.
+
+## Append-only execution record
+
+### July 27, 2026 — seed-1 pilot completed
+
+Commit `c1ab3da` records the derived pilot summaries:
+
+- `results/causal_baseline_pilot/pilot_core.json`
+- `results/causal_baseline_pilot/pilot_table.md`
+
+The pilot evaluated the predeclared steps 2,000, 4,000, and 6,000 for one SFT
+seed and one sign-only GRPO seed on `test_goods` validation. It did not run the
+frozen checkpoint selector and did not open OOD-50 or the frozen-unused suite.
+Both methods sharply reduced lambda from the matched base. SFT reached
+`d = sqrt(lambda^2 + eta^2)` of 0.060 and 0.052 at steps 4k and 6k;
+sign-only GRPO was more variable across the three checkpoints. These are
+pilot observations, not a method winner.
+
+Observed 6k training times on one A100 were approximately 17.5 minutes for SFT
+and 8.7 hours for sign-only GRPO.
+
+**Provenance limitation:** the commit contains derived summaries only. It does
+not yet provide raw prediction files, structural-fit CSVs, checkpoint/data/code
+hash manifests, exact commands, or a deterministic generator for all table
+cells. W, Jacobian condition numbers, and runtimes appear in the Markdown table
+but not in `pilot_core.json`. Close `PILOT-001` in `KNOWN_ISSUES.md` before
+citing the pilot beyond exploratory project status.
+
+**Confirmatory status:** the two-seed, 30k runs and a newly frozen untouched
+method-comparison suite remain pending. The already-opened OOD-50 and
+frozen-unused suites cannot be used to select or revise the baseline methods.

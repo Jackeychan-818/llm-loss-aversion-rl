@@ -23,16 +23,20 @@ readiness descriptions elsewhere in this file.
 A 7B model can be post-trained to reduce ownership-dependent choice while
 preserving its own estimated preference ordering.
 
-> **Status (July 23, 2026):** Exploratory checkpoint 8,000 remains the primary
+> **Status (July 28, 2026):** Exploratory checkpoint 8,000 remains the primary
 > candidate, and the **replication is CONFIRMED — 2/2 confirmatory seeds PASS**.
 > Seeds 1 and 2 reached the frozen 30,000-step endpoint; frozen ID selection
 > gave seed 1 → step 2,000 and seed 2 → step 6,000, and the one-shot OOD-50 +
 > GSM8K per selected checkpoint pass every pre-registered gate (seed 1 λ_OOD
 > 0.259, seed 2 λ_OOD 0.064; GSM8K CI lower −1.14pp / −1.44pp). seed 42 is
 > supporting exploratory evidence. Matched-base and ownership-free
-> pseudo-utility validation are complete.
-> Matched baselines, stronger inference, and complete raw-artifact archival
-> remain required for a full paper.
+> pseudo-utility validation are complete. The prospective unused-configuration
+> suite was evaluated once: matched-base λ=5.946 versus 0.031 and −0.053 for
+> the two selected seeds. A one-seed SFT/sign-only pilot is also complete, but
+> is validation-only and declares no winner. Full matched baselines, stronger
+> inference, prompt robustness, and complete raw-artifact archival remain
+> required for a full paper. The project is venue-agnostic; `draft/aaai27/` is
+> historical.
 
 ---
 
@@ -40,9 +44,12 @@ preserving its own estimated preference ordering.
 
 | Model / treatment | λ̂ | η̂ | Notes |
 |---|---:|---:|---|
-| Historical Together-hosted Qwen base | 11.75 | 1.52 | Not yet matched to the local post-training evaluator |
+| Historical Together-hosted Qwen base | 11.75 | 1.52 | Superseded for before/after; pipeline mismatch |
+| Exact matched local Qwen base, ID | 7.637 | 1.007 | Use for causal before/after comparisons |
 | Qwen-own-delta GRPO, step 8k ID | 0.111 | 0.504 | Primary-model validation; selected on `test_goods` |
 | Qwen-own-delta GRPO, step 8k OOD | 0.226 | 0.790 | Intended final evidence; raw artifacts pending |
+| Confirmatory seed 1, frozen unused configs | 0.031 | 0.089 | Selected at step 2k; opened once |
+| Confirmatory seed 2, frozen unused configs | -0.053 | 0.693 | Selected at step 6k; opened once |
 | Consensus-delta GRPO, baseline | 0.177 | -0.048 | Reward-source ablation/reference |
 | Qwen-7B-GRPO, debias | 0.205 | 0.090 | Treatment robustness |
 | Qwen-7B-GRPO, forced | 0.173 | -0.379 | Treatment robustness |
@@ -76,14 +83,15 @@ evidence. See `ATTRIBUTE_EFFECTS.md` and `eval/analyze_attribute_effects.py`.
 
 ### Frozen Prospective Configuration Test
 
-`data/frozen_unused_test_goods.json` is frozen and unevaluated. It contains 10
-additional unused configurations for each of the 4,945 familiar goods pairs
-(49,450 cases; 98,900 X/Y prompts per model). All 12 existing codes per pair
-were removed before deterministic hash-shuffling with seed `20260723`. It is
-prohibited for training, reward construction, checkpoint selection, or method
-changes. Primary evaluation is limited to the matched local base and the frozen
-seed selections (seed 1 at 2,000; seed 2 at 6,000). This is configuration
-generalization, not unseen-goods OOD. See `data/FROZEN_UNUSED_TEST.md`.
+`data/frozen_unused_test_goods.json` was frozen and then opened exactly once on
+July 24 for the three policy-allowed models: matched local base, seed 1 at step
+2,000, and seed 2 at step 6,000. It contains 10 additional unused
+configurations for each of the 4,945 familiar goods pairs (49,450 cases; 98,900
+X/Y prompts per model). Lambda was 5.946, 0.031, and −0.053 respectively. It
+remains prohibited for training, reward construction, checkpoint selection,
+method comparison, or method changes. This is configuration generalization,
+not unseen-goods OOD. See `data/FROZEN_UNUSED_TEST.md` and
+`results/frozen_unused_evaluation_manifest.json`.
 
 ---
 
@@ -115,10 +123,10 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | 0. Frontier-model baseline | ✅ Done in `loss_aversion/` | λ̂ for 9 frontier models |
 | 1. Small-model baseline | ✅ Matched | Exact local base λ̂ = 7.637, η̂ = 1.007 |
 | 2. Qwen-own reward design | 🟡 Partly validated | Ownership-free validation complete; leakage-clean construction pending |
-| 3. Qwen-own GRPO training | 🟡 Replication training complete | Seeds 1 and 2 reached 30k; frozen evaluations pending |
-| 4. Primary-model evaluation | 🟡 Partially complete | ID validation and reported OOD table exist; raw artifacts pending |
+| 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen verdicts pass |
+| 4. Primary-model evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and prospective configuration results exist; raw/durable artifacts pending |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | ⏳ Next | SFT, sign-only GRPO, robust inference, capability retention |
+| 6. Baselines/robustness | 🟡 Pilot only | SFT/sign-only seed-1 pilot complete; full runs, robust inference, prompt robustness, IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
@@ -246,4 +254,4 @@ python plot_training.py logs/<training-log>.out
 
 ---
 
-*Last updated: July 23, 2026*
+*Last updated: July 28, 2026*
