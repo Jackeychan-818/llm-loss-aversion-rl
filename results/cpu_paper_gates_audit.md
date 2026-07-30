@@ -34,8 +34,8 @@ evaluated, no frozen suite opened.*
   strata, hash drift, deterministic `--check`).
 - Task 3: `test_scale_matched_reward.py` → **29/29**; existing
   `test_causal_baselines.py` → **10/10** (default path unchanged).
-- Task 4: `test_robust_inference.py` → **16/16**; `estimator_recovery.py --quick`
-  near-zero bias, no failures.
+- Task 4: `test_robust_inference.py` → **20/20** (incl. the pair-split-free
+  proof); `estimator_recovery.py --quick` near-zero bias, no failures.
 - Task 5/6: `--check` byte-identical regeneration.
 - `eval/test_select_checkpoint.py` → pass (selector unchanged).
 - `qstat -u jackeyc0`: no jobs (no GPU submission).
@@ -46,8 +46,9 @@ evaluated, no frozen suite opened.*
   after excluding test/train/frozen-unused's 22; the suite uses 4/pair with zero
   `(pair,code)` overlap (asserted). OOD-50 uses a different goods population.
 - **λ does not tell the whole story:** the full-behavior aggregation flags 15/40
-  committed rows `clean_reduction=NO` — low λ contradicted by high η,
-  inconsistency, or choice collapse (incl. the matched base itself).
+  committed rows `clean_reduction=NO`; of those, **10 have `|λ|<0.5` plus a
+  contradictory caveat** (high η, inconsistency, or choice collapse — incl. the
+  matched base), and 5 are `NO` only because `|λ|≥0.5`.
 - **Magnitude weighting concentrates updates:** high-|δ̃|(>1) cases carry 63.1% of
   total |δ̃| mass from 27.1% of cases; measured zero task-reward advantage ≈57%.
 - **Efficiency ≠ effectiveness:** SFT is far cheaper (~1.4 h vs ~51 h/seed at 30k)
@@ -79,6 +80,35 @@ evaluated, no frozen suite opened.*
 5. **Provenance:** capture git commit robustly in future training manifests
    (`SFTPROV-001`); feed per-model frozen-estimator utilities into the bootstrap
    to close `INFER-001` on the headline numbers.
+
+## Pre-opening corrections (commit `e475699`) + origin/main merge
+
+Applied transparently before any frozen suite was opened:
+
+1. **True pair-clustered bootstrap** — resamples whole goods-pair clusters keyed
+   by `(X_num, Y_num)`; a test proves a pair's repeated configurations cannot be
+   split across clusters (`test_robust_inference.py`, now **20/20**). Recovery
+   uses singleton pairs per simulated case.
+2. **Semantic-counterbalancing amended** (recorded as an explicit amendment, not
+   a silent rewrite): `permitted_models` broadened to base + every selected
+   magnitude-GRPO/SFT/sign-only/scale-matched seed; primary invariance metric +
+   secondary flip/token metrics defined.
+3. **Sign-only and scale-matched are now distinct families** in
+   `METHOD_COMPARISON_PROTOCOL.md` (separate grids, selections, comparisons).
+4. **Efficiency reconciled to measured values:** ~56–57% mean zero-task-advantage
+   across full seed-1/2/42 runs (seed means 0.569/0.558/0.573); 80% only as an
+   explicitly labelled early logged observation; SFT **5,422 s/seed = 0.181
+   s/step ≈ 1.51 h**.
+5. **Scale wording corrected:** `±1` *increases* average magnitude vs
+   `E|δ|=0.685`; scale-matched `±0.685` holds the first absolute moment fixed.
+6. **Behavior summary corrected:** 15/40 rows `clean=NO`; of those **10** have
+   `|λ|<0.5` plus a contradictory caveat, and 5 are `NO` only because `|λ|≥0.5`.
+7. **`ENVIRONMENT.md`** declares Python ≥ 3.10 + SciPy/NumPy minimums (tested
+   3.13.3 / scipy 1.15.2 / numpy 2.2.4); explicitly **not** a complete lock.
+
+**Merge:** `origin/main` (`6306a15 Simplify framing specificity table`, touches
+only `draft/project-overview.html`) merged into the branch with `--no-edit` (no
+rebase of published commits); no conflicts. All checks rerun and pass post-merge.
 
 ## Constraints honored
 
