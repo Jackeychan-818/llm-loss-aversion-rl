@@ -161,6 +161,18 @@ def main() -> int:
         check("pre-opening manifest references the frozen suite hash",
               pdoc.get("frozen_suite", {}).get("sha256") == sha256_bytes(sem_text.encode("utf-8")),
               "suite hash mismatch")
+        check("pre-opening manifest status is DRAFT_UNRESOLVED_DO_NOT_OPEN",
+              pdoc.get("status") == "DRAFT_UNRESOLVED_DO_NOT_OPEN", str(pdoc.get("status")))
+        check("pre-opening manifest all_families_resolved is False",
+              pdoc.get("all_families_resolved") is False, str(pdoc.get("all_families_resolved")))
+        rv = subprocess.run([sys.executable, str(MC / "build_semantic_preopening_manifest.py"),
+                             "--validate"], capture_output=True, text=True)
+        check("pre-opening --validate refuses to open (non-zero exit)", rv.returncode != 0,
+              f"exit={rv.returncode}")
+        rr = subprocess.run([sys.executable, str(MC / "build_semantic_preopening_manifest.py"),
+                             "--emit-ready"], capture_output=True, text=True)
+        check("pre-opening --emit-ready refuses while unresolved", rr.returncode != 0,
+              f"exit={rr.returncode}")
 
     # --- deterministic regeneration (--check) of the generators ---
     for script in ["build_method_comparison_suite.py", "build_semantic_counterbalancing.py",

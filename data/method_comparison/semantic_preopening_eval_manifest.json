@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "status": "DRAFT_UNRESOLVED_DO_NOT_OPEN",
+  "all_families_resolved": false,
   "role": "pre-opening resolution of the semantic suite's model set (no eval run)",
   "frozen_suite": {
     "path": "data/method_comparison/semantic_counterbalancing.json",
@@ -47,5 +49,10 @@
       "selector_manifest_when_selected": "results/baselines_selection/scale_seed{N}.json (TBD)"
     }
   },
-  "open_rule": "Freeze this manifest (all families resolved) BEFORE opening the semantic suite once, under METHOD_COMPARISON_PROTOCOL.md."
+  "unresolved_reasons": [
+    "family 'sft' is UNRESOLVED (no frozen selection yet)",
+    "family 'sign_only' is UNRESOLVED (no frozen selection yet)",
+    "family 'scale_matched' is UNRESOLVED (no frozen selection yet)"
+  ],
+  "open_rule": "Freeze this manifest (all families resolved) BEFORE opening the semantic suite once, under METHOD_COMPARISON_PROTOCOL.md. A final immutable semantic_ready_to_open_manifest.json (status FROZEN_READY_TO_OPEN) is produced by `--emit-ready` ONLY after every family is selected; until then this DRAFT must not be opened."
 }

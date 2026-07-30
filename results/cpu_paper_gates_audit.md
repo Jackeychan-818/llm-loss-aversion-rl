@@ -30,15 +30,30 @@ evaluated, no frozen suite opened.*
 
 ## Checks run (all pass)
 
-- Task 1: `test_method_comparison_suite.py` → **31/31** (overlap, pairing, IDs,
-  strata, hash drift, deterministic `--check`).
+- Task 1: `test_method_comparison_suite.py` → **39/39** (overlap, pairing, IDs,
+  strata, hash drift, deterministic `--check`, no-embedded-checkpoint-IDs guard,
+  and the DRAFT-status / `--validate` / `--emit-ready` refusal guards). Up from
+  31 → 35 (correction round) → 39 (governance guards).
 - Task 3: `test_scale_matched_reward.py` → **29/29**; existing
   `test_causal_baselines.py` → **10/10** (default path unchanged).
-- Task 4: `test_robust_inference.py` → **20/20** (incl. the pair-split-free
-  proof); `estimator_recovery.py --quick` near-zero bias, no failures.
-- Task 5/6: `--check` byte-identical regeneration.
+- Task 4: `test_robust_inference.py` → **22/22** (incl. the pair-split-free
+  proof and the no-fabricated-probability / hard-choice guards);
+  `estimator_recovery.py --quick` near-zero bias, no failures.
+- Task 5/6: `--check` byte-identical regeneration; the full-behavior `--check`
+  additionally **passes from a clean `git archive`** (snapshot-only path).
 - `eval/test_select_checkpoint.py` → pass (selector unchanged).
 - `qstat -u jackeyc0`: no jobs (no GPU submission).
+
+**Reproducibility & governance deliverables (correction rounds):**
+- `results/full_behavior/full_behavior_snapshot.json` — tracked canonical row
+  snapshot; JSON/CSV/MD/TEX render from it, `--refresh` re-reads NSCC dirs.
+- `data/method_comparison/semantic_preopening_eval_manifest.json` (status
+  `DRAFT_UNRESOLVED_DO_NOT_OPEN`, `all_families_resolved: false`) +
+  `build_semantic_preopening_manifest.py` with a hard `--validate` / `--emit-ready`
+  gate that refuses opening until every family is resolved with non-null selector
+  hashes; the immutable `FROZEN_READY_TO_OPEN` manifest is emitted only then.
+- `ENVIRONMENT.md` — declared Python/SciPy/NumPy/PyYAML/PyTorch minimums (not a
+  full lock).
 
 ## Key findings
 
@@ -96,10 +111,11 @@ rate spans ~106 SU/GPU-h (clean SFT measurement) to ~220 SU/GPU-h (older jobs).
 | **Eval sign-only grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
 | **Eval scale-matched grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
 | **Final untouched-suite eval** | base + 2 seeds × 4 families = 9 models × ~1–2 h | ~9–18 | ~1.0k–4.0k |
-| **Semantic-counterbalancing eval** | 9 models × 160 cases × 48 forms (tiny) | ~1–2 | ~0.1k–0.4k |
-| **Total** | | **~240–296 GPU-h** | **~25k–65k SU** |
+| **Semantic-counterbalancing eval** | 9 models × 160 cases × 48 forms = 7,680 prompt-forms/model | ~3.5–7 | ~0.4k–1.5k |
+| **Total (before capability contingency)** | | **~243–301 GPU-h** | **~26k–67k SU** |
 
-**Conclusion:** the full program costs **~25k–65k SU**, dominated by sign-only +
+**Conclusion:** the full program costs **~26k–67k SU** *before* any capability
+contingency (IFEval / GSM-Symbolic add more), dominated by sign-only +
 scale-matched *training* (~40k SU alone at the high rate). This vastly exceeds
 the **~3,312 SU** balance, so it requires a substantial **SU top-up** (roughly
 10–20× the current balance). Cheapest partial progress within budget: the SFT
@@ -112,7 +128,7 @@ Applied transparently before any frozen suite was opened:
 
 1. **True pair-clustered bootstrap** — resamples whole goods-pair clusters keyed
    by `(X_num, Y_num)`; a test proves a pair's repeated configurations cannot be
-   split across clusters (`test_robust_inference.py`, now **20/20**). Recovery
+   split across clusters (`test_robust_inference.py`, now **22/22**). Recovery
    uses singleton pairs per simulated case.
 2. **Semantic-counterbalancing amended** (recorded as an explicit amendment, not
    a silent rewrite): `permitted_models` broadened to base + every selected
