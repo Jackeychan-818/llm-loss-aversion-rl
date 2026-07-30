@@ -3,6 +3,13 @@
   "note": "test_goods is validation. estimator_cond_proxy is max/min parameter variance (a conditioning proxy, NOT the Jacobian condition number). clean_reduction requires |lambda|<0.5 AND no caveat.",
   "delta_file_sha256": "569bf72e4aaf12b43bc98f27cb706c4a6bffbfda1e765a8eb00f5c2332133dfd",
   "n_rows": 40,
+  "summary": {
+    "n_clean_reduction": 25,
+    "n_clean_no": 15,
+    "n_small_lambda_with_caveat": 10,
+    "n_large_lambda_ge_0_5": 5,
+    "interpretation": "15/40 rows are clean=NO. Of those, 10 have |lambda|<0.5 BUT a contradictory caveat (eta, inconsistency, parse failures, or choice collapse) \u2014 the direct evidence that lambda alone can mislead \u2014 while the remaining 5 are clean=NO simply because |lambda|>=0.5."
+  },
   "rows": [
     {
       "model_name": "Qwen-7B-Base-Local",

@@ -16,11 +16,16 @@ been run on the full grids. Training completion is **not** a behavioral result.
 | Comparison | Question |
 |---|---|
 | GRPO (magnitude) vs matched base | Does the primary intervention reduce ownership-dependent choice? (already confirmed on other suites) |
-| SFT vs GRPO | Is **RL necessary**, or does supervised learning on the same rational-choice targets suffice? |
-| sign-only / scale-matched GRPO vs GRPO | Does reward **magnitude** `|δ̃|` add beyond the **sign**? |
+| SFT vs GRPO (magnitude) | Is **RL necessary**, or does supervised learning on the same rational-choice targets suffice? |
+| sign-only GRPO vs magnitude GRPO | Combined effect of dropping per-case weighting **and** changing global scale (`±|δ̃|` → `±1`). |
+| scale-matched GRPO vs magnitude GRPO | Value of per-case magnitude weighting at matched global scale (`±|δ̃|` → `±c`, c=E[\|δ̃\|]). |
+| sign-only vs scale-matched GRPO | Isolates the pure global-scale effect. |
 
-These are distinct from the completed frontier-consensus-delta run (a reward-
-**source** ablation) and must not be conflated.
+**Sign-only and scale-matched GRPO are DISTINCT model families** (different
+reward configs, trained separately, selected separately, compared separately);
+they must not be pooled. All are distinct from the completed
+frontier-consensus-delta run (a reward-**source** ablation) and must not be
+conflated.
 
 ## 2. Eligible models, seeds, and checkpoint grids
 
@@ -29,10 +34,13 @@ These are distinct from the completed frontier-consensus-delta run (a reward-
 | exact matched local base | — | single fixed base (no selection) |
 | Qwen-own-delta GRPO (magnitude) | 1, 2 | frozen 2k…30k @ 2k (15) |
 | matched SFT (Qwen-own-delta targets) | 1, 2 | frozen 2k…30k @ 2k (15) |
-| sign-only / scale-matched GRPO | 1, 2 | frozen 2k…30k @ 2k (15) — **pending training** |
+| sign-only GRPO (`±1`) | 1, 2 | frozen 2k…30k @ 2k (15) — **distinct family; pending training** |
+| scale-matched GRPO (`±c`, c=0.685029) | 1, 2 | frozen 2k…30k @ 2k (15) — **distinct family; pending training** |
 
 All grids are the confirmatory 15-checkpoint grid. Off-grid diagnostics (e.g.
-step 600) are **ineligible** for selection.
+step 600) are **ineligible** for selection. Each family runs the selector
+independently, on its own evaluation directory, producing its own per-seed
+selected checkpoint; families are never pooled for selection or comparison.
 
 ## 3. Selection — unchanged `eval/select_checkpoint.py`
 
@@ -64,8 +72,9 @@ Every selector invocation for these baselines MUST pass `--provenance_note`
 recording that the previous final suites are already opened:
 
 > "OOD-50 and frozen-unused final suites already opened (before these baselines);
-> selection is validation-only on test_goods; SFT-vs-GRPO / sign-vs-magnitude
-> comparisons are post-hoc until the new untouched suite is opened."
+> selection is validation-only on test_goods; SFT-vs-GRPO, sign-vs-magnitude,
+> scale-matched-vs-magnitude, and sign-vs-scale-matched comparisons are post-hoc
+> until the new untouched suite is opened."
 
 The new untouched suite (`data/method_comparison/`) is the only set that can
 carry a **confirmatory** cross-method claim, and only under this protocol.
@@ -110,6 +119,10 @@ selection.
   **post-hoc / validation / exploratory** and must be labelled so.
 - A full `test_goods` grid does **not** make SFT-vs-GRPO confirmatory. This
   protocol explicitly rejects that claim.
+- The four cross-family comparisons — SFT vs magnitude GRPO, sign-only vs
+  magnitude, scale-matched vs magnitude, and sign-only vs scale-matched — are
+  each reported separately per seed; sign-only and scale-matched results are
+  never pooled.
 
 ## 9. Prohibited selection inputs
 

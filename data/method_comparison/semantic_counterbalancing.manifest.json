@@ -25,5 +25,5 @@
     "decoding": "greedy, do_sample=False, structural link scale T=1",
     "analysis": "FROZEN before opening trained-model results"
   },
-  "output_sha256": "764d1e4377abbf2aee436b4d68f1c2a97101086390847a9f549832ed84ef5fa2"
+  "output_sha256": "afa42efac2bfb38ede802daff9b6db51d8ce24d373fe18743808d6a41fbede6f"
 }

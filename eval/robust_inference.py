@@ -200,24 +200,49 @@ class BootResult:
     eta_se: float = np.nan
     n_replicates: int = 0
     n_failed: int = 0
+    n_clusters: int = 0
     replicate_lams: list = field(default_factory=list)
     replicate_etas: list = field(default_factory=list)
+
+
+def build_pair_clusters(cases: list[PairedCase]) -> tuple[list, list]:
+    """Group case indices into goods-pair CLUSTERS keyed by (X_num, Y_num).
+
+    Every configuration of a pair, with BOTH perspectives, lives in one cluster,
+    so a pair's repeated configurations can never be split across bootstrap
+    replicates. Returns (cluster_keys, list_of_index_arrays)."""
+    clusters: dict[tuple, list[int]] = {}
+    for i, c in enumerate(cases):
+        clusters.setdefault((c.x_num, c.y_num), []).append(i)
+    keys = sorted(clusters)
+    return keys, [np.array(clusters[k], dtype=int) for k in keys]
+
+
+def pair_cluster_resample_index(cluster_index_arrays: list, rng) -> np.ndarray:
+    """Resample WHOLE goods-pair clusters with replacement and concatenate their
+    member indices. A selected pair contributes all its configurations/perspectives
+    together (and its full block again if drawn more than once)."""
+    n_clusters = len(cluster_index_arrays)
+    chosen = rng.integers(0, n_clusters, size=n_clusters)
+    return np.concatenate([cluster_index_arrays[c] for c in chosen])
 
 
 def pair_clustered_bootstrap(cases: list[PairedCase], vx, vy,
                              n_boot: int = 1000, seed: int = 0,
                              alpha: float = 0.05) -> BootResult:
-    """Resample CASES (the cluster = one goods pair + config, carrying both
-    perspectives together) with replacement; refit each replicate. This respects
-    the paired structure the frozen iid covariance ignores (INFER-001)."""
+    """Pair-clustered bootstrap: the cluster is one goods pair keyed by
+    (X_num, Y_num). Every replicate resamples WHOLE pairs with replacement, so
+    all configurations and both perspectives of a pair move together and are
+    never split across clusters. This respects the paired/repeated structure the
+    frozen iid covariance ignores (INFER-001)."""
     vx = np.asarray(vx, float); vy = np.asarray(vy, float)
     pno_x = np.array([c.pno_x for c in cases]); pno_y = np.array([c.pno_y for c in cases])
     point = fit_lambda_eta(vx, vy, pno_x, pno_y)
+    _, cluster_arrays = build_pair_clusters(cases)
     rng = np.random.default_rng(seed)
-    n = len(cases)
     lams, etas, failed = [], [], 0
     for _ in range(n_boot):
-        idx = rng.integers(0, n, size=n)  # cluster resample: whole cases
+        idx = pair_cluster_resample_index(cluster_arrays, rng)  # whole-pair resample
         r = fit_lambda_eta(vx[idx], vy[idx], pno_x[idx], pno_y[idx])
         if r.success and np.isfinite(r.lam):
             lams.append(r.lam); etas.append(r.eta)
@@ -232,6 +257,7 @@ def pair_clustered_bootstrap(cases: list[PairedCase], vx, vy,
         lam_se=float(np.std(lams, ddof=1)) if lams.size > 1 else np.nan,
         eta_se=float(np.std(etas, ddof=1)) if etas.size > 1 else np.nan,
         n_replicates=int(lams.size), n_failed=int(failed),
+        n_clusters=len(cluster_arrays),
         replicate_lams=lams.tolist(), replicate_etas=etas.tolist(),
     )
 

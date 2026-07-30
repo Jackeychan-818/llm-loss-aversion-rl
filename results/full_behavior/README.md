@@ -33,8 +33,10 @@ contradicted by:
 - choice collapse (a keep-both or trade-both side `< 2%`).
 
 This prevents reporting a low λ as success when the model still keeps everything,
-has high η, or has degenerate choices. In the current committed set, several
-low-λ checkpoints are flagged `NO` for exactly these reasons.
+has high η, or has degenerate choices. In the current committed set, **15/40 rows
+are `clean=NO`**; of those, **10 have `|λ|<0.5` plus a contradictory caveat** (the
+direct evidence that λ alone can mislead), and the remaining 5 are `clean=NO`
+only because `|λ|≥0.5`.
 
 ## Scope / honesty notes
 

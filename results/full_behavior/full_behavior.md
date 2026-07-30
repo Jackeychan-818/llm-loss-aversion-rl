@@ -45,4 +45,4 @@
 | Qwen-7B-GRPO-qd-seed2-ckpt28000 | seed2 | 28000 | 0.016 (0.008) | 0.794 (0.024) | 0.794 | 0.793 | 0.177 | 0.030 | 0.839 | 0.958 | yes | — |
 | Qwen-7B-GRPO-qd-seed2-ckpt30000 | seed2 | 30000 | 0.000 (0.008) | 0.783 (0.024) | 0.783 | 0.798 | 0.170 | 0.032 | 0.842 | 0.958 | yes | — |
 
-Rows: 40. `clean=NO` means λ small but a caveat fired (η, inconsistency, parse failures, or choice collapse).
+Rows: 40. **15/40 rows are `clean=NO`.** Of those, **10** have `|λ|<0.5` *plus* a contradictory caveat (η, inconsistency, parse failures, or choice collapse) — the direct evidence that λ alone can mislead; the rest are `clean=NO` only because `|λ|≥0.5`.

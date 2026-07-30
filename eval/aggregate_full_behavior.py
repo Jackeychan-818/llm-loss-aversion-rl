@@ -238,8 +238,15 @@ def render_md(rows) -> str:
             f"{r['trade_both_rate']:.3f} | {tgt} | {w} | "
             f"{'yes' if r['clean_reduction'] else 'NO'} | "
             f"{'; '.join(r['caveats']) if r['caveats'] else '—'} |")
-    lines += ["", f"Rows: {len(rows)}. `clean=NO` means λ small but a caveat fired "
-              "(η, inconsistency, parse failures, or choice collapse).", ""]
+    n_total = len(rows)
+    n_clean = sum(1 for r in rows if r["clean_reduction"])
+    n_small_caveat = sum(1 for r in rows if abs(r["lambda"]) < 0.5 and r["caveats"])
+    lines += ["",
+              f"Rows: {n_total}. **{n_total - n_clean}/{n_total} rows are "
+              f"`clean=NO`.** Of those, **{n_small_caveat}** have `|λ|<0.5` *plus* a "
+              "contradictory caveat (η, inconsistency, parse failures, or choice "
+              "collapse) — the direct evidence that λ alone can mislead; the rest "
+              "are `clean=NO` only because `|λ|≥0.5`.", ""]
     return "\n".join(lines)
 
 
@@ -278,13 +285,33 @@ def main():
     args = ap.parse_args()
 
     rows = build_rows()
+    n_total = len(rows)
+    n_clean = sum(1 for r in rows if r["clean_reduction"])
+    n_not_clean = n_total - n_clean
+    n_small_lambda_caveated = sum(1 for r in rows
+                                  if abs(r["lambda"]) < 0.5 and r["caveats"])
+    n_large_lambda = sum(1 for r in rows if abs(r["lambda"]) >= 0.5)
     doc = {
         "purpose": "Deterministic full-behavior aggregation from committed results (Task 5).",
         "note": ("test_goods is validation. estimator_cond_proxy is max/min parameter "
                  "variance (a conditioning proxy, NOT the Jacobian condition number). "
                  "clean_reduction requires |lambda|<0.5 AND no caveat."),
         "delta_file_sha256": sha256_file(DELTA_FILE),
-        "n_rows": len(rows),
+        "n_rows": n_total,
+        "summary": {
+            "n_clean_reduction": n_clean,
+            "n_clean_no": n_not_clean,
+            "n_small_lambda_with_caveat": n_small_lambda_caveated,
+            "n_large_lambda_ge_0_5": n_large_lambda,
+            "interpretation": (
+                f"{n_not_clean}/{n_total} rows are clean=NO. Of those, "
+                f"{n_small_lambda_caveated} have |lambda|<0.5 BUT a contradictory "
+                f"caveat (eta, inconsistency, parse failures, or choice collapse) — "
+                f"the direct evidence that lambda alone can mislead — while the "
+                f"remaining {n_not_clean - n_small_lambda_caveated} are clean=NO "
+                f"simply because |lambda|>=0.5."
+            ),
+        },
         "rows": rows,
     }
     outputs = {

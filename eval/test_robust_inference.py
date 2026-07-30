@@ -20,7 +20,8 @@ sys.path.insert(0, str(ROOT / "eval"))
 
 from robust_inference import (  # noqa: E402
     join_paired_records, fit_lambda_eta, pair_clustered_bootstrap,
-    leave_one_good_out, PairedCase,
+    leave_one_good_out, PairedCase, build_pair_clusters,
+    pair_cluster_resample_index,
 )
 
 _fail: list[str] = []
@@ -91,6 +92,51 @@ check("bootstrap CI finite", np.isfinite(boot.lam_ci[0]) and np.isfinite(boot.la
 check("bootstrap CI ordered", boot.lam_ci[0] <= boot.lam_ci[1], str(boot.lam_ci))
 check("bootstrap CI covers truth", boot.lam_ci[0] <= lam_true <= boot.lam_ci[1], str(boot.lam_ci))
 check("bootstrap few failures", boot.n_failed <= 0.1 * 150, str(boot.n_failed))
+
+# --- 6b. pair-clustering: repeated configs of one pair never split ----------
+# 3 goods pairs, each with several configurations (both perspectives per case).
+multi = []
+cid = 0
+pair_defs = {(0, 1): 4, (2, 3): 3, (4, 5): 5}  # (X,Y) -> n configs
+for (xn, yn), k in pair_defs.items():
+    for _ in range(k):
+        multi.append(PairedCase(cid, xn, yn, (), 0.6, 0.4))
+        cid += 1
+keys, cluster_arrays = build_pair_clusters(multi)
+check("clusters keyed by (X_num,Y_num)", keys == sorted(pair_defs.keys()), str(keys))
+check("cluster sizes match configs*1",
+      sorted(len(a) for a in cluster_arrays) == sorted(pair_defs.values()),
+      str([len(a) for a in cluster_arrays]))
+# every member of a cluster shares one (X_num,Y_num)
+ok_cluster = all(len({(multi[i].x_num, multi[i].y_num) for i in arr}) == 1
+                 for arr in cluster_arrays)
+check("each cluster is a single pair", ok_cluster, "mixed pair in a cluster")
+
+# resample many times; in EVERY replicate a pair's configs appear as whole
+# blocks (count is a multiple of that pair's config count) — never split.
+rng_pc = np.random.default_rng(11)
+sizes = {(xn, yn): k for (xn, yn), k in pair_defs.items()}
+split_free = True
+for _ in range(300):
+    idx = pair_cluster_resample_index(cluster_arrays, rng_pc)
+    counts = {}
+    for i in idx:
+        key = (multi[i].x_num, multi[i].y_num)
+        counts[key] = counts.get(key, 0) + 1
+    # each present pair's row count must be an exact multiple of its config count
+    for key, cnt in counts.items():
+        if cnt % sizes[key] != 0:
+            split_free = False
+    # and within a present pair, ALL its member configs must be present equally
+    for key in counts:
+        member_ids = [i for i in idx if (multi[i].x_num, multi[i].y_num) == key]
+        per_config = {}
+        for i in member_ids:
+            per_config[i] = per_config.get(i, 0) + 1
+        if len(set(per_config.values())) != 1:
+            split_free = False
+check("repeated configs of a pair cannot be split across clusters", split_free,
+      "a pair's configurations were split")
 
 # --- 7. leave-one-good-out --------------------------------------------------
 logo = leave_one_good_out(syn_cases, vx, vy)

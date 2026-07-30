@@ -84,8 +84,10 @@ def main():
     doc = {
         "tag": args.tag,
         "estimator": "conditional (lambda,eta) robustness layer; plug-in V=exp(U); T=1",
-        "note": ("Separate from the frozen full-FE headline estimator. Pair-clustered "
-                 "bootstrap addresses INFER-001 for (lambda,eta)."),
+        "note": ("Separate from the frozen full-FE headline estimator. Bootstrap "
+                 "resamples WHOLE goods-pair clusters keyed by (X_num,Y_num) — all "
+                 "configurations and both perspectives of a pair move together — "
+                 "addressing INFER-001 for (lambda,eta)."),
         "inputs": {
             "x": {"path": args.x, "sha256": sha256_file(Path(args.x))},
             "y": {"path": args.y, "sha256": sha256_file(Path(args.y))},
@@ -100,6 +102,8 @@ def main():
                   "jac_cond": boot.point.jac_cond,
                   "multistart_lam_sd": boot.point.multistart_lam_sd},
         "pair_clustered": {
+            "cluster_key": "(X_num, Y_num) goods pair",
+            "n_clusters": boot.n_clusters,
             "lambda_ci95": list(boot.lam_ci), "eta_ci95": list(boot.eta_ci),
             "lambda_se": boot.lam_se, "eta_se": boot.eta_se,
             "n_replicates": boot.n_replicates, "n_failed": boot.n_failed,

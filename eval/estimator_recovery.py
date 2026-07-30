@@ -61,8 +61,11 @@ def run_cell(n, lam, eta, reps, n_boot, base_seed, binary):
         biases_lam.append(fit.lam - lam)
         biases_eta.append(fit.eta - eta)
         jac_conds.append(fit.jac_cond)
-        # coverage via pair-clustered bootstrap on this replicate
-        cases = [PairedCase(i, 0, 1, (), px[i], py[i]) for i in range(n)]
+        # coverage via pair-clustered bootstrap on this replicate. Give each
+        # simulated case its own singleton goods pair so pair-clustering is
+        # well-defined (independent cases => one cluster each), not a single
+        # degenerate cluster.
+        cases = [PairedCase(i, 2 * i, 2 * i + 1, (), px[i], py[i]) for i in range(n)]
         boot = pair_clustered_bootstrap(cases, vx, vy, n_boot=n_boot, seed=base_seed + 10000 + r)
         lam_ses.append(boot.lam_se)
         if boot.lam_ci[0] <= lam <= boot.lam_ci[1]:

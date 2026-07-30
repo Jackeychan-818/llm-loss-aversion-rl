@@ -9,7 +9,9 @@ once versus the magnitude reward:
 
 1. **per-case weighting** — magnitude gives each case a different weight `|δ̃|`;
    sign-only gives every case weight 1;
-2. **global scale** — the average reward magnitude drops from `E[|δ̃|]` to 1.
+2. **global scale** — the average reward magnitude *increases* from
+   `E[|δ̃|] ≈ 0.685` to 1 (since the constant 1 exceeds the mean absolute δ̃).
+   Scale-matched `±0.685` instead holds this chosen first absolute moment fixed.
 
 So a sign-only-vs-magnitude difference cannot be attributed to the informational
 value of per-case magnitude alone.

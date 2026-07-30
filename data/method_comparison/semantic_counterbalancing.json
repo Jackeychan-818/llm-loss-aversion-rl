@@ -38,11 +38,35 @@
   },
   "forms_per_case": 48,
   "total_prompt_forms_per_perspective": 7680,
-  "primary_outcome": "Whether the same final good is selected across semantically equivalent forms; also report response-token rates and paired structural outcomes where estimable.",
-  "permitted_models": [
-    "Qwen-7B-Base-Local",
-    "Qwen-7B-GRPO-qd-seed1-ckpt2000",
-    "Qwen-7B-GRPO-qd-seed2-ckpt6000"
+  "primary_invariance_metric": {
+    "name": "same_final_good_invariance_rate",
+    "definition": "Fraction of semantic cases for which the model selects the SAME physical good across ALL 48 equivalent surface forms (strict per-case invariance). Computed per perspective and jointly."
+  },
+  "secondary_metrics": {
+    "form_flip_rate": "Fraction of the 48 forms whose chosen good differs from the case's modal chosen good (lower = more invariant).",
+    "response_token_rate": "Fraction of forms yielding a parseable in-vocabulary response (Yes/No or keep/trade as applicable); parse failures counted, not dropped.",
+    "paired_structural_outcomes": "lambda/eta and consistency where estimable within a form family."
+  },
+  "permitted_models": {
+    "note": "PRE-OPENING AMENDMENT (2026-07-30): broadened from the original 3-model list to the matched base plus EVERY selected seed of every method family, so the semantic test covers the same model set as the method comparison. Concrete checkpoint IDs are filled in at selection time (test_goods validation) BEFORE opening this suite; no model has been evaluated here.",
+    "matched_base": [
+      "Qwen-7B-Base-Local"
+    ],
+    "magnitude_grpo_selected_seeds": [
+      "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+      "Qwen-7B-GRPO-qd-seed2-ckpt6000"
+    ],
+    "sft_selected_seeds": "each SFT seed's frozen-selected checkpoint (TBD at selection)",
+    "sign_only_selected_seeds": "each sign-only seed's frozen-selected checkpoint (TBD)",
+    "scale_matched_selected_seeds": "each scale-matched seed's frozen-selected checkpoint (TBD)"
+  },
+  "amendments": [
+    {
+      "date": "2026-07-30",
+      "type": "pre-opening correction",
+      "change": "Broadened permitted_models to base + all method-family selected seeds; defined the primary invariance metric and secondary flip/token metrics.",
+      "note": "Recorded transparently; suite still UNEVALUATED, so this is not a post-hoc rewrite."
+    }
   ],
   "cases": [
     {

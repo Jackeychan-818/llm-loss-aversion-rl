@@ -40,9 +40,12 @@ TRAIN_ID_MIN, TRAIN_ID_MAX = 9_951, 59_400
 G = 16
 MAX_STEPS = 30_000
 TRAIN_POOL = 98_900
-# Measured throughput (CAUSAL_BASELINE_PROTOCOL append record / smoke tests).
-GRPO_S_PER_STEP = 6.1      # HF generate + update
-SFT_S_PER_STEP = 0.28      # supervised forward/backward, no generation
+# Measured throughput.
+GRPO_S_PER_STEP = 6.1      # HF generate + update (confirmatory GRPO run)
+# SFT: measured from the FULL 30k runs (5,422 s / 30,000 steps = 0.1807 s/step,
+# ~1.51 h/seed), which supersedes the earlier ~0.28 s/step smoke estimate.
+SFT_FULL_RUNTIME_S = 5_422
+SFT_S_PER_STEP = SFT_FULL_RUNTIME_S / MAX_STEPS   # 0.1807
 DELTA_BINS = [(0.0, 0.5), (0.5, 1.0), (1.0, 2.0), (2.0, float("inf"))]
 DELTA_LABELS = ["|d|<=0.5", "0.5<|d|<=1.0", "1.0<|d|<=2.0", "|d|>2.0"]
 
@@ -132,8 +135,11 @@ def exposure_table():
             "epoch_fraction": MAX_STEPS / TRAIN_POOL,
             "optimizer_updates": MAX_STEPS,
             "completions_generated": 0,
-            "runtime_hours_est": MAX_STEPS * SFT_S_PER_STEP / 3600,
+            "runtime_seconds_measured": SFT_FULL_RUNTIME_S,
+            "runtime_hours_measured": SFT_FULL_RUNTIME_S / 3600,
             "s_per_step_measured": SFT_S_PER_STEP,
+            "source": "MEASURED from the full 30k runs (5,422 s/seed = 0.181 s/step, "
+                      "~1.51 h/seed); supersedes the earlier ~0.28 s/step smoke estimate.",
         },
         "asymmetry_warning": (
             "GRPO generates 480,000 completions; SFT generates 0. Runtime and "
@@ -175,6 +181,14 @@ def build():
             "filtering; generation-level dynamic sampling is not implemented "
             "(KNOWN_ISSUES.md #4)."
         ),
+        "zero_task_advantage_summary": {
+            "full_run_mean": "approximately 56-57% across the full seed-1/2/42 runs "
+                             "(measured frac_reward_zero_std mean per seed, below).",
+            "early_logged_observation": "the ~80% figure is a single EARLY logged step "
+                             "(step 10 of the April run; also frac_first up to ~0.90 "
+                             "here) and must be labelled as an early observation, not "
+                             "the full-run mean.",
+        },
         "measured_per_seed": seeds,
         "cross_seed_stability_conf": stability,
         "update_signal_by_delta_bin": delta_concentration(),
@@ -182,11 +196,12 @@ def build():
         "why_sft_could_dominate": [
             "The task is a deterministic one-token (Yes/No) mapping with a fixed "
             "rational target, so SFT has a dense per-example gradient on every prompt.",
-            "GRPO wastes signal: ~80% of groups are zero task-reward advantage "
-            "(measured frac_reward_zero_std), so most generation+backward compute "
-            "carries only a KL-only update; SFT has no such waste.",
-            "SFT reaches the endpoint in ~1.4 h/seed vs GRPO ~51 h/seed at 30k "
-            "(measured s/step), a large efficiency gap for the SAME unique-prompt "
+            "GRPO wastes signal: ~56-57% of groups are zero task-reward advantage "
+            "on the full runs (measured mean frac_reward_zero_std; ~80% is only an "
+            "early-step observation), so a large share of generation+backward "
+            "compute carries only a KL-only update; SFT has no such waste.",
+            "SFT reaches the endpoint in ~1.51 h/seed (measured 5,422 s) vs GRPO "
+            "~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt "
             "exposure.",
         ],
         "why_this_is_not_proof_grpo_is_useless": [
@@ -236,7 +251,8 @@ def render_md(doc) -> str:
           f"~{ex['grpo']['runtime_hours_est']:.1f} h/seed ({ex['grpo']['s_per_step_measured']} s/step).",
           f"- SFT: same {ex['sft']['unique_prompts']:,} prompts, "
           f"{ex['sft']['completions_generated']} completions, "
-          f"~{ex['sft']['runtime_hours_est']:.1f} h/seed ({ex['sft']['s_per_step_measured']} s/step).",
+          f"~{ex['sft']['runtime_hours_measured']:.2f} h/seed "
+          f"({ex['sft']['s_per_step_measured']:.3f} s/step, measured 5,422 s).",
           "", f"> {ex['asymmetry_warning']}", "",
           "## Interpretation", "",
           "**Why SFT could dominate this task:**"]

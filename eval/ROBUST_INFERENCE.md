@@ -10,9 +10,12 @@ full fixed effects), which stays the reference for point estimates.*
    with hard assertions: missing IDs, duplicate IDs, asymmetric pairing, and
    goods/attribute mismatch all raise. This is the PAIR-001 fix, usable by any
    estimator.
-2. **Pair-clustered bootstrap** for `(lambda, eta)` — resamples whole cases (the
-   cluster = one goods pair + config, carrying both perspectives), which respects
-   the paired/repeated structure the frozen iid `curve_fit` covariance ignores.
+2. **Pair-clustered bootstrap** for `(lambda, eta)` — the cluster is one goods
+   pair keyed by `(X_num, Y_num)`; each replicate resamples WHOLE pairs with
+   replacement, so all of a pair's configurations and both perspectives move
+   together and can never be split across clusters (proven by
+   `test_robust_inference.py`). This respects the paired/repeated structure the
+   frozen iid `curve_fit` covariance ignores.
 3. **Leave-one-good-out**, **Jacobian conditioning**, and **multi-start**
    diagnostics.
 4. **Estimator-recovery** (`estimator_recovery.py`): known `(lambda*, eta*)` →
