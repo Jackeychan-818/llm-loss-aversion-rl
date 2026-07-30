@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "dataset": "semantic_counterbalancing.json",
+  "status": "FROZEN_UNTOUCHED_UNEVALUATED",
+  "frozen_on": "2026-07-30",
+  "inputs": {
+    "method_comparison_suite.json": {
+      "sha256": "859e4c889e4774c957357bede8819afd2d8dad3151ab51b8d0f9d3f50fefb5c3"
+    },
+    "method_comparison_strata.json": {
+      "sha256": "9f8b8081dee32092d2c72677c02ac11ced4a2b11f83e23271c98de565798c4ed"
+    }
+  },
+  "n_cases": 160,
+  "per_bin_selected": {
+    "|d|<=0.5": 40,
+    "0.5<|d|<=1.0": 40,
+    "1.0<|d|<=2.0": 40,
+    "|d|>2.0": 40
+  },
+  "forms_per_case": 48,
+  "freeze_policy": {
+    "template_text": "FROZEN",
+    "subset_ids": "FROZEN",
+    "decoding": "greedy, do_sample=False, structural link scale T=1",
+    "analysis": "FROZEN before opening trained-model results"
+  },
+  "output_sha256": "764d1e4377abbf2aee436b4d68f1c2a97101086390847a9f549832ed84ef5fa2"
+}

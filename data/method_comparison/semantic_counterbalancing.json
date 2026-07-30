@@ -1,0 +1,689 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_UNTOUCHED_UNEVALUATED",
+  "frozen_on": "2026-07-30",
+  "frozen_seed": 20260730,
+  "parent_suite": "method_comparison_suite.json",
+  "selection_rule": "Within each predicted-|delta| bin, hash-rank case_ids by sha256('sem:{seed}:{case_id}') and take the first N_PER_BIN. Response-independent.",
+  "n_per_bin": 40,
+  "per_bin_selected": {
+    "|d|<=0.5": 40,
+    "0.5<|d|<=1.0": 40,
+    "1.0<|d|<=2.0": 40,
+    "|d|>2.0": 40
+  },
+  "n_cases": 160,
+  "variant_axes": {
+    "response_mode": [
+      "yes_no",
+      "keep_trade"
+    ],
+    "item_labels": [
+      "XY",
+      "AB"
+    ],
+    "display_order": [
+      "normal",
+      "reversed"
+    ],
+    "attr_order": [
+      "normal",
+      "reversed"
+    ],
+    "paraphrase": [
+      "baseline_v1",
+      "concise_v1",
+      "explicit_v1"
+    ]
+  },
+  "forms_per_case": 48,
+  "total_prompt_forms_per_perspective": 7680,
+  "primary_outcome": "Whether the same final good is selected across semantically equivalent forms; also report response-token rates and paired structural outcomes where estimable.",
+  "permitted_models": [
+    "Qwen-7B-Base-Local",
+    "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+    "Qwen-7B-GRPO-qd-seed2-ckpt6000"
+  ],
+  "cases": [
+    {
+      "case_id": 2000019,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2000293,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2000443,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2000568,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2000745,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2000934,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2001070,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2001269,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2001307,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2001404,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2001415,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2001473,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2001775,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2001784,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2001852,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2001868,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2001887,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2002054,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2002482,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2002746,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2002756,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2002881,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2003040,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2003105,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2003118,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2003282,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2003461,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2003501,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2003722,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2003968,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2003996,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2004064,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2004069,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2004134,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2004163,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2004175,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2004247,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2004711,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2004924,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2005579,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2005696,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2005748,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2005768,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2005849,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2005991,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2006185,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2006414,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2006445,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2006493,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2006816,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2006847,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2007028,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2007080,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2007117,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2007500,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2007700,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2007748,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2007816,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2007871,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2007993,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2008160,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2008205,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2008590,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2009104,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2009558,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2009656,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2009808,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2009960,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2009966,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2010047,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2010222,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2010385,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2010607,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2010663,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2010671,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2010713,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2010716,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2010851,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2010868,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2010942,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2010959,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2011191,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2011449,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2011552,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2011630,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2011994,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2012339,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2012383,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2012387,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2012718,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2012822,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2013077,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2013156,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2013161,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2013202,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2013228,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2013552,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2013567,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2013609,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2013678,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2013803,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2013920,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2013966,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2013996,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2014256,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2014296,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2014481,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2014550,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2014651,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2014776,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2014852,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2014854,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2014858,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2014972,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2015531,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2015539,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2015705,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2015752,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2015771,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2015811,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2015901,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2015904,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2015928,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016114,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2016292,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016327,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016453,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2016596,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2016628,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016643,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2016832,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016898,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2016940,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2017073,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2017152,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2017229,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2017312,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2017354,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2017412,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2017414,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2017599,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2017887,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2018007,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2018032,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2018087,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2018215,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2018385,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2018446,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2018851,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2018860,
+      "pred_delta_bin": "1.0<|d|<=2.0"
+    },
+    {
+      "case_id": 2019005,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2019012,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2019040,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2019136,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2019187,
+      "pred_delta_bin": "|d|<=0.5"
+    },
+    {
+      "case_id": 2019194,
+      "pred_delta_bin": "|d|>2.0"
+    },
+    {
+      "case_id": 2019337,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2019620,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2019720,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    },
+    {
+      "case_id": 2019752,
+      "pred_delta_bin": "0.5<|d|<=1.0"
+    }
+  ]
+}

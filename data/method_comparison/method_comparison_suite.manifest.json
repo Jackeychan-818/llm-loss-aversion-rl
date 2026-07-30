@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "dataset": "method_comparison_suite.json",
+  "status": "FROZEN_UNTOUCHED_UNEVALUATED",
+  "frozen_on": "2026-07-30",
+  "purpose": "Final method-comparison suite for matched base, magnitude-weighted GRPO, matched SFT, and sign-only/scale-matched GRPO. Never used for training, reward construction, checkpoint selection, or method development.",
+  "selection": {
+    "algorithm": "sha256_rank_shuffle_v1",
+    "seed": 20260730,
+    "codes_per_pair": 4,
+    "candidate_codes": "integers 0..80 excluding each pair's 22 used codes",
+    "rule": "sort untouched codes by SHA-256 key, take the first K, then sort",
+    "hash_payload": "{seed}:{x}:{y}:{code}",
+    "response_independent": true
+  },
+  "case_id_scheme": {
+    "offset": 2000000,
+    "order": "sequential over (X, Y, code) ascending",
+    "first_case_id": 2000001,
+    "last_case_id": 2019780,
+    "n_case_ids": 19780,
+    "paired_perspectives": "each case_id yields one X-endowed and one Y-endowed prompt"
+  },
+  "inputs": {
+    "test_goods.json": {
+      "role": "validation configs (2/pair) excluded",
+      "sha256": "6b47703a995169e92bee0da8b6d9b53cb2c04d6dbcc463ace63cf89a73e12476"
+    },
+    "remaining_goods.json": {
+      "role": "training configs (10/pair) excluded",
+      "sha256": "67e4e95ee2d4feb7da32bed40c5f30af4b50126b46d48f945c2269ceea9ed75d"
+    },
+    "frozen_unused_test_goods.json": {
+      "role": "already-opened prospective configs (10/pair) excluded",
+      "sha256": "793c472157fb46fbc53cb24df644b04b84ade7aa8a1a0b6ea93567b4838a55e5"
+    },
+    "ood_new_goods_50.json": {
+      "role": "unseen-goods OOD suite; different goods population, no code overlap",
+      "sha256": "2573c9e0f3ced946ccf16abe4ec43a28a8f1daa1252824ca96dad206de37685a"
+    }
+  },
+  "output": {
+    "path": "data/method_comparison/method_comparison_suite.json",
+    "sha256": "859e4c889e4774c957357bede8819afd2d8dad3151ab51b8d0f9d3f50fefb5c3"
+  },
+  "validation": {
+    "pair_count": 4945,
+    "selected_codes_per_pair": 4,
+    "case_count": 19780,
+    "prompts_per_model": 39560,
+    "used_codes_per_pair": 22,
+    "untouched_candidates_per_pair": 59,
+    "zero_overlap_with_test_goods": true,
+    "zero_overlap_with_remaining_goods": true,
+    "zero_overlap_with_frozen_unused": true,
+    "ood_50_shares_no_goods": true,
+    "all_selected_codes_unique_within_pair": true,
+    "joint_code_counts_0_to_80": [
+      244,
+      251,
+      237,
+      250,
+      262,
+      238,
+      245,
+      253,
+      208,
+      241,
+      212,
+      239,
+      255,
+      262,
+      235,
+      252,
+      251,
+      248,
+      265,
+      239,
+      259,
+      255,
+      269,
+      261,
+      227,
+      259,
+      260,
+      235,
+      257,
+      217,
+      228,
+      246,
+      254,
+      263,
+      229,
+      254,
+      218,
+      249,
+      261,
+      257,
+      262,
+      232,
+      246,
+      237,
+      252,
+      242,
+      252,
+      208,
+      225,
+      234,
+      259,
+      239,
+      253,
+      238,
+      244,
+      262,
+      241,
+      250,
+      219,
+      251,
+      250,
+      247,
+      240,
+      233,
+      225,
+      247,
+      241,
+      258,
+      238,
+      245,
+      236,
+      238,
+      258,
+      229,
+      242,
+      235,
+      246,
+      244,
+      239,
+      269,
+      229
+    ],
+    "joint_code_count_min": 208,
+    "joint_code_count_max": 269,
+    "joint_code_expected_count": 244.19753086419752,
+    "max_joint_relative_deviation": 0.14823053589484322,
+    "max_joint_relative_deviation_gate": 0.15,
+    "attribute_position_level_counts": [
+      [
+        6582,
+        6668,
+        6530
+      ],
+      [
+        6507,
+        6666,
+        6607
+      ],
+      [
+        6575,
+        6570,
+        6635
+      ],
+      [
+        6677,
+        6547,
+        6556
+      ]
+    ],
+    "max_marginal_share_deviation": 0.004364678126053234,
+    "max_marginal_share_deviation_gate": 0.01,
+    "balance_gates_pass": true
+  },
+  "freeze_policy": {
+    "training_or_reward_construction": "PROHIBITED",
+    "checkpoint_selection": "PROHIBITED",
+    "method_development_or_tuning": "PROHIBITED",
+    "open_rule": "Open ONCE, after all per-seed checkpoint selections are frozen on test_goods validation, for the pre-registered method comparison in METHOD_COMPARISON_PROTOCOL.md.",
+    "scope": "Same 100 goods and 4,945 pairs; untouched configurations, not unseen goods."
+  }
+}
