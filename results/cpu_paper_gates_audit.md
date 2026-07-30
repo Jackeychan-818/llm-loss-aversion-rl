@@ -111,7 +111,7 @@ rate spans ~106 SU/GPU-h (clean SFT measurement) to ~220 SU/GPU-h (older jobs).
 | **Eval sign-only grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
 | **Eval scale-matched grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
 | **Final untouched-suite eval** | base + 2 seeds × 4 families = 9 models × ~1–2 h | ~9–18 | ~1.0k–4.0k |
-| **Semantic-counterbalancing eval** | 9 models × 160 cases × 48 forms = 7,680 prompt-forms/model | ~3.5–7 | ~0.4k–1.5k |
+| **Semantic-counterbalancing eval** | 9 models × 160 cases × 48 forms = 7,680 paired cases / 15,360 X/Y prompts per model | ~3.5–7 | ~0.4k–1.5k |
 | **Total (before capability contingency)** | | **~243–301 GPU-h** | **~26k–67k SU** |
 
 **Conclusion:** the full program costs **~26k–67k SU** *before* any capability
