@@ -80,10 +80,15 @@ def parse_args() -> argparse.Namespace:
                         "Overrides `seed` in the YAML config.")
     p.add_argument("--resume_from_checkpoint", default=None,
                    help="Checkpoint path to resume from, or 'auto' to use the latest checkpoint")
-    p.add_argument("--reward_weighting", choices=["magnitude", "sign_only"], default=None,
-                   help="Reward weight: 'magnitude' (default, confirmatory ±|delta|) or "
-                        "'sign_only' (roadmap Priority-1 ablation, ±1). Overrides the YAML "
-                        "'reward_weighting' key; if neither is set, defaults to 'magnitude'.")
+    p.add_argument("--reward_weighting",
+                   choices=["magnitude", "sign_only", "scale_matched"], default=None,
+                   help="Reward weight: 'magnitude' (default, confirmatory ±|delta|), "
+                        "'sign_only' (Priority-1 ablation, ±1), or 'scale_matched' "
+                        "(ABLATION-001 control, ±c). Overrides the YAML 'reward_weighting' "
+                        "key; if neither is set, defaults to 'magnitude'.")
+    p.add_argument("--scale_constant", type=float, default=None,
+                   help="Constant c for reward_weighting=scale_matched. Overrides the YAML "
+                        "'scale_constant'. Required (and must be >0) only for scale_matched.")
     return p.parse_args()
 
 
@@ -116,14 +121,15 @@ def _git_commit() -> str:
 
 def write_run_manifest(output_dir: str, cfg: dict, args, reward_weighting: str,
                        seed: int, data_file: Path, delta_path: Path, goods_json: Path,
-                       max_steps) -> None:
-    """Provenance manifest for a GRPO run (magnitude OR sign-only). Additive: a
-    single JSON in the output dir; does not affect training."""
+                       max_steps, scale_constant=None) -> None:
+    """Provenance manifest for a GRPO run (magnitude / sign-only / scale-matched).
+    Additive: a single JSON in the output dir; does not affect training."""
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     manifest = {
         "run_type": "grpo",
         "reward_weighting": reward_weighting,
+        "scale_constant": scale_constant,
         "config": args.config,
         "output_dir": str(output_dir),
         "seed": seed,
@@ -198,15 +204,36 @@ def find_resume_checkpoint(args: argparse.Namespace) -> Optional[str]:
     return str(ckpt)
 
 
+# Algorithm-defining GRPOConfig keys. If the installed TRL silently lacks any of
+# these, the run's algorithm differs from the frozen spec, so we HARD-FAIL rather
+# than warn (ENV-001). Non-critical keys (logging, dataloader tuning) still warn.
+CRITICAL_GRPO_KEYS = frozenset({
+    "beta", "epsilon", "loss_type", "scale_rewards", "num_generations",
+    "temperature", "mask_truncated_completions", "max_completion_length",
+})
+
+
 def filter_supported_config_kwargs(config_cls, kwargs: dict) -> dict:
-    """Drop GRPOConfig kwargs unsupported by the installed TRL version."""
+    """Drop GRPOConfig kwargs unsupported by the installed TRL version.
+
+    Hard-fails if any ALGORITHM-DEFINING key (CRITICAL_GRPO_KEYS) is unsupported,
+    because silently dropping it would change the trained algorithm (ENV-001).
+    Only non-critical keys are dropped with a warning."""
     supported = {field.name for field in dataclasses.fields(config_cls)}
     filtered = {key: value for key, value in kwargs.items() if key in supported}
     dropped = sorted(set(kwargs) - supported)
+    critical_dropped = sorted(k for k in dropped if k in CRITICAL_GRPO_KEYS)
+    if critical_dropped:
+        raise SystemExit(
+            "FATAL: installed TRL GRPOConfig does not support algorithm-defining "
+            f"settings {critical_dropped}. Silently dropping them would change the "
+            "trained algorithm. Install a TRL version that supports them, or remove "
+            "them deliberately with a documented protocol change."
+        )
     if dropped:
         logger.warning(
-            "Installed TRL GRPOConfig does not support these settings; ignoring: "
-            + ", ".join(dropped)
+            "Installed TRL GRPOConfig does not support these non-critical settings; "
+            "ignoring: " + ", ".join(dropped)
         )
     return filtered
 
@@ -423,13 +450,27 @@ def main():
     grpo_config = build_grpo_config(cfg, args, resume_checkpoint)
     lora_config = build_lora_config(cfg)
     # Reward weighting: CLI overrides YAML; default 'magnitude' reproduces the
-    # confirmatory ±|delta| behavior exactly. 'sign_only' is the ±1 ablation.
+    # confirmatory ±|delta| behavior exactly. 'sign_only' is the ±1 ablation;
+    # 'scale_matched' is the ±c ABLATION-001 control (needs scale_constant>0).
     reward_weighting = args.reward_weighting or cfg.get("reward_weighting", "magnitude")
-    reward_fn = make_reward_fn(reward_weighting)
-    logger.info(f"Reward weighting  : {reward_weighting} "
-                f"({'±|delta| (confirmatory default)' if reward_weighting == 'magnitude' else '±1 (sign-only ablation)'})")
+    scale_constant = None
+    if reward_weighting == "scale_matched":
+        scale_constant = args.scale_constant if args.scale_constant is not None \
+            else cfg.get("scale_constant")
+        if scale_constant is None or not (scale_constant > 0):
+            raise SystemExit(
+                "reward_weighting=scale_matched requires a positive 'scale_constant' "
+                "(YAML or --scale_constant). Freeze it with train/build_scale_matched_spec.py.")
+        reward_fn = make_reward_fn(reward_weighting, scale_constant=float(scale_constant))
+        _reward_desc = f"±c={float(scale_constant):.6f} (scale-matched control)"
+    else:
+        reward_fn = make_reward_fn(reward_weighting)
+        _reward_desc = ("±|delta| (confirmatory default)" if reward_weighting == "magnitude"
+                        else "±1 (sign-only ablation)")
+    logger.info(f"Reward weighting  : {reward_weighting} ({_reward_desc})")
     write_run_manifest(args.output_dir, cfg, args, reward_weighting,
-                       grpo_config.seed, data_file, delta_path, goods_json, grpo_config.max_steps)
+                       grpo_config.seed, data_file, delta_path, goods_json,
+                       grpo_config.max_steps, scale_constant=scale_constant)
 
     logger.info(
         f"GRPO config: G={grpo_config.num_generations}, "

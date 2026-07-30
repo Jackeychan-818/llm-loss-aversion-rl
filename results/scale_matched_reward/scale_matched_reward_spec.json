@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "purpose": "Scale-matched sign control for ABLATION-001 (reward-magnitude ablation).",
+  "delta_file": "data/deltas/delta_qwen_base.json",
+  "delta_file_sha256": "569bf72e4aaf12b43bc98f27cb706c4a6bffbfda1e765a8eb00f5c2332133dfd",
+  "training_id_range": [
+    9951,
+    59400
+  ],
+  "magnitude_reward_distribution": {
+    "n_nonzero": 49450,
+    "mean_abs": 0.6850291044696067,
+    "rms": 0.9471656803337986,
+    "median_abs": 0.4496420679448737,
+    "std_abs": 0.6541085170151479,
+    "min_abs": 1.5002748017689527e-05,
+    "max_abs": 4.0532893155316145
+  },
+  "scale_matching": {
+    "default_rule": "mean_abs",
+    "c_mean_abs": 0.6850291044696067,
+    "c_rms": 0.9471656803337986,
+    "chosen_constant": 0.6850291044696067,
+    "mean_abs_justification": "c = E[|delta|]; matches the first absolute moment / mean reward magnitude.",
+    "rms_justification": "c = sqrt(E[delta^2]); matches the second moment / RMS effective advantage scale."
+  },
+  "limitations": "GRPO mean-centres advantages by the group mean (scale_rewards='none') and ~80% of groups carry zero task-reward advantage, so no constant c reproduces the realized per-step gradient of the magnitude reward; c matches only the chosen moment of the reward-magnitude distribution. The scale_matched control removes per-case weighting while matching global scale; sign_only removes both.",
+  "usage": {
+    "reward_weighting": "scale_matched",
+    "scale_constant": 0.6850291044696067,
+    "config": "train/configs/qwen25_7b_qwen_delta_scale_matched.yaml"
+  }
+}

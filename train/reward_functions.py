@@ -74,8 +74,33 @@ def rational_choice(perspective: str, delta: float) -> str:
     return "Yes" if delta > 0 else "No"
 
 
+VALID_WEIGHTINGS = ("magnitude", "sign_only", "scale_matched")
+
+
+def _weight_for(weighting: str, delta: float, scale_constant: float | None) -> float:
+    """The non-negative reward magnitude for a case under a weighting scheme.
+
+      - "magnitude":     |δ̃|                (per-case, varies across prompts)
+      - "sign_only":     1.0                (uniform; changes both weighting AND scale)
+      - "scale_matched": scale_constant c   (uniform like sign_only, but c chosen
+                         so the GLOBAL reward scale matches magnitude — isolates
+                         per-case weighting from global scale; see ABLATION-001)
+    """
+    if weighting == "magnitude":
+        return abs(delta)
+    if weighting == "sign_only":
+        return 1.0
+    if weighting == "scale_matched":
+        if scale_constant is None or not (scale_constant > 0):
+            raise ValueError("scale_matched weighting requires a positive scale_constant "
+                             f"(got {scale_constant!r})")
+        return float(scale_constant)
+    raise ValueError(f"unknown reward weighting {weighting!r}; expected one of {VALID_WEIGHTINGS}")
+
+
 def compute_reward(response: str, perspective: str, delta: float,
-                   weighting: str = "magnitude") -> float:
+                   weighting: str = "magnitude",
+                   scale_constant: float | None = None) -> float:
     """
     Reward for a Yes/No response.
 
@@ -84,24 +109,81 @@ def compute_reward(response: str, perspective: str, delta: float,
     weighting:
       - "magnitude" (DEFAULT, the confirmatory behavior): ±|δ̃|.
       - "sign_only" (roadmap Priority-1 ablation):        ±1, independent of |δ̃|.
+      - "scale_matched" (ABLATION-001 control): ±c with a FIXED constant c (see
+        compute_scale_constant). Uniform per case like sign_only, but scaled so
+        the global reward scale matches ±|δ̃|, so magnitude-vs-scale_matched
+        isolates per-case magnitude information from global scale.
 
-    In both modes the SIGN is +weight for the rational choice, -weight otherwise;
+    In every mode the SIGN is +weight for the rational choice, -weight otherwise;
     only the magnitude of the weight differs. Unparseable responses ('') are
     irrational → -weight. δ̃ == 0.0 cases are filtered in prompt_builder.py;
     guarded here too (return 0.0).
     """
     if delta == 0.0:
         return 0.0
-    if weighting not in ("magnitude", "sign_only"):
+    if weighting not in VALID_WEIGHTINGS:
         raise ValueError(f"unknown reward weighting {weighting!r}; "
-                         "expected 'magnitude' or 'sign_only'")
+                         f"expected one of {VALID_WEIGHTINGS}")
 
     rational = rational_choice(perspective, delta)
-    weight = abs(delta) if weighting == "magnitude" else 1.0
+    weight = _weight_for(weighting, delta, scale_constant)
     return weight if response == rational else -weight
 
 
-def make_reward_fn(weighting: str = "magnitude"):
+def characterize_deltas(deltas) -> dict:
+    """Summarise the magnitude-reward distribution |δ̃| from an iterable of δ̃.
+
+    Deterministic; the reported moments justify the scale-matching rules in
+    compute_scale_constant. Non-zero δ̃ only (δ̃==0 cases are filtered upstream).
+    """
+    vals = [abs(float(d)) for d in deltas if float(d) != 0.0]
+    if not vals:
+        raise ValueError("no non-zero deltas to characterize")
+    n = len(vals)
+    mean_abs = sum(vals) / n
+    rms = (sum(v * v for v in vals) / n) ** 0.5
+    ordered = sorted(vals)
+    mid = n // 2
+    median = ordered[mid] if n % 2 else 0.5 * (ordered[mid - 1] + ordered[mid])
+    var = sum((v - mean_abs) ** 2 for v in vals) / n
+    return {
+        "n_nonzero": n,
+        "mean_abs": mean_abs,     # E[|δ̃|]        → matches mean reward magnitude
+        "rms": rms,               # sqrt(E[δ̃²])   → matches per-case gradient 2nd moment
+        "median_abs": median,
+        "std_abs": var ** 0.5,
+        "min_abs": ordered[0],
+        "max_abs": ordered[-1],
+    }
+
+
+def compute_scale_constant(deltas, rule: str = "mean_abs") -> float:
+    """Scale-matching constant c for scale_matched weighting.
+
+    rule:
+      - "mean_abs" (DEFAULT): c = E[|δ̃|]. Matches the FIRST absolute moment, i.e.
+        the mean reward magnitude / mean absolute advantage scale. Most direct
+        "same average reward scale" match.
+      - "rms": c = sqrt(E[δ̃²]). Matches the SECOND moment, i.e. the RMS reward
+        magnitude. Within a GRPO group the advantage magnitude is ∝ the reward
+        weight, so RMS matching equalises the root-mean-square effective
+        advantage/gradient scale across prompts.
+
+    Limitation (documented, not fixable by choice of c): GRPO normalises
+    advantages by the GROUP mean (scale_rewards="none" still mean-centres), and
+    ~80% of groups carry zero task-reward advantage. So no constant c reproduces
+    the realized per-step gradient of the magnitude reward; c only matches the
+    chosen moment of the reward-magnitude distribution.
+    """
+    stats = characterize_deltas(deltas)
+    if rule == "mean_abs":
+        return stats["mean_abs"]
+    if rule == "rms":
+        return stats["rms"]
+    raise ValueError(f"unknown scale rule {rule!r}; expected 'mean_abs' or 'rms'")
+
+
+def make_reward_fn(weighting: str = "magnitude", scale_constant: float | None = None):
     """
     Return a reward function compatible with TRL's GRPOTrainer.
 
@@ -137,23 +219,26 @@ def make_reward_fn(weighting: str = "magnitude"):
     True generation-level filtering (DAPO dynamic sampling) requires subclassing
     GRPOTrainer and overriding _generate_completions; it is not implemented.
     """
-    if weighting not in ("magnitude", "sign_only"):
+    if weighting not in VALID_WEIGHTINGS:
         raise ValueError(f"unknown reward weighting {weighting!r}; "
-                         "expected 'magnitude' or 'sign_only'")
+                         f"expected one of {VALID_WEIGHTINGS}")
+    if weighting == "scale_matched" and not (scale_constant and scale_constant > 0):
+        raise ValueError("scale_matched weighting requires a positive scale_constant")
 
     def reward_fn(completions, perspective, delta, **kwargs):
         parsed = [parse_response(c) for c in completions]
 
         # Zero-diversity group (all outputs identical) → all-zero task rewards.
         # The batch is NOT skipped; see the docstring above for what TRL does
-        # with these. Identical for both weightings — the diversity branch is
-        # orthogonal to reward magnitude, so the sign-only contrast is purely
-        # the weight.
+        # with these. Identical for all weightings — the diversity branch is
+        # orthogonal to reward magnitude, so the sign-only / scale-matched
+        # contrast is purely the weight.
         if len(set(parsed)) == 1:
             return [0.0] * len(completions)
 
         return [
-            compute_reward(p, persp, float(d), weighting=weighting)
+            compute_reward(p, persp, float(d), weighting=weighting,
+                           scale_constant=scale_constant)
             for p, persp, d in zip(parsed, perspective, delta)
         ]
 
