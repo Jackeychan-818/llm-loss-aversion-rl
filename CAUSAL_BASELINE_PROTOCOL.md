@@ -280,3 +280,38 @@ selector has not been run. Therefore:
 
 The next authorized phase is the CPU-only work package in
 `NSCC_CPU_WORK_PROMPT.md`. GPU evaluation remains budget-gated.
+
+### July 30, 2026 — CPU-only paper-gate package completed (branch codex/cpu-paper-gates)
+
+The six CPU-only tasks were built, tested, and committed without submitting any
+GPU job, running any inference, evaluating any checkpoint, or opening any frozen
+suite. This entry records infrastructure/analysis freezes only — no full-SFT
+behavioral result and no method winner is created.
+
+- **New untouched method-comparison suite frozen** (`data/method_comparison/`):
+  4 previously-unused attribute codes per pair (19,780 cases; 39,560 X/Y
+  prompts) drawn from the 59 codes never used by test/train/frozen-unused; zero
+  (pair,code) overlap asserted; frozen semantic-counterbalancing subset (160
+  cases, 48 forms); 31 integrity tests pass. UNEVALUATED.
+- **Method-comparison protocol frozen** (`METHOD_COMPARISON_PROTOCOL.md`) before
+  any full-grid SFT checkpoint was opened. Uses the unchanged selector; all
+  per-seed selections happen on `test_goods` validation before the untouched
+  suite is opened once.
+- **Scale-matched reward control specified** (ABLATION-001): `scale_matched`
+  weighting (±c, c=0.685029 mean_abs) added without changing the default
+  magnitude path; ENV-001 hard-fail on dropped algorithm-defining keys; 29 tests.
+  Run-pending (GPU).
+- **Robustness inference added** (`eval/robust_inference.py`,
+  `estimator_recovery.py`): strict ID join (PAIR-001), pair-clustered bootstrap
+  and recovery for (λ,η); CPU-only PBS jobs. The frozen headline estimator is
+  untouched; headline INFER-001 closure still needs per-model utilities fed into
+  the bootstrap.
+- **Full-behavior aggregation** (`results/full_behavior/`) and **GRPO efficiency
+  analysis** (`results/grpo_efficiency/`) from committed results only,
+  deterministic (`--check`), with an explicit "small λ is not success" guard.
+
+**Provenance finding (open):** the full-SFT and pilot `sft_dataset_manifest.json`
+record `git_commit: "unknown"` (the `git rev-parse` subprocess failed on the
+compute node). Source data/delta/goods SHAs match this protocol, so the runs are
+traceable, but the exact training commit is not captured. Recorded in
+`KNOWN_ISSUES.md`; cannot be reconstructed retroactively with certainty.

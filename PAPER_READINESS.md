@@ -363,11 +363,17 @@ incomplete grid, and no untouched method-comparison suite. See
 
 **Required next action:** before opening the full SFT checkpoint trajectories,
 freeze a new untouched comparison suite and the full method-comparison
-protocol. Then evaluate the complete SFT grid, apply the unchanged selector,
-and complete the matched sign-only/scale-matched program when budget permits.
-If matched SFT confirms the effect, narrow the central claim from “GRPO is
-necessary” to “targeted post-training can remove ownership dependence,” with
-GRPO versus SFT treated as a mechanism and efficiency comparison.
+protocol. **DONE (2026-07-30, branch `codex/cpu-paper-gates`):** the untouched
+suite is frozen (`data/method_comparison/`, 19,780 cases + semantic
+counterbalancing, unevaluated) and the protocol is frozen
+(`METHOD_COMPARISON_PROTOCOL.md`); the scale-matched control is specified+tested
+(ABLATION-001, run-pending). **Still pending (GPU/budget-gated):** evaluate the
+complete SFT grid, apply the unchanged selector, complete the matched
+sign-only/scale-matched runs, then open the untouched suite once. If matched SFT
+confirms the effect, narrow the central claim from “GRPO is necessary” to
+“targeted post-training can remove ownership dependence,” with GRPO versus SFT
+treated as a mechanism and efficiency comparison (see
+`results/grpo_efficiency/`).
 
 ### 8. Predeclare the primary outcome and report the full behavior
 

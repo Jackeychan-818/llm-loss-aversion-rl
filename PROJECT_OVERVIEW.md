@@ -292,13 +292,24 @@ Key main-run hyperparameters:
    `test_goods`, and SFT reaches `d≈0.05` at 4k–6k, but no frozen selector or
    untouched comparison suite was used. SFT seeds 1 and 2 have now reached 30k
    with all 15 checkpoints per seed, but those full trajectories have not been
-   evaluated. A newly frozen suite, full SFT selection, full sign-only runs,
-   and a scale-matched sign control remain required.
+   evaluated. The CPU-only paper-gate package (branch `codex/cpu-paper-gates`)
+   has since **frozen the newly required untouched suite**
+   (`data/method_comparison/`) and **comparison protocol**
+   (`METHOD_COMPARISON_PROTOCOL.md`), and **specified+tested the scale-matched
+   sign control** (`scale_matched` weighting, ABLATION-001 run-pending). Full SFT
+   selection, full sign-only + scale-matched runs, and opening the untouched
+   suite once remain GPU/budget-gated.
 7. Freeze and run a prompt-semantic robustness suite covering response tokens,
    item labels, display order, attribute order, and paraphrases.
 8. Complete IFEval, then add one compact GSM-Symbolic-500 math robustness
    check. Treat confidence calibration as a lower-priority side-effect test.
-9. Add pair/good-aware structural robustness and estimator recovery.
+9. Add pair/good-aware structural robustness and estimator recovery. A
+   robustness inference layer (`eval/robust_inference.py`,
+   `eval/estimator_recovery.py`, CPU-only PBS) now provides a strict ID-based
+   X/Y join, pair-clustered bootstrap, leave-one-good-out, and validated
+   recovery for (λ,η); the frozen headline estimator is untouched, and closing
+   INFER-001 on the headline numbers needs per-model utilities fed into the
+   bootstrap.
 10. Retain frontier or human comparisons only if their protocols and estimands
    are made comparable.
 11. Keep the manuscript venue-agnostic and defer the full rewrite until these

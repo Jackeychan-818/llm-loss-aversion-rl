@@ -36,10 +36,18 @@ preserving its own estimated preference ordering.
 > 1 and 2 through 30,000 steps, with all 15 checkpoints per seed and provenance
 > manifests present on NSCC. The full SFT evaluation grid and frozen selection
 > have not run, so there is no full-SFT behavioral result or method winner yet.
-> Sign-only remains a pilot only. A new untouched comparison suite, stronger
-> inference, prompt robustness, and complete raw-artifact archival remain
-> required for a full paper. The project is venue-agnostic; `draft/aaai27/` is
-> historical.
+> Sign-only remains a pilot only. The CPU-only paper-gate package (branch
+> `codex/cpu-paper-gates`) is complete: a new untouched method-comparison suite
+> (`data/method_comparison/`) and comparison protocol
+> (`METHOD_COMPARISON_PROTOCOL.md`) are frozen; the scale-matched reward control
+> is specified+tested (ABLATION-001, run-pending); a robustness inference layer
+> (`eval/robust_inference.py`) and deterministic full-behavior
+> (`results/full_behavior/`) and GRPO-efficiency (`results/grpo_efficiency/`)
+> analyses exist — all with no GPU jobs, inference, or frozen-suite opening.
+> Still required for a full paper: GPU-phase SFT-grid evaluation + sign-only/
+> scale-matched training under the frozen protocol, prompt robustness, and
+> complete raw-artifact archival. The project is venue-agnostic; `draft/aaai27/`
+> is historical.
 
 ---
 

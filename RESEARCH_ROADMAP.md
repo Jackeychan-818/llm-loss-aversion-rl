@@ -72,26 +72,28 @@ Before treating any new comparison as a headline paper result:
 > require a newly frozen untouched comparison suite and completed matched
 > evaluation across methods.
 
-## Immediate CPU-only work package
+## Immediate CPU-only work package — COMPLETE (2026-07-30, branch codex/cpu-paper-gates)
 
-Before any full SFT checkpoint evaluation or additional GPU training:
+All six CPU-only gates were built, tested, and committed with no GPU jobs, no
+inference, and no frozen suite opened:
 
-1. freeze a new untouched method-comparison and semantic-counterbalancing
-   suite without evaluating any model;
-2. freeze the method-comparison protocol, outcomes, selector use, uncertainty,
-   and capability non-inferiority rules;
-3. specify and test a scale-matched sign-only reward condition without
-   training it;
-4. implement pair/good-aware inference and estimator-recovery simulations
-   using existing predictions;
-5. build deterministic joint reporting for lambda, eta, d, direct choices,
-   preference preservation, parse failures, and estimator diagnostics; and
-6. quantify GRPO signal efficiency from existing logs, including
-   zero-task-advantage groups, KL, reward variation, exposure, runtime, and
-   cost.
+1. **Untouched suite frozen** → `data/method_comparison/` (19,780 cases; frozen
+   semantic-counterbalancing subset of 160 cases × 48 forms; 31 integrity tests).
+2. **Comparison protocol frozen** → `METHOD_COMPARISON_PROTOCOL.md`.
+3. **Scale-matched reward specified + tested** (ABLATION-001, run-pending) →
+   `train/build_scale_matched_spec.py`, `results/scale_matched_reward/`, 29 tests.
+4. **Robustness inference** → `eval/robust_inference.py`,
+   `eval/estimator_recovery.py`, CPU-only PBS jobs, 16 tests (PAIR-001/INFER-001
+   partial).
+5. **Deterministic full-behavior aggregation** → `results/full_behavior/`
+   (JSON/CSV/MD/TEX; "small λ is not success" guard).
+6. **GRPO efficiency analysis** → `results/grpo_efficiency/` (measured vs
+   estimated separated).
 
-The execution-ready instructions are in `NSCC_CPU_WORK_PROMPT.md`. This phase
-must not submit GPU jobs, open frozen suites, or produce new model responses.
+Original execution instructions: `NSCC_CPU_WORK_PROMPT.md`. The remaining
+Priority-1 steps are GPU/budget-gated: evaluate the full SFT grid, train
+sign-only + scale-matched, then open the new untouched suite once under the
+frozen protocol.
 
 ### 1A. Matched supervised fine-tuning
 
