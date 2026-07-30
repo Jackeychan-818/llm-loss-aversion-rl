@@ -67,6 +67,16 @@ confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
   a behavioral result. Sign-only remains a one-seed 6k exploratory pilot.
   A new untouched comparison suite, robust inference, prompt-semantic
   robustness, and IFEval remain active.
+- **CPU-only paper-gate package complete (July 30, branch
+  `codex/cpu-paper-gates`).** Froze the new untouched method-comparison suite
+  (`data/method_comparison/`) + `METHOD_COMPARISON_PROTOCOL.md`; specified+tested
+  the scale-matched reward control (`scale_matched` weighting, ABLATION-001
+  run-pending) with an ENV-001 hard-fail on dropped algorithm-defining keys;
+  added a robustness inference layer (`eval/robust_inference.py`,
+  `estimator_recovery.py`, CPU PBS) and deterministic full-behavior
+  (`results/full_behavior/`) + GRPO-efficiency (`results/grpo_efficiency/`)
+  analyses. No GPU jobs, no inference, no frozen suite opened. SFT manifests
+  carry `git_commit:"unknown"` (`SFTPROV-001`).
 
 The complete blocker ordering and claim restrictions are in
 `PAPER_READINESS.md`.

@@ -1,0 +1,92 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SCALE-MATCHED GRPO ablation config (Priority 1B, ABLATION-001 control).
+# IDENTICAL to qwen25_7b_qwen_delta.yaml EXCEPT reward_weighting: scale_matched
+# (+ scale_constant). Uniform per-case magnitude like sign_only, but the constant
+# c is set to the frozen mean_abs of |delta| so GLOBAL reward scale matches magnitude.
+# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# lambda-zero GRPO training config — Qwen2.5-7B-Instruct
+# All hyperparameter rationale is documented in CLAUDE.md §Key Design Decisions
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Model ──────────────────────────────────────────────────────────────────
+model_name_or_path: models/Qwen2.5-7B-Instruct
+
+# ── LoRA ───────────────────────────────────────────────────────────────────
+lora_r: 16
+lora_alpha: 32                   # standard: 2× rank
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# ── GRPO algorithm ─────────────────────────────────────────────────────────
+num_generations: 16              # G — group size; increased from 8 for 99% No distribution
+temperature: 1.5                 # must be >= 1.0 — temp < 1 makes peaked dist even more peaked
+epsilon: 0.2                     # PPO clip ratio
+beta: 0.04                       # KL penalty coefficient; tighter than DeepSeek-R1's 0.001
+max_completion_length: 4         # Yes/No needs ~1–2 tokens; 4 gives slack
+loss_type: dapo                  # "dapo" (default in TRL 1.3) | "dr_grpo" — both eliminate length bias for 1-token outputs
+scale_rewards: "none"            # Dr. GRPO recommendation: group std normalisation introduces bias.
+                                 # NOTE: "none" does NOT mean advantages are raw rewards — TRL still
+                                 # mean-centres (advantages = rewards - group mean); it only skips the
+                                 # /std step. It is also not a NaN guard: TRL divides by (std + 1e-4).
+mask_truncated_completions: true # Exclude truncated completions from loss — good practice (DAPO paper)
+reward_weighting: scale_matched  # ABLATION-001 control: ±c uniform per case, isolates per-case
+                                 # magnitude information from global scale.
+scale_constant: 0.685029         # c = E[|delta|] over frozen training deltas (mean_abs rule).
+                                 # Frozen by train/build_scale_matched_spec.py; see
+                                 # results/scale_matched_reward/scale_matched_reward_spec.json.
+
+# ── Training ───────────────────────────────────────────────────────────────
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16  # generation_batch_size = per_device_bs * grad_accum = 1*16 = 16 = num_generations
+learning_rate: 1.0e-6
+num_train_epochs: 1
+max_steps: -1                    # -1 = run full epoch; overridden by --max_steps in CLI
+max_grad_norm: 0.1
+warmup_ratio: 0.05
+lr_scheduler_type: cosine
+bf16: true
+dataloader_num_workers: 0
+remove_unused_columns: false     # must be false — reward fn needs perspective/delta columns
+
+# ── Logging / saving ───────────────────────────────────────────────────────
+logging_steps: 10
+save_steps: 200
+eval_steps: 200
+report_to: none                  # set to "wandb" to enable Weights & Biases logging
+log_completions: true            # print sample (prompt, completion) pairs every logging_steps — useful for sanity checking
+
+# ── vLLM (faster generation during rollouts) ───────────────────────────────
+# Disabled: every vLLM release tried (latest 0.23.0 and TRL-supported 0.18.0)
+# hit a distinct, unresolved compatibility wall on this Cray/NSCC environment
+# (Rust linker, missing CUDA-13 runtime path, torch ABI mismatch, missing
+# system nvcc for source builds). Falling back to plain HF generate
+# (~6.1 sec/step, proven to run for 15k+ real steps). Revisit as a separate
+# infra task if throughput becomes the binding constraint again.
+use_vllm: false
+vllm_mode: colocate
+vllm_gpu_memory_utilization: 0.3
+vllm_server_base_url:
+vllm_server_host: 0.0.0.0
+vllm_server_port: 8000
+vllm_server_timeout: 240.0
+vllm_max_model_length:
+
+# ── Project-specific paths (relative to project root) ──────────────────────
+delta_file: data/deltas/delta_qwen_base.json   # ablation: Qwen-7B's own NLS utilities
+goods_file: everyday_goods_full.json
+treatment: baseline
+
+# ── Replication ─────────────────────────────────────────────────────────────
+# TrainingArguments defaults to seed=42. Runs launched WITHOUT an explicit,
+# DISTINCT seed are not independent replications — they reproduce the same
+# trajectory (same init, data order, rollout sampling) and would fake a
+# replication. Override per run: --seed / -v SEED=...
+seed: 42

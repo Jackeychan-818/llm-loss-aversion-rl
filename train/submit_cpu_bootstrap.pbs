@@ -1,0 +1,54 @@
+#!/bin/bash
+# ============================================================
+# PBS — CPU-ONLY pair-clustered bootstrap on existing predictions (Task 4). NO GPU.
+#
+# Runs the robustness (lambda, eta) pair-clustered bootstrap + leave-one-good-out
+# on ALREADY-COMMITTED / already-generated X/Y prediction files. It generates NO
+# new model responses and evaluates no checkpoint. Point to an existing
+# loss_aversion_X/Y pair (e.g. the matched base under baseline/).
+#
+# Submit (example: matched local base):
+#   qsub -v XJSON=baseline/Qwen-7B-Base-Local/Model_1/loss_aversion_X_for_Model_A.json,\
+# YJSON=baseline/Qwen-7B-Base-Local/Model_1/loss_aversion_Y_for_Model_A.json,\
+# UTIL=baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv,\
+# TAG=base train/submit_cpu_bootstrap.pbs
+#
+# NOTE: this operates only on files that already exist; if the required
+# prediction/utility files are absent it exits without fabricating anything.
+# ============================================================
+#PBS -N lz-cpu-bootstrap
+#PBS -q normal
+#PBS -l select=1:ncpus=16:mem=32gb
+#PBS -l walltime=06:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/cpu_bootstrap_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/cpu_bootstrap_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+cd "$PBS_O_WORKDIR"
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+
+cd "$PROJECT_DIR"
+: "${XJSON:?Must pass -v XJSON=<loss_aversion_X json>}"
+: "${YJSON:?Must pass -v YJSON=<loss_aversion_Y json>}"
+: "${UTIL:?Must pass -v UTIL=<utility CSV giving V=exp(U) per (item,attr)>}"
+TAG="${TAG:-run}"
+NBOOT="${NBOOT:-2000}"
+
+for f in "$XJSON" "$YJSON" "$UTIL"; do
+  if [[ ! -f "$f" ]]; then echo "MISSING input: $f — nothing to bootstrap. Exiting."; exit 1; fi
+done
+
+echo "=== CPU pair-clustered bootstrap (tag=$TAG, n_boot=$NBOOT), no GPU ==="
+python eval/run_robust_bootstrap.py \
+    --x "$XJSON" --y "$YJSON" --utility "$UTIL" \
+    --n_boot "$NBOOT" --tag "$TAG" \
+    --out "results/robust_inference/bootstrap_${TAG}.json"
+echo "=== done ==="
