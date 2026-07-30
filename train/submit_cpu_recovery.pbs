@@ -1,0 +1,42 @@
+#!/bin/bash
+# ============================================================
+# PBS — CPU-ONLY estimator-recovery grid (Task 4). NO GPU.
+#
+# Validates the robustness (lambda, eta) estimator: bias, pair-clustered
+# bootstrap CI coverage, failure rate, and weak-identification diagnostics
+# across a grid of known (lambda*, eta*). Runs no model inference and touches no
+# checkpoint or frozen suite.
+#
+# Submit:
+#   qsub train/submit_cpu_recovery.pbs
+#   qsub -v REGIME=binary train/submit_cpu_recovery.pbs
+# ============================================================
+#PBS -N lz-cpu-recovery
+#PBS -q normal
+#PBS -l select=1:ncpus=16:mem=32gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/cpu_recovery_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/cpu_recovery_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+cd "$PBS_O_WORKDIR"
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+
+cd "$PROJECT_DIR"
+REGIME="${REGIME:-prob}"
+EXTRA=""
+if [[ "$REGIME" == "binary" ]]; then EXTRA="--binary"; fi
+
+echo "=== CPU estimator-recovery grid (regime=$REGIME), no GPU ==="
+python eval/estimator_recovery.py \
+    --n_cases 4945 --reps 200 --n_boot 300 $EXTRA \
+    --out "results/estimator_recovery/recovery_${REGIME}.json"
+echo "=== done ==="
