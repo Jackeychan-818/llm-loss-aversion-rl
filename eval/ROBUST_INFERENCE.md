@@ -9,7 +9,10 @@ full fixed effects), which stays the reference for point estimates.*
 1. **Strict ID-based X/Y join** (`load_paired_predictions` / `join_paired_records`)
    with hard assertions: missing IDs, duplicate IDs, asymmetric pairing, and
    goods/attribute mismatch all raise. This is the PAIR-001 fix, usable by any
-   estimator.
+   estimator. Records **require an actual `Yes / No prob` array** — there is no
+   textual/argmax probability fabrication; the binary regime is available only via
+   an explicit, separately labelled `hard_choice=True` that collapses the real
+   probability array to {0, 1}.
 2. **Pair-clustered bootstrap** for `(lambda, eta)` — the cluster is one goods
    pair keyed by `(X_num, Y_num)`; each replicate resamples WHOLE pairs with
    replacement, so all of a pair's configurations and both perspectives move

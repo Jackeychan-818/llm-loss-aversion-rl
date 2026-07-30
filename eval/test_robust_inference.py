@@ -71,6 +71,18 @@ try:
 except ValueError:
     check("goods mismatch hard-fails", True)
 
+# --- 4b. no fabricated probabilities (#3) -----------------------------------
+try:
+    join_paired_records([{"case_id": 1, "X_num": 0, "Y_num": 1, "response": "No"}],
+                        [{"case_id": 1, "X_num": 0, "Y_num": 1, "response": "Yes"}])
+    check("missing prob array hard-fails (no textual fallback)", False, "no raise")
+except ValueError:
+    check("missing prob array hard-fails (no textual fallback)", True)
+# hard_choice collapses the real prob array to {0,1}; still needs the array
+hc = join_paired_records([rec(1, 0, 1, 0.9)], [rec(1, 0, 1, 0.2)], hard_choice=True)
+check("hard_choice maps to {0,1}", hc[0].pno_x == 1.0 and hc[0].pno_y == 0.0,
+      f"{hc[0].pno_x},{hc[0].pno_y}")
+
 # --- 5. point recovery on clean synthetic -----------------------------------
 rng = np.random.default_rng(3)
 n = 500

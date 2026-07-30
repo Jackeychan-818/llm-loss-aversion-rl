@@ -61,34 +61,46 @@ class PairedCase:
     pno_y: float   # P(No) when endowed with Y (keep Y)
 
 
-def _parse_pno(entry: dict) -> float:
-    """P(No) from a loss_aversion_{X,Y} record. Accepts an explicit
-    'Yes / No prob' = [yes, no] or a textual response."""
-    if "Yes / No prob" in entry:
-        yes, no = entry["Yes / No prob"]
-        return float(no)
-    resp = str(entry.get("response", "")).strip().lower()
-    if resp.startswith("no") or resp.startswith("n"):
-        return 0.75
-    if resp.startswith("yes") or resp.startswith("y"):
-        return 0.25
-    raise ValueError(f"case {entry.get('case_id')}: cannot parse P(No)")
+def _parse_pno(entry: dict, hard_choice: bool = False) -> float:
+    """P(No) from a loss_aversion_{X,Y} record. REQUIRES an actual
+    'Yes / No prob' = [P(Yes), P(No)] array — there is no textual/argmax
+    fabrication of probabilities.
+
+    hard_choice=False (default): return the real P(No) in [0, 1].
+    hard_choice=True: a SEPARATELY LABELLED hard-choice input — collapse the
+        probability array to {0, 1} by argmax (No wins ties). Use this only when
+        deliberately running the binary / Model-B-style regime; it is not the
+        probabilistic estimator's default."""
+    if "Yes / No prob" not in entry:
+        raise ValueError(
+            f"case {entry.get('case_id')}: missing 'Yes / No prob'. Robust "
+            "inference requires actual Yes/No probabilities; there is no textual "
+            "fallback. For binary data pass hard_choice=True (still needs the "
+            "probability array) or use a separately labelled hard-choice estimator."
+        )
+    yes, no = entry["Yes / No prob"]
+    if hard_choice:
+        return 1.0 if float(no) >= float(yes) else 0.0
+    return float(no)
 
 
 def load_paired_predictions(x_path: str | Path, y_path: str | Path,
-                            id_key: str = "case_id") -> list[PairedCase]:
+                            id_key: str = "case_id",
+                            hard_choice: bool = False) -> list[PairedCase]:
     """Join X-perspective and Y-perspective prediction files by stable case ID
     with hard integrity assertions (PAIR-001). Raises on: missing IDs, duplicate
-    IDs, asymmetric pairing, or mismatched goods/attributes."""
+    IDs, asymmetric pairing, or mismatched goods/attributes. `hard_choice`
+    selects the labelled binary regime (see `_parse_pno`)."""
     with open(x_path) as fh:
         xs = json.load(fh)
     with open(y_path) as fh:
         ys = json.load(fh)
-    return join_paired_records(xs, ys, id_key=id_key)
+    return join_paired_records(xs, ys, id_key=id_key, hard_choice=hard_choice)
 
 
 def join_paired_records(xs: Sequence[dict], ys: Sequence[dict],
-                        id_key: str = "case_id") -> list[PairedCase]:
+                        id_key: str = "case_id",
+                        hard_choice: bool = False) -> list[PairedCase]:
     def index(records, side):
         out = {}
         for r in records:
@@ -119,7 +131,7 @@ def join_paired_records(xs: Sequence[dict], ys: Sequence[dict],
         cases.append(PairedCase(
             case_id=cid, x_num=x_num, y_num=y_num,
             attr=tuple(xr.get("attr", ())),
-            pno_x=_parse_pno(xr), pno_y=_parse_pno(yr),
+            pno_x=_parse_pno(xr, hard_choice), pno_y=_parse_pno(yr, hard_choice),
         ))
     if not cases:
         raise ValueError("no paired cases after join")

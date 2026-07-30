@@ -47,11 +47,12 @@ evaluated, no frozen suite opened.*
   `(pair,code)` overlap (asserted). OOD-50 uses a different goods population.
 - **λ does not tell the whole story:** the full-behavior aggregation flags 15/40
   committed rows `clean_reduction=NO`; of those, **10 have `|λ|<0.5` plus a
-  contradictory caveat** (high η, inconsistency, or choice collapse — incl. the
-  matched base), and 5 are `NO` only because `|λ|≥0.5`.
+  contradictory caveat** (high η, inconsistency, or choice collapse), and 5 are
+  `NO` only because `|λ|≥0.5` — the matched base is one of those 5 (λ=7.637), not
+  one of the 10.
 - **Magnitude weighting concentrates updates:** high-|δ̃|(>1) cases carry 63.1% of
   total |δ̃| mass from 27.1% of cases; measured zero task-reward advantage ≈57%.
-- **Efficiency ≠ effectiveness:** SFT is far cheaper (~1.4 h vs ~51 h/seed at 30k)
+- **Efficiency ≠ effectiveness:** SFT is far cheaper (~1.51 h vs ~51 h/seed at 30k)
   for the same unique-prompt exposure, but the method winner is decided only on
   the untouched suite under the frozen protocol.
 
@@ -69,10 +70,9 @@ evaluated, no frozen suite opened.*
    then run the unchanged selector **with `--provenance_note`** per the protocol.
    Budget-gated: ~30 evals may exceed the ~3,312 SU balance (subset or top-up
    decision still open).
-2. **Train sign-only and scale-matched GRPO** (seeds 1&2) —
+2. **Train sign-only and scale-matched GRPO** (seeds 1&2, distinct families) —
    `submit_train_glong_qwen_delta_sign.pbs` and a scale-matched submit using
-   `qwen25_7b_qwen_delta_scale_matched.yaml` — then compare. Sign-only alone is
-   ~21k SU (postponed).
+   `qwen25_7b_qwen_delta_scale_matched.yaml`. See the combined budget below.
 3. **Open the untouched suite once** on the already-selected checkpoints + base,
    under `METHOD_COMPARISON_PROTOCOL.md`.
 4. **CPU (no GPU) but PBS-sized:** `submit_cpu_recovery.pbs` (recovery grid) and
@@ -80,6 +80,31 @@ evaluated, no frozen suite opened.*
 5. **Provenance:** capture git commit robustly in future training manifests
    (`SFTPROV-001`); feed per-model frozen-estimator utilities into the bootstrap
    to close `INFER-001` on the headline numbers.
+
+## Combined GPU-phase budget estimate (both new families + evals)
+
+Rough, single A100-40GB, HF generate (no vLLM). GPU-hours anchored to measured
+throughput (GRPO ~5.57–6.1 s/step; test_goods eval ~0.5–1 h; the untouched suite
+is ~2× test_goods so ~1–2 h/model). SU is shown as a range because the observed
+rate spans ~106 SU/GPU-h (clean SFT measurement) to ~220 SU/GPU-h (older jobs).
+
+| item | quantity | GPU-h | SU (≈106–220/GPU-h) |
+|---|---|---:|---:|
+| **Train sign-only GRPO** | 2 seeds × 30k @ ~46 h | ~93 | ~9.8k–20.5k |
+| **Train scale-matched GRPO** | 2 seeds × 30k @ ~46 h | ~93 | ~9.8k–20.5k |
+| **Eval SFT grid** (trained) | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
+| **Eval sign-only grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
+| **Eval scale-matched grid** | 15 × 2 seeds | ~15–30 | ~1.6k–6.6k |
+| **Final untouched-suite eval** | base + 2 seeds × 4 families = 9 models × ~1–2 h | ~9–18 | ~1.0k–4.0k |
+| **Semantic-counterbalancing eval** | 9 models × 160 cases × 48 forms (tiny) | ~1–2 | ~0.1k–0.4k |
+| **Total** | | **~240–296 GPU-h** | **~25k–65k SU** |
+
+**Conclusion:** the full program costs **~25k–65k SU**, dominated by sign-only +
+scale-matched *training* (~40k SU alone at the high rate). This vastly exceeds
+the **~3,312 SU** balance, so it requires a substantial **SU top-up** (roughly
+10–20× the current balance). Cheapest partial progress within budget: the SFT
+eval grid only (~1.6k–6.6k SU) — still borderline — or a reduced-subset SFT
+trajectory. The CPU-phase recovery/bootstrap PBS jobs consume **no GPU SU**.
 
 ## Pre-opening corrections (commit `e475699`) + origin/main merge
 

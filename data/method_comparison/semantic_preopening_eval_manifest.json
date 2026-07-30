@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "role": "pre-opening resolution of the semantic suite's model set (no eval run)",
+  "frozen_suite": {
+    "path": "data/method_comparison/semantic_counterbalancing.json",
+    "sha256": "72a2a0c1fd386562e792e063b9cacc481b25f6873e99af2e915bc5188fcbe6bd"
+  },
+  "resolution_rule": "Evaluate the matched base plus each method family's frozen-selected seed checkpoint. Concrete IDs are taken from the referenced frozen selector manifests; none are stored in the frozen suite file.",
+  "models": {
+    "matched_base": {
+      "model": "Qwen-7B-Base-Local",
+      "resolved": true
+    },
+    "magnitude_grpo": {
+      "resolved": true,
+      "selected": {
+        "seed1": {
+          "checkpoint": "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+          "selector_manifest": {
+            "path": "results/checkpoint_selection/qwen_delta_seed1.json",
+            "sha256": "1cb2d4577d1b00b13d55f23e7b945308727c1477923c050d8d84a3804add3b17"
+          }
+        },
+        "seed2": {
+          "checkpoint": "Qwen-7B-GRPO-qd-seed2-ckpt6000",
+          "selector_manifest": {
+            "path": "results/checkpoint_selection/qwen_delta_seed2.json",
+            "sha256": "514d98172a70d630ecfefe4540168573d576d00f560bd4a47a0b776465f94c84"
+          }
+        }
+      },
+      "replication_report": {
+        "path": "results/seed_replication_report.json",
+        "sha256": "40acd5ed248c69a71c4c9b7676fff9949f95f52ce65c3773d12f93d328825f6e"
+      }
+    },
+    "sft": {
+      "resolved": false,
+      "selector_manifest_when_selected": "results/baselines_selection/sft_seed{N}.json (TBD)"
+    },
+    "sign_only": {
+      "resolved": false,
+      "selector_manifest_when_selected": "results/baselines_selection/sign_seed{N}.json (TBD)"
+    },
+    "scale_matched": {
+      "resolved": false,
+      "selector_manifest_when_selected": "results/baselines_selection/scale_seed{N}.json (TBD)"
+    }
+  },
+  "open_rule": "Freeze this manifest (all families resolved) BEFORE opening the semantic suite once, under METHOD_COMPARISON_PROTOCOL.md."
+}

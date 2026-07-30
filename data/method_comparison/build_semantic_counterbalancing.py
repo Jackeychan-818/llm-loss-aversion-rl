@@ -156,35 +156,43 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
                 "lambda/eta and consistency where estimable within a form family."
             ),
         },
-        "permitted_models": {
+        "permitted_model_families": {
             "note": (
-                "PRE-OPENING AMENDMENT (2026-07-30): broadened from the original "
-                "3-model list to the matched base plus EVERY selected seed of "
-                "every method family, so the semantic test covers the same model "
-                "set as the method comparison. Concrete checkpoint IDs are filled "
-                "in at selection time (test_goods validation) BEFORE opening this "
-                "suite; no model has been evaluated here."
+                "The frozen suite records FAMILY ROLES only — NO concrete checkpoint "
+                "IDs. Concrete checkpoints are resolved separately in "
+                "semantic_preopening_eval_manifest.json (which references the frozen "
+                "selector manifests and this suite's hash), so selection provenance "
+                "never leaks into the frozen data file. No model has been evaluated here."
             ),
-            "matched_base": ["Qwen-7B-Base-Local"],
-            "magnitude_grpo_selected_seeds": [
-                "Qwen-7B-GRPO-qd-seed1-ckpt2000",
-                "Qwen-7B-GRPO-qd-seed2-ckpt6000",
+            "families": [
+                "matched_base",
+                "magnitude_grpo (each frozen-selected seed)",
+                "sft (each frozen-selected seed)",
+                "sign_only (each frozen-selected seed)",
+                "scale_matched (each frozen-selected seed)",
             ],
-            "sft_selected_seeds": "each SFT seed's frozen-selected checkpoint (TBD at selection)",
-            "sign_only_selected_seeds": "each sign-only seed's frozen-selected checkpoint (TBD)",
-            "scale_matched_selected_seeds": "each scale-matched seed's frozen-selected checkpoint (TBD)",
         },
         "amendments": [
             {
                 "date": "2026-07-30",
                 "type": "pre-opening correction",
                 "change": (
-                    "Broadened permitted_models to base + all method-family selected "
-                    "seeds; defined the primary invariance metric and secondary "
+                    "Broadened the permitted model set to the base + all method-family "
+                    "selected seeds; defined the primary invariance metric and secondary "
                     "flip/token metrics."
                 ),
                 "note": "Recorded transparently; suite still UNEVALUATED, so this is not a post-hoc rewrite.",
-            }
+            },
+            {
+                "date": "2026-07-30",
+                "type": "pre-opening correction",
+                "change": (
+                    "Removed concrete checkpoint IDs from this frozen file; they are "
+                    "now resolved in semantic_preopening_eval_manifest.json referencing "
+                    "the frozen selector manifests and this suite's hash."
+                ),
+                "note": "Keeps the frozen suite free of selection provenance.",
+            },
         ],
         "cases": selected,
     }

@@ -16,15 +16,24 @@ complete reproducible lock remains an open reproducibility item
 
 ## Required libraries (CPU-phase scripts)
 
-| library | used by | minimum |
+| library | used by | version |
 |---|---|---|
-| **SciPy** | `eval/robust_inference.py`, `eval/estimator_recovery.py` (`scipy.optimize.least_squares`) | any modern SciPy (>= 1.7 is safe; `least_squares` exists since 0.17) |
-| **NumPy** | robustness layer, recovery, analyses | >= 1.20 |
+| **SciPy** | `eval/robust_inference.py`, `eval/estimator_recovery.py` (`scipy.optimize.least_squares`) | min any modern SciPy (>= 1.7 safe); tested **1.15.2** |
+| **NumPy** | robustness layer, recovery, analyses | min >= 1.20; tested **2.2.4** |
+| **PyYAML** | `train/grpo_train.py` (config loading), imported by `train/test_scale_matched_reward.py` | tested **6.0.3** |
+| **PyTorch** | `train/grpo_train.py` (imported at module top), pulled in by `train/test_scale_matched_reward.py` | tested **2.11.0+cu130** |
 
-The suite generators (`data/method_comparison/`), the scale-matched spec
+**Test-battery dependency note (correction #5):** most CPU-phase scripts —
+the suite generators (`data/method_comparison/`), the scale-matched spec
 (`train/build_scale_matched_spec.py`), the full-behavior aggregation
 (`eval/aggregate_full_behavior.py`), and the GRPO-efficiency analysis
-(`eval/analyze_grpo_efficiency.py`) use only the Python standard library.
+(`eval/analyze_grpo_efficiency.py`) — use only the Python standard library
+(plus SciPy/NumPy for the robustness layer). **However, running the full test
+battery is not stdlib-only:** `train/test_scale_matched_reward.py` imports
+`train/grpo_train.py`, which imports **PyTorch** and **PyYAML** at module top, so
+those two are required to execute that test (even though the reward logic it
+exercises does not itself use them). PyTorch/PyYAML are otherwise training
+dependencies, not needed to render any CPU-phase analysis output.
 
 ## Tested with
 

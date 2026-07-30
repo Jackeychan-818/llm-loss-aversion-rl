@@ -150,8 +150,21 @@ def main() -> int:
     check("manifest suite sha256 matches file", manifest["output"]["sha256"] == recomputed,
           "hash drift between manifest and suite")
 
-    # --- deterministic regeneration (--check) of both generators ---
-    for script in ["build_method_comparison_suite.py", "build_semantic_counterbalancing.py"]:
+    # --- frozen semantic suite must carry NO concrete checkpoint IDs (#2) ---
+    sem_text = SEM.read_text()
+    check("frozen semantic JSON has no concrete ckpt IDs",
+          "ckpt" not in sem_text.lower(), "a checkpoint ID leaked into the frozen suite")
+    preopen = MC / "semantic_preopening_eval_manifest.json"
+    check("pre-opening eval manifest exists", preopen.exists(), "missing")
+    if preopen.exists():
+        pdoc = load(preopen)
+        check("pre-opening manifest references the frozen suite hash",
+              pdoc.get("frozen_suite", {}).get("sha256") == sha256_bytes(sem_text.encode("utf-8")),
+              "suite hash mismatch")
+
+    # --- deterministic regeneration (--check) of the generators ---
+    for script in ["build_method_comparison_suite.py", "build_semantic_counterbalancing.py",
+                   "build_semantic_preopening_manifest.py"]:
         r = subprocess.run([sys.executable, str(MC / script), "--check"],
                            capture_output=True, text=True)
         check(f"{script} --check regenerates byte-identically", r.returncode == 0,
