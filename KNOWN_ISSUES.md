@@ -4,7 +4,7 @@ A running log of problems encountered, potential risks, and things to verify
 before they become bugs. `PAPER_READINESS.md` is the authoritative prioritized
 summary for the current full-paper plan.
 
-## Current Paper Direction — July 28, 2026
+## Current Paper Direction — July 30, 2026
 
 - **Primary model:** Qwen-own-delta GRPO, with checkpoint 8,000 as the current
   exploratory selected candidate.
@@ -20,9 +20,10 @@ summary for the current full-paper plan.
   was opened once on the matched base and two selected seeds. Lambda was 5.946
   for base, 0.031 for seed 1, and −0.053 for seed 2. This is new
   configurations of familiar goods/pairs, not unseen-goods OOD.
-- **Causal baselines:** infrastructure and a one-seed 6k pilot now exist. Both
-  SFT and sign-only GRPO reduce lambda on validation, but the pilot cannot
-  establish a winner or a confirmatory method comparison.
+- **Causal baselines:** infrastructure and a one-seed 6k pilot exist. Full SFT
+  seeds 1 and 2 have completed 30k training with all 15 checkpoints per seed,
+  but the full grids have not been evaluated or selected. Sign-only remains a
+  pilot. No method winner or confirmatory comparison exists.
 - **Economic rationale:** use Qwen's own estimated preference ordering rather
   than imposing the preferences of frontier models. Both reward sources remain
   pseudo-utility signals, not objective cardinal ground truth.
@@ -31,7 +32,7 @@ summary for the current full-paper plan.
 
 ---
 
-## Active audit ledger — July 28, 2026
+## Active audit ledger — July 30, 2026
 
 This is the canonical live problem ledger. `PAPER_READINESS.md` decides what
 the paper may claim; `RESEARCH_ROADMAP.md` orders the work; `HISTORY.md` records
@@ -46,6 +47,7 @@ what already happened.
 | `BUILD-001` | P0 reproducibility | Open | `draft/aaai27/main.tex` requires `figures/task_overview.pdf`, but the figure is untracked. The submission checker passes only because local untracked figures mask the clean-checkout failure. | Track the required vector figures or make the default documented build generate them before checking; verify from `git archive`. |
 | `RESUME-001` | P1 correctness | Open | Explicit resume paths in `train/grpo_train.py` and `train/sft_train.py` are not required to belong to the current output directory and are not checked against immutable seed/config/data manifests. | Validate ancestry and the prior manifest before loading; never overwrite provenance before the check passes. |
 | `ABLATION-001` | P0 identification | Open | Sign-only GRPO changes `±|delta|` to `±1` while reward-scale normalization is disabled. It therefore changes both relative case weighting and global gradient scale. | Describe the current contrast precisely and add a scale-matched sign control, or otherwise match effective reward/gradient scale. |
+| `SFT-EVAL-001` | P0 claim validity | Open | Full SFT seeds 1 and 2 completed 30k training with complete checkpoint grids, but no full-run checkpoint has been behaviorally evaluated and no selector has run. Training loss or completion cannot establish that SFT beats GRPO. | Freeze the new untouched suite and comparison protocol first; then evaluate the complete validation grids, apply the unchanged selector, and reserve method claims for the new untouched comparison. |
 | `PILOT-001` | P0 provenance | Open | `results/causal_baseline_pilot/` contains only a summary JSON and hand-facing table. W, Jacobian condition numbers, and runtimes are not in the JSON; raw predictions, fit CSVs, hashes, commands, and a deterministic generator are absent. | Add immutable run/eval manifests, machine-readable inputs for every table cell, and a deterministic aggregation command before citation beyond exploratory status. |
 | `ENV-001` | P1 reproducibility | Open | `train/grpo_train.py` warns and silently drops unsupported GRPO fields on library-version mismatch, including scientifically defining options. There is no repository-wide environment lock. | Hard-fail for critical keys; record exact Torch/Transformers/TRL/PEFT versions and model revision/hash in immutable run manifests. |
 | `EVAL-001` | P1 correctness | Open | `eval/run_qwen_local.py` resumes an output directory keyed mainly by model name without validating adapter, base, dataset, treatment, or hashes. Different evaluations can be silently mixed. | Create and validate an immutable evaluation manifest before resume; refuse mismatches and concurrent directory reuse. |
@@ -132,8 +134,9 @@ consistency.
 
 - derived result manifests are committed, but the full raw prediction,
   adapter, environment, and durable-release package is incomplete;
-- matched SFT and sign-only GRPO code is hardened and a pilot exists, but the
-  confirmatory two-seed 30k comparison and new untouched suite do not; and
+- matched SFT and sign-only GRPO code is hardened, a pilot exists, and the two
+  full SFT training runs are complete, but full-grid SFT evaluation, full
+  sign-only training, and the new untouched comparison suite do not; and
 - multi-start/conditioning diagnostics exist, but pair/good-aware inference
   and estimator-recovery validation remain incomplete.
 
@@ -350,4 +353,4 @@ vLLM was disabled after compatible versions failed on NSCC. The working path use
 
 ---
 
-*Last updated: July 28, 2026*
+*Last updated: July 30, 2026*

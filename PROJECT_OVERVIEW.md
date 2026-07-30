@@ -1,5 +1,5 @@
 # Project Overview — lambda-zero
-*Last updated: July 25, 2026*
+*Last updated: July 30, 2026*
 
 ---
 
@@ -171,7 +171,7 @@ and freeze policy: `data/FROZEN_UNUSED_TEST.md`,
 | 3. Qwen-own GRPO training | ✅ Replication confirmed | Seeds 1 and 2 completed the frozen grid and passed ID selection, OOD-50, and GSM8K gates |
 | 4. Primary-model evaluation | 🟡 Evaluations complete; archival pending | Confirmatory OOD/GSM8K and the prospective unused-configuration test are complete; raw claim-carrying artifacts still need durable publication |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID results committed; reported OOD artifacts need archival |
-| 6. Baselines/robustness | ⏳ Next | Matched SFT, sign-only GRPO, prompt-semantic counterbalancing, IFEval, GSM-Symbolic-500 |
+| 6. Baselines/robustness | 🟡 SFT trained; evaluation gated | Full SFT seeds 1/2 reached 30k with all checkpoints; full SFT grid/selection, full sign-only runs, new untouched comparison suite, robust inference, prompt robustness, and IFEval pending |
 | 7. Paper writeup | Deferred | Resume after the next experimental program clarifies the final scope |
 
 ---
@@ -285,13 +285,15 @@ Key main-run hyperparameters:
    utility-trajectory diagnostics are recorded without changing the frozen
    selection grid. Pair/good-aware inference remains open.
 5. Archive and reproduce all seed, OOD, framing, and capability artifacts.
-6. **Priority-1 baselines — exploratory pilot complete; confirmatory runs
-   pending** (frozen design: `CAUSAL_BASELINE_PROTOCOL.md`). Matched **SFT**
+6. **Priority-1 baselines — full SFT training complete; evaluation and matched
+   comparison pending** (frozen design: `CAUSAL_BASELINE_PROTOCOL.md`). Matched **SFT**
    tests whether RL is necessary; **sign-only GRPO** tests a combined change in
    reward weighting and scale. Both one-seed pilots reduce lambda on
    `test_goods`, and SFT reaches `d≈0.05` at 4k–6k, but no frozen selector or
-   untouched comparison suite was used. Full two-seed 30k runs, a newly frozen
-   suite, and a scale-matched sign control remain required.
+   untouched comparison suite was used. SFT seeds 1 and 2 have now reached 30k
+   with all 15 checkpoints per seed, but those full trajectories have not been
+   evaluated. A newly frozen suite, full SFT selection, full sign-only runs,
+   and a scale-matched sign control remain required.
 7. Freeze and run a prompt-semantic robustness suite covering response tokens,
    item labels, display order, attribute order, and paraphrases.
 8. Complete IFEval, then add one compact GSM-Symbolic-500 math robustness

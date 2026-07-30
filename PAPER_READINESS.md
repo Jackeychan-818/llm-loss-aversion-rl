@@ -1,6 +1,6 @@
 # Full-Paper Readiness and Current Methodological Risks
 
-*Last updated: July 28, 2026*
+*Last updated: July 30, 2026*
 
 This document is the authoritative summary of the current paper direction,
 which results are final versus validation-only, and which methodological
@@ -349,8 +349,11 @@ ordinary supervised LoRA fine-tuning is sufficient.
 5. preferably sign-only flat-reward GRPO to test whether delta magnitude adds
    value.
 
-**Status (July 28, 2026): infrastructure complete; exploratory pilot complete;
-confirmatory comparison still open.** The seed-1 pilot evaluated steps
+**Status (July 30, 2026): infrastructure complete; exploratory pilot complete;
+full SFT training complete; confirmatory comparison still open.** Both SFT
+seeds reached 30,000 steps on NSCC and contain the complete 15-checkpoint grid.
+The full grid has not been evaluated and the selector has not run, so there is
+no full-SFT behavioral result. The seed-1 pilot evaluated steps
 2k/4k/6k on `test_goods` validation. Both methods reduce lambda sharply; SFT
 reaches `d = sqrt(lambda^2 + eta^2)` of 0.060 and 0.052 at 4k and 6k, while
 sign-only GRPO is less stable across the three checkpoints. These results do
@@ -358,11 +361,13 @@ not show that SFT wins: the pilot has one seed, no frozen selector, an
 incomplete grid, and no untouched method-comparison suite. See
 `results/causal_baseline_pilot/pilot_table.md`.
 
-**Required next action:** complete the predeclared two-seed, 30k runs and freeze
-a new untouched comparison suite before opening it. If matched SFT confirms the
-effect, narrow the central claim from “GRPO is necessary” to “targeted
-post-training can remove ownership dependence,” with GRPO versus SFT treated as
-a mechanism and efficiency comparison.
+**Required next action:** before opening the full SFT checkpoint trajectories,
+freeze a new untouched comparison suite and the full method-comparison
+protocol. Then evaluate the complete SFT grid, apply the unchanged selector,
+and complete the matched sign-only/scale-matched program when budget permits.
+If matched SFT confirms the effect, narrow the central claim from “GRPO is
+necessary” to “targeted post-training can remove ownership dependence,” with
+GRPO versus SFT treated as a mechanism and efficiency comparison.
 
 ### 8. Predeclare the primary outcome and report the full behavior
 
@@ -516,9 +521,12 @@ reproducibility work above.
 6. IN PROGRESS — archive and reproduce all Qwen-own-delta checkpoint and OOD
    artifacts. Derived results are traceable; complete raw predictions,
    adapters, environment, and durable release remain incomplete.
-7. IN PROGRESS — train the matched SFT and sign-only GRPO baselines. The
-   one-seed 6k pilot is exploratory; full two-seed 30k runs and a new untouched
-   method-comparison suite remain.
+7. IN PROGRESS — matched SFT seeds 1 and 2 have completed 30k training with the
+   full checkpoint grids, but full-grid evaluation/selection has not started.
+   Sign-only remains a one-seed 6k pilot. Freeze the new untouched
+   method-comparison suite and protocol before opening the full SFT
+   trajectories; then complete matched evaluations and sign-only training when
+   budget permits.
 8. Add robust structural inference, multi-start optimization/utility
    diagnostics, and estimator-recovery checks.
 9. Add direct frozen preference-preservation and prompt-semantic robustness

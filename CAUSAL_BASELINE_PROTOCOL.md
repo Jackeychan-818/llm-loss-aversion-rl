@@ -254,3 +254,29 @@ citing the pilot beyond exploratory project status.
 **Confirmatory status:** the two-seed, 30k runs and a newly frozen untouched
 method-comparison suite remain pending. The already-opened OOD-50 and
 frozen-unused suites cannot be used to select or revise the baseline methods.
+
+### July 30, 2026 — full SFT training completed on NSCC
+
+Both predeclared matched SFT seeds reached the fixed 30,000-step endpoint.
+Each run contains all 15 scheduled checkpoints from step 2,000 through step
+30,000. The earlier seed-1 pilot remains preserved separately, and provenance
+manifests are present on NSCC.
+
+Observed training runtime was approximately 5,422 seconds per seed
+(approximately 90 minutes). The two full runs charged approximately 317 SU in
+total, reducing the reported allocation balance from 3,629 SU to approximately
+3,312 SU.
+
+No full-run checkpoint has yet been evaluated on `test_goods`, and the frozen
+selector has not been run. Therefore:
+
+- this entry records training completion, not SFT behavioral performance;
+- the seed-1 pilot remains the only evaluated SFT evidence and is exploratory;
+- no claim that SFT beats or matches GRPO is licensed;
+- the new untouched method-comparison suite and protocol must be frozen before
+  the complete SFT trajectory is opened; and
+- the complete 15-point grid must be retained because the frozen selector
+  rejects incomplete grids.
+
+The next authorized phase is the CPU-only work package in
+`NSCC_CPU_WORK_PROMPT.md`. GPU evaluation remains budget-gated.

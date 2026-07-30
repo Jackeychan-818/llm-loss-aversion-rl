@@ -76,8 +76,8 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
   early-trajectory point; frozen selection remains 2k–30k @ 2k.
 - Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
   artifacts.
-- **Priority-1 causal baselines — exploratory pilot complete; full runs
-  pending.**
+- **Priority-1 causal baselines — full SFT training complete; evaluation and
+  matched comparison pending.**
   Matched **SFT** (tests whether RL is necessary) and **sign-only GRPO** (tests
   whether reward magnitude |δ̃| adds beyond the sign) — two different questions,
   both distinct from the frontier-consensus-delta reward-*source* ablation. The
@@ -85,9 +85,11 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
   `CAUSAL_BASELINE_PROTOCOL.md`. Default GRPO behavior is unchanged
   (`reward_weighting: magnitude`). The one-seed 6k validation pilot shows large
   reductions for both methods, with SFT near `d=0.05` at 4k–6k, but it has no
-  frozen selector or untouched comparison suite and declares no winner. See
-  `results/causal_baseline_pilot/pilot_table.md`; confirmatory claims require
-  the full two-seed 30k runs and a newly frozen suite.
+  frozen selector or untouched comparison suite and declares no winner. Full
+  SFT seeds 1 and 2 have now reached 30k with all 15 checkpoints per seed;
+  those full trajectories have not been evaluated or selected. See
+  `results/causal_baseline_pilot/pilot_table.md`; confirmatory claims require a
+  newly frozen suite plus completed matched evaluation.
 - **Later priorities:** frozen prompt-semantic counterbalancing, IFEval, one
   compact GSM-Symbolic-500 capability extension; confidence calibration is
   explicitly lower priority. See `RESEARCH_ROADMAP.md` for ordering.

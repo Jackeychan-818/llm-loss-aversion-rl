@@ -23,7 +23,7 @@ readiness descriptions elsewhere in this file.
 A 7B model can be post-trained to reduce ownership-dependent choice while
 preserving its own estimated preference ordering.
 
-> **Status (July 28, 2026):** Exploratory checkpoint 8,000 remains the primary
+> **Status (July 30, 2026):** Exploratory checkpoint 8,000 remains the primary
 > candidate, and the **replication is CONFIRMED — 2/2 confirmatory seeds PASS**.
 > Seeds 1 and 2 reached the frozen 30,000-step endpoint; frozen ID selection
 > gave seed 1 → step 2,000 and seed 2 → step 6,000, and the one-shot OOD-50 +
@@ -32,8 +32,11 @@ preserving its own estimated preference ordering.
 > supporting exploratory evidence. Matched-base and ownership-free
 > pseudo-utility validation are complete. The prospective unused-configuration
 > suite was evaluated once: matched-base λ=5.946 versus 0.031 and −0.053 for
-> the two selected seeds. A one-seed SFT/sign-only pilot is also complete, but
-> is validation-only and declares no winner. Full matched baselines, stronger
+> the two selected seeds. Full matched SFT training is now complete for seeds
+> 1 and 2 through 30,000 steps, with all 15 checkpoints per seed and provenance
+> manifests present on NSCC. The full SFT evaluation grid and frozen selection
+> have not run, so there is no full-SFT behavioral result or method winner yet.
+> Sign-only remains a pilot only. A new untouched comparison suite, stronger
 > inference, prompt robustness, and complete raw-artifact archival remain
 > required for a full paper. The project is venue-agnostic; `draft/aaai27/` is
 > historical.
@@ -126,7 +129,7 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen verdicts pass |
 | 4. Primary-model evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and prospective configuration results exist; raw/durable artifacts pending |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | 🟡 Pilot only | SFT/sign-only seed-1 pilot complete; full runs, robust inference, prompt robustness, IFEval pending |
+| 6. Baselines/robustness | 🟡 SFT trained; evaluation gated | Full SFT seeds 1/2 reached 30k; full SFT grid/selection, full sign-only runs, robust inference, prompt robustness, and IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
@@ -254,4 +257,4 @@ python plot_training.py logs/<training-log>.out
 
 ---
 
-*Last updated: July 28, 2026*
+*Last updated: July 30, 2026*

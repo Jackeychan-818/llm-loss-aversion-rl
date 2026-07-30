@@ -26,6 +26,7 @@ This file combines the recent git commits into a project-level history, so the r
 | Jul 25, 2026 | `2ecf68d` | Added a venue-independent research roadmap. | Causal baselines, prompt-semantic robustness, broader capability checks, and stronger inference became the ordered next program. |
 | Jul 26–27, 2026 | `909cb15`–`c1ab3da` | Added and hardened matched SFT and sign-only GRPO infrastructure, then recorded a seed-1, 6k-step pilot. | Both pilots sharply reduce lambda on validation; SFT is especially strong at 4k–6k, but no method winner is established without the frozen full runs and a new untouched suite. |
 | Jul 28, 2026 | `6c31e81` plus status reconciliation | Committed the manuscript source tree, result registry, paper scripts, and Qwen-utility delta builder; the follow-up reconciliation reduced the redundant root TeX manuscript to a deprecated pointer. | The earlier untracked/canonical-source problem is substantially resolved. Generated outputs, duplicate local copies, and the overlapping utility-delta builders still require classification. |
+| Jul 30, 2026 | NSCC full SFT runs; manifests pending repository sync | Completed matched SFT seeds 1 and 2 through 30k with all 15 checkpoints per seed; preserved the seed-1 pilot separately. Runtime was approximately 5,422 seconds per seed and total charged cost approximately 317 SU. | SFT training is complete, but full-grid evaluation and selection have not run. The reported balance is approximately 3,312 SU; no full-SFT behavioral or method-superiority claim is yet supported. |
 
 ## Current Research Snapshot
 
@@ -51,17 +52,20 @@ This file combines the recent git commits into a project-level history, so the r
 - The exploratory causal-baseline pilot is complete on `test_goods`: SFT and
   sign-only GRPO both reduce lambda, but the one-seed, three-checkpoint pilot
   is hypothesis-generating only.
+- Full matched SFT training is complete for both predeclared seeds through
+  30,000 steps, with the complete checkpoint grids. Full-grid behavioral
+  evaluation and frozen selection remain pending.
 - The framing result is adverse for any broad “general debiasing” claim.
 - Human and frontier-superiority claims are paused pending comparable tasks,
   estimands, model endpoints, samples, scorers, and estimators.
 
 ## Remaining Work
 
-- Complete the predeclared two-seed, 30k matched SFT and sign-only GRPO runs;
-  do not promote the pilot into a confirmatory result.
-- Freeze a new untouched comparison suite before using it to choose among
-  training methods. The already-opened prospective suite cannot be reused for
-  method development.
+- Freeze a new untouched comparison suite and method-comparison protocol before
+  opening the full SFT trajectories. The already-opened prospective suite
+  cannot be reused for method development.
+- Evaluate and select the complete two-seed SFT grids only after that freeze;
+  complete the two-seed sign-only/scale-matched program when budget permits.
 - Finish raw prediction, adapter, environment, and reproduction archival for
   every claim-carrying result.
 - Add pair/good-aware inference, estimator-recovery simulations, and explicit

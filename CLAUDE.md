@@ -2,7 +2,7 @@
 
 This file gives Claude Code context about this project so it can help effectively without re-reading everything from scratch.
 
-> **Current paper-direction override (July 28, 2026):** The primary model is
+> **Current paper-direction override (July 30, 2026):** The primary model is
 > Qwen-own-delta GRPO checkpoint 8,000; frontier-consensus delta is the
 > reward-source ablation. Its `test_goods` estimate (`lambda = 0.111`,
 > `eta = 0.504`) is validation-only because this set informed reward
@@ -34,7 +34,7 @@ is not a current claim because those comparisons are not harmonized.
 
 ---
 
-## Current Status (July 28, 2026)
+## Current Status (July 30, 2026)
 
 **The exploratory primary run and two confirmatory runs are complete; both
 confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
@@ -61,9 +61,12 @@ confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
 - Raw-prediction archival (derived results + manifests ARE committed; the raw
   X/Y predictions, ~167 MB, are not — numbers are traceable but not
   independently re-derivable from the repo alone).
-- Matched SFT/sign-only full baselines, robust inference, prompt-semantic
-  robustness, and IFEval. A one-seed 6k pilot exists for both baselines, but is
-  exploratory validation evidence only.
+- Full matched SFT training is complete for seeds 1 and 2 through 30,000 steps,
+  with 15 checkpoints per seed and provenance manifests on NSCC. Full-grid
+  evaluation and frozen SFT selection have not run; training completion is not
+  a behavioral result. Sign-only remains a one-seed 6k exploratory pilot.
+  A new untouched comparison suite, robust inference, prompt-semantic
+  robustness, and IFEval remain active.
 
 The complete blocker ordering and claim restrictions are in
 `PAPER_READINESS.md`.
@@ -112,7 +115,7 @@ Estimation methods (in `core_exp_refactored.py`):
 | 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen ID/OOD/GSM8K verdicts pass |
 | 4. Primary evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and once-opened prospective configuration results exist; raw/durable artifacts remain incomplete |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | 🟡 Pilot only | SFT/sign-only seed-1 pilot complete; full runs, scale-matched sign control, robust inference, prompt robustness, IFEval pending |
+| 6. Baselines/robustness | 🟡 SFT trained; evaluation gated | Full SFT seeds 1/2 reached 30k; full SFT grid/selection, full sign-only runs, scale-matched sign control, robust inference, prompt robustness, and IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---
@@ -477,4 +480,4 @@ from the historical `draft/aaai27/` workspace.
 
 ---
 
-*Last updated: July 28, 2026*
+*Last updated: July 30, 2026*
