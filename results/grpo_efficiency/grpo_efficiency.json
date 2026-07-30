@@ -1,0 +1,122 @@
+{
+  "purpose": "GRPO signal/efficiency analysis from existing logs (Task 6).",
+  "terminology_note": "frac_reward_zero_std = fraction of prompt groups with zero task-reward advantage (all G completions identical). NOT DAPO generation-level filtering; generation-level dynamic sampling is not implemented (KNOWN_ISSUES.md #4).",
+  "measured_per_seed": {
+    "seed1": {
+      "n_logged_steps": 3000,
+      "last_step": 30000,
+      "reward_mean": 0.09910883756612025,
+      "reward_first": -0.010788667201995849,
+      "reward_last": 0.05435986566590145,
+      "kl_first": 0.0,
+      "kl_last": 0.7128368552774191,
+      "kl_max": 7.589292684197426,
+      "frac_zero_adv_mean": 0.5689,
+      "frac_zero_adv_first": 0.9,
+      "frac_zero_adv_last": 0.3,
+      "entropy_first": 0.07043624296784401,
+      "entropy_last": 0.192610857100226,
+      "grad_norm_mean": 3.590083507852263
+    },
+    "seed2": {
+      "n_logged_steps": 3000,
+      "last_step": 30000,
+      "reward_mean": 0.10355072522575283,
+      "reward_first": -0.3595320850610733,
+      "reward_last": 0.12768056690692903,
+      "kl_first": 1.552117319079116e-05,
+      "kl_last": 0.7679709009826183,
+      "kl_max": 9.997070487961173,
+      "frac_zero_adv_mean": 0.5578666666666666,
+      "frac_zero_adv_first": 0.6,
+      "frac_zero_adv_last": 0.7,
+      "entropy_first": 0.15222007189877332,
+      "entropy_last": 0.11603438464226201,
+      "grad_norm_mean": 3.9469706535413
+    },
+    "seed42": {
+      "n_logged_steps": 3000,
+      "last_step": 30000,
+      "reward_mean": 0.09342100825091135,
+      "reward_first": -0.12472870647907257,
+      "reward_last": 0.24518327564001083,
+      "kl_first": 0.0,
+      "kl_last": 0.6428541902452707,
+      "kl_max": 3.95880689509213,
+      "frac_zero_adv_mean": 0.5731333333333334,
+      "frac_zero_adv_first": 0.8,
+      "frac_zero_adv_last": 0.7,
+      "entropy_first": 0.09537169774994254,
+      "entropy_last": 0.081150059227366,
+      "grad_norm_mean": 3.4115956615806073
+    }
+  },
+  "cross_seed_stability_conf": {
+    "reward_last_spread": 0.07332070124102757,
+    "kl_last_spread": 0.0551340457051992,
+    "frac_zero_adv_mean_spread": 0.01103333333333334
+  },
+  "update_signal_by_delta_bin": {
+    "n_nonzero": 49450,
+    "bins": [
+      {
+        "bin": "|d|<=0.5",
+        "case_share": 0.5298281092012134,
+        "abs_delta_mass_share": 0.1581590922986187
+      },
+      {
+        "bin": "0.5<|d|<=1.0",
+        "case_share": 0.1990495449949444,
+        "abs_delta_mass_share": 0.21114426849180196
+      },
+      {
+        "bin": "1.0<|d|<=2.0",
+        "case_share": 0.2190495449949444,
+        "abs_delta_mass_share": 0.44959733006016517
+      },
+      {
+        "bin": "|d|>2.0",
+        "case_share": 0.052072800808897875,
+        "abs_delta_mass_share": 0.18109930914941416
+      }
+    ],
+    "high_delta_case_share_gt1": 0.27112234580384226,
+    "high_delta_mass_share_gt1": 0.6306966392095793,
+    "interpretation": "ESTIMATE (from the frozen training delta distribution, not logged per-step): under magnitude weighting the within-group advantage magnitude is proportional to |delta|, so update magnitude concentrates in |delta|>1 cases (63.1% of total |delta| mass from 27.1% of cases). Sign-only removes this concentration; scale_matched keeps it uniform-per-case at matched global scale."
+  },
+  "exposure": {
+    "measured_or_derived": "DERIVED from config (1 step = 1 unique prompt at this TRL config)",
+    "grpo": {
+      "unique_prompts": 30000,
+      "epoch_fraction": 0.3033367037411527,
+      "optimizer_updates": 30000,
+      "completions_generated": 480000,
+      "completion_tokens_trained_est": "~480000*(1-2) tokens",
+      "runtime_hours_est": 50.833333333333336,
+      "s_per_step_measured": 6.1
+    },
+    "sft": {
+      "unique_prompts": 30000,
+      "epoch_fraction": 0.3033367037411527,
+      "optimizer_updates": 30000,
+      "completions_generated": 0,
+      "runtime_hours_est": 2.3333333333333335,
+      "s_per_step_measured": 0.28
+    },
+    "asymmetry_warning": "GRPO generates 480,000 completions; SFT generates 0. Runtime and completion counts are FUNDAMENTALLY different between RL and SFT and are reported, NOT matched. Only unique-prompt exposure (30,000, 0.303 epoch) and optimizer updates (30,000) are matched. Do NOT treat the unequal completion counts as a matched comparison."
+  },
+  "why_sft_could_dominate": [
+    "The task is a deterministic one-token (Yes/No) mapping with a fixed rational target, so SFT has a dense per-example gradient on every prompt.",
+    "GRPO wastes signal: ~80% of groups are zero task-reward advantage (measured frac_reward_zero_std), so most generation+backward compute carries only a KL-only update; SFT has no such waste.",
+    "SFT reaches the endpoint in ~1.4 h/seed vs GRPO ~51 h/seed at 30k (measured s/step), a large efficiency gap for the SAME unique-prompt exposure."
+  ],
+  "why_this_is_not_proof_grpo_is_useless": [
+    "Efficiency is not effectiveness: the method winner is decided on the untouched suite under METHOD_COMPARISON_PROTOCOL.md, not on training cost or training reward (which is a conditional diagnostic).",
+    "SFT on a fixed target risks shortcut/template learning (answer-token or label heuristics) that GRPO's exploration might avoid."
+  ],
+  "untouched_tests_needed": [
+    "The frozen untouched method-comparison suite (data/method_comparison/) for the confirmatory SFT-vs-GRPO lambda/eta comparison.",
+    "The frozen semantic-counterbalancing component (Yes/No vs keep/trade, X/Y vs A/B, reversed order/attr, paraphrases) to distinguish an ownership-invariant policy from a Yes/No/label/template heuristic.",
+    "Capability retention (GSM8K/IFEval) to check SFT's dense fit did not degrade general behavior more than GRPO."
+  ]
+}
