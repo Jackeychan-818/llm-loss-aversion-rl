@@ -1,0 +1,85 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY_POST_HOC GSM8K capability-retention eval of TWO pilot adapters:
+#   * matched SFT      seed 1, step 6000
+#   * sign-only GRPO   seed 1, step 6000
+#
+# Reuses the EXISTING frozen matched-base GSM8K predictions
+# (results/gsm8k/base/predictions.jsonl, 1,319 records) for BOTH paired
+# comparisons; DOES NOT re-evaluate the base. Greedy, max_new_tokens=512, parse
+# failures counted as incorrect. Exploratory: GSM8K must NOT change any
+# checkpoint selection.
+#
+# Full run:
+#   qsub train/submit_eval_gsm8k_sft_sign_pilot.pbs
+# Smoke (20 problems each):
+#   qsub -v LIMIT=20 train/submit_eval_gsm8k_sft_sign_pilot.pbs
+# ============================================================
+#PBS -N lz-gsm8k-sftsign
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=08:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/gsm8k_sftsign_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/gsm8k_sftsign_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+export HF_HOME="${HF_HOME:-$PROJECT_DIR/.cache/huggingface}"; mkdir -p "$HF_HOME"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL="models/Qwen2.5-7B-Instruct"
+DATA_FILE="data/gsm8k_full.csv"
+BASE_PRED="results/gsm8k/base/predictions.jsonl"
+OUTPUT_ROOT="results/gsm8k_sft_sign_pilot6k"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-512}"
+LIMIT="${LIMIT:-}"
+EXPECTED_COUNT="${EXPECTED_COUNT:-1319}"
+
+SFT_ADAPTER="checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000"
+SIGN_ADAPTER="checkpoints/grpo_qwen_delta_sign_seed1/checkpoint-6000"
+
+LIMIT_ARGS=(); [[ -n "$LIMIT" ]] && LIMIT_ARGS+=(--limit "$LIMIT")
+
+# --- Guards: reuse a valid frozen base; never regenerate it here. ---
+[[ -f "$BASE_PRED" ]] || { echo "ERROR: frozen base predictions missing: $BASE_PRED"; exit 1; }
+if [[ -z "$LIMIT" ]]; then
+  n=$(grep -c . "$BASE_PRED")
+  [[ "$n" == "$EXPECTED_COUNT" ]] || { echo "ERROR: base predictions have $n records, expected $EXPECTED_COUNT"; exit 1; }
+fi
+for a in "$SFT_ADAPTER" "$SIGN_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+
+echo "=== Validate dataset ===" && python eval/run_gsm8k_local.py --data_file "$DATA_FILE" --validate_data_only
+
+nvidia-smi
+
+run_one () {  # $1=adapter  $2=outdir
+  local adapter="$1" out="$OUTPUT_ROOT/$2"
+  echo "=== eval $2 (exploratory, post-hoc) ==="
+  python eval/run_gsm8k_local.py \
+      --model_path "$MODEL" --adapter_path "$adapter" \
+      --data_file "$DATA_FILE" --output_dir "$out" \
+      --batch_size "$BATCH_SIZE" --max_new_tokens "$MAX_NEW_TOKENS" \
+      "${LIMIT_ARGS[@]}" 2>&1 | tee "logs/gsm8k_sftsign_$2.log"
+  echo "=== paired comparison $2 vs frozen base ==="
+  python eval/compare_gsm8k.py \
+      --base "$BASE_PRED" --tuned "$out/predictions.jsonl" \
+      --output "$out/comparison_vs_base.json" \
+      2>&1 | tee "logs/gsm8k_sftsign_${2}_cmp.log"
+}
+
+run_one "$SFT_ADAPTER"  "sft_seed1_step6000"
+run_one "$SIGN_ADAPTER" "sign_seed1_step6000"
+
+echo "=== GSM8K side-effect eval complete (SFT + sign-only vs frozen base) ==="

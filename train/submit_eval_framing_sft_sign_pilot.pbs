@@ -1,0 +1,92 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY_POST_HOC framing side-effect eval of TWO pilot adapters:
+#   * matched SFT      seed 1, step 6000
+#   * sign-only GRPO   seed 1, step 6000
+#
+# Reuses the EXISTING full matched-base framing predictions (5,520 cases) as the
+# comparator; DOES NOT re-evaluate the base and DOES NOT touch the GRPO-8k
+# outputs. Exploratory/post-hoc: the framing benchmark is already opened.
+#
+# Full run:
+#   qsub train/submit_eval_framing_sft_sign_pilot.pbs
+# Smoke (10 scenarios x 5 probabilities x 2 frames):
+#   qsub -v LIMIT_SCENARIOS=10,PROBABILITY_SUBSET=0.10:0.30:0.50:0.70:0.90 \
+#     train/submit_eval_framing_sft_sign_pilot.pbs
+# ============================================================
+#PBS -N lz-fram-sftsign
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/fram_sftsign_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/fram_sftsign_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL_PATH="models/Qwen2.5-7B-Instruct"
+DATA_FILE="data/framing_effects_23prob.json"
+OUTPUT_ROOT="framing/sft_sign_pilot6k"
+BASE_PRED="framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+
+SFT_ADAPTER="checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000"
+SIGN_ADAPTER="checkpoints/grpo_qwen_delta_sign_seed1/checkpoint-6000"
+
+# Defence in depth: never let this job read a frozen untouched/semantic suite.
+case "$DATA_FILE" in
+  *method_comparison*|*semantic*) echo "REFUSED: frozen suite path in DATA_FILE"; exit 2 ;;
+esac
+[[ "$DATA_FILE" == "data/framing_effects_23prob.json" ]] || { echo "REFUSED: unexpected DATA_FILE"; exit 2; }
+[[ -f "$BASE_PRED" ]] || { echo "ERROR: reused base predictions missing: $BASE_PRED"; exit 1; }
+for a in "$SFT_ADAPTER" "$SIGN_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+
+EXTRA_ARGS=()
+[[ -n "${LIMIT_SCENARIOS:-}" ]] && EXTRA_ARGS+=(--limit_scenarios "$LIMIT_SCENARIOS")
+[[ -n "${PROBABILITY_SUBSET:-}" ]] && EXTRA_ARGS+=(--probability_subset "$PROBABILITY_SUBSET")
+
+nvidia-smi
+
+echo "=== [1/2] SFT seed1 step6000 framing (exploratory, post-hoc) ==="
+python eval/run_framing_local.py \
+    --model_path "$MODEL_PATH" \
+    --adapter_path "$SFT_ADAPTER" \
+    --model_name SFT-seed1-step6000 \
+    --data_file "$DATA_FILE" \
+    --output_root "$OUTPUT_ROOT" \
+    --prompt_style single_word \
+    --dtype bf16 \
+    --compare_to "$BASE_PRED" \
+    --batch_size "$BATCH_SIZE" \
+    --yes \
+    "${EXTRA_ARGS[@]}" \
+    2>&1 | tee logs/fram_sftsign_sft.log
+
+echo "=== [2/2] sign-only seed1 step6000 framing (exploratory, post-hoc) ==="
+python eval/run_framing_local.py \
+    --model_path "$MODEL_PATH" \
+    --adapter_path "$SIGN_ADAPTER" \
+    --model_name SignOnly-seed1-step6000 \
+    --data_file "$DATA_FILE" \
+    --output_root "$OUTPUT_ROOT" \
+    --prompt_style single_word \
+    --dtype bf16 \
+    --compare_to "$BASE_PRED" \
+    --batch_size "$BATCH_SIZE" \
+    --yes \
+    "${EXTRA_ARGS[@]}" \
+    2>&1 | tee logs/fram_sftsign_sign.log
+
+echo "=== framing side-effect eval complete (SFT + sign-only vs existing base) ==="
