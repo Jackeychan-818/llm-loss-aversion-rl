@@ -1,0 +1,7 @@
+# Generated, self-contained reports are useful artifacts, not source code.
+/draft/*.html linguist-generated
+/ood/*_summary.html linguist-generated
+
+# Third-party AAAI submission styles should not affect repository languages.
+/draft/aaai27/aaai2027.bst linguist-vendored
+/draft/aaai27/aaai2027.sty linguist-vendored

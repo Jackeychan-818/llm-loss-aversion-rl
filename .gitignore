@@ -35,6 +35,18 @@ models/
 .Rhistory
 *.docx
 
+# Local scratch and rendered presentation artifacts
+/tmp/
+/outputs/
+
+# Historical AAAI draft build and QA outputs
+/draft/aaai27/output/
+/draft/aaai27/tmp/
+/draft/aaai27/main.pdf
+/draft/aaai27/reproducibility_checklist.pdf
+/draft/aaai27/figures/*.png
+*.log
+
 # LaTeX build outputs — derived from the canonical training_overview.tex.
 # Regenerate; never hand-edit or commit. See PAPER_SOURCES.md.
 *.aux
