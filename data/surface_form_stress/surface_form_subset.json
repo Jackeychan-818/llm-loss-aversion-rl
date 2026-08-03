@@ -1,0 +1,990 @@
+{
+  "status": "FROZEN_PRE_GPU",
+  "purpose": "Surface-form stress subset for the SFT-vs-sign-only diagnostic (rule vs shortcut). Frozen before inference; selected from pre-training metadata only.",
+  "source": "test_goods.json (already-opened validation); frozen semantic/method-comparison suites NOT consumed",
+  "selection_rule": "stratify by delta sign x magnitude bin; hash-rank by sha256('{seed}:{case_id}'); take first N per stratum",
+  "response_independent": true,
+  "uses_no_sft_or_sign_output": true,
+  "frozen_seed": 20260803,
+  "n_per_stratum_target": 12,
+  "per_stratum_selected": {
+    "neg|0.5-1": 12,
+    "neg|1-2": 12,
+    "neg|<=0.5": 12,
+    "neg|>2": 12,
+    "pos|0.5-1": 12,
+    "pos|1-2": 12,
+    "pos|<=0.5": 12,
+    "pos|>2": 12
+  },
+  "n_cases": 96,
+  "bin_edges": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    Infinity
+  ],
+  "cases": [
+    {
+      "case_id": 78,
+      "X_num": 0,
+      "Y_num": 14,
+      "attr_code": 8,
+      "delta": 2.5611086861982546,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 114,
+      "X_num": 0,
+      "Y_num": 32,
+      "attr_code": 34,
+      "delta": 2.1561826796192807,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 124,
+      "X_num": 0,
+      "Y_num": 37,
+      "attr_code": 24,
+      "delta": 1.4285411030355102,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 126,
+      "X_num": 0,
+      "Y_num": 38,
+      "attr_code": 53,
+      "delta": 2.2223400988585644,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 141,
+      "X_num": 0,
+      "Y_num": 46,
+      "attr_code": 10,
+      "delta": 0.7273066132414754,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 190,
+      "X_num": 0,
+      "Y_num": 70,
+      "attr_code": 55,
+      "delta": 1.4474301891830395,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 207,
+      "X_num": 0,
+      "Y_num": 79,
+      "attr_code": 65,
+      "delta": 1.5412393363021004,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 228,
+      "X_num": 0,
+      "Y_num": 89,
+      "attr_code": 4,
+      "delta": 2.0457301476623253,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 265,
+      "X_num": 1,
+      "Y_num": 10,
+      "attr_code": 20,
+      "delta": 0.2197670885017189,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 474,
+      "X_num": 2,
+      "Y_num": 17,
+      "attr_code": 27,
+      "delta": -1.4822492836585572,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 562,
+      "X_num": 2,
+      "Y_num": 61,
+      "attr_code": 75,
+      "delta": -0.4532529169729617,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 606,
+      "X_num": 2,
+      "Y_num": 83,
+      "attr_code": 18,
+      "delta": -0.0850691478515631,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 720,
+      "X_num": 3,
+      "Y_num": 44,
+      "attr_code": 47,
+      "delta": -2.064583451761771,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 798,
+      "X_num": 3,
+      "Y_num": 83,
+      "attr_code": 4,
+      "delta": 0.5033599043256352,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 874,
+      "X_num": 4,
+      "Y_num": 26,
+      "attr_code": 34,
+      "delta": -0.8637323835413684,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 1082,
+      "X_num": 5,
+      "Y_num": 36,
+      "attr_code": 61,
+      "delta": 0.8283090853025806,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 1235,
+      "X_num": 6,
+      "Y_num": 20,
+      "attr_code": 79,
+      "delta": 1.6882709060192516,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 1241,
+      "X_num": 6,
+      "Y_num": 23,
+      "attr_code": 39,
+      "delta": 0.758754817600382,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 1267,
+      "X_num": 6,
+      "Y_num": 36,
+      "attr_code": 23,
+      "delta": 2.1272654822352526,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 1269,
+      "X_num": 6,
+      "Y_num": 37,
+      "attr_code": 36,
+      "delta": 0.6334211648787816,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 1382,
+      "X_num": 6,
+      "Y_num": 93,
+      "attr_code": 5,
+      "delta": 2.06348983632596,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 1411,
+      "X_num": 7,
+      "Y_num": 16,
+      "attr_code": 53,
+      "delta": -0.024013483373835576,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 1519,
+      "X_num": 7,
+      "Y_num": 70,
+      "attr_code": 15,
+      "delta": 0.20545023853807381,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 1545,
+      "X_num": 7,
+      "Y_num": 83,
+      "attr_code": 24,
+      "delta": 0.21416386675063712,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 1552,
+      "X_num": 7,
+      "Y_num": 86,
+      "attr_code": 48,
+      "delta": -2.2011439096238057,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 1584,
+      "X_num": 8,
+      "Y_num": 11,
+      "attr_code": 12,
+      "delta": -0.6657967994013234,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 1594,
+      "X_num": 8,
+      "Y_num": 16,
+      "attr_code": 16,
+      "delta": 0.17283794204663344,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 1596,
+      "X_num": 8,
+      "Y_num": 17,
+      "attr_code": 78,
+      "delta": -2.3887799380453156,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 1717,
+      "X_num": 8,
+      "Y_num": 78,
+      "attr_code": 29,
+      "delta": -0.5658402738639864,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 1954,
+      "X_num": 10,
+      "Y_num": 17,
+      "attr_code": 72,
+      "delta": -2.6821900325840753,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 2005,
+      "X_num": 10,
+      "Y_num": 43,
+      "attr_code": 14,
+      "delta": -0.10630943738004939,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 2049,
+      "X_num": 10,
+      "Y_num": 65,
+      "attr_code": 5,
+      "delta": -0.6589304921216868,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 2160,
+      "X_num": 11,
+      "Y_num": 32,
+      "attr_code": 2,
+      "delta": 0.9889532603478969,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 2188,
+      "X_num": 11,
+      "Y_num": 46,
+      "attr_code": 74,
+      "delta": -0.39039671654177033,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 2194,
+      "X_num": 11,
+      "Y_num": 49,
+      "attr_code": 17,
+      "delta": 1.5922550135951024,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 2239,
+      "X_num": 11,
+      "Y_num": 72,
+      "attr_code": 29,
+      "delta": 0.9047754572799431,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 2294,
+      "X_num": 11,
+      "Y_num": 99,
+      "attr_code": 42,
+      "delta": -0.3037046233696252,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 2389,
+      "X_num": 12,
+      "Y_num": 60,
+      "attr_code": 18,
+      "delta": 0.4320701838020135,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 2515,
+      "X_num": 13,
+      "Y_num": 37,
+      "attr_code": 80,
+      "delta": 0.7658269070263757,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 2679,
+      "X_num": 14,
+      "Y_num": 34,
+      "attr_code": 80,
+      "delta": 0.32481319838344885,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 2718,
+      "X_num": 14,
+      "Y_num": 53,
+      "attr_code": 54,
+      "delta": -0.5585194294615186,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 3187,
+      "X_num": 17,
+      "Y_num": 39,
+      "attr_code": 45,
+      "delta": 0.283276954066197,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 3249,
+      "X_num": 17,
+      "Y_num": 70,
+      "attr_code": 44,
+      "delta": 2.5302043824826272,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 3261,
+      "X_num": 17,
+      "Y_num": 76,
+      "attr_code": 13,
+      "delta": 2.0166538501812186,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 3432,
+      "X_num": 18,
+      "Y_num": 80,
+      "attr_code": 73,
+      "delta": -1.9906164074125532,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 3640,
+      "X_num": 20,
+      "Y_num": 25,
+      "attr_code": 47,
+      "delta": -0.6653088280173551,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 3872,
+      "X_num": 21,
+      "Y_num": 63,
+      "attr_code": 28,
+      "delta": -0.2623668125765014,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 4059,
+      "X_num": 22,
+      "Y_num": 80,
+      "attr_code": 53,
+      "delta": -1.1615687015965181,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 4118,
+      "X_num": 23,
+      "Y_num": 33,
+      "attr_code": 54,
+      "delta": -0.8347218392516498,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 4215,
+      "X_num": 23,
+      "Y_num": 82,
+      "attr_code": 66,
+      "delta": -3.227934916389685,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 4340,
+      "X_num": 24,
+      "Y_num": 69,
+      "attr_code": 46,
+      "delta": -0.9218830884583848,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 4366,
+      "X_num": 24,
+      "Y_num": 82,
+      "attr_code": 12,
+      "delta": -2.0275495941387747,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 4788,
+      "X_num": 27,
+      "Y_num": 74,
+      "attr_code": 21,
+      "delta": 0.11519013699267461,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 5008,
+      "X_num": 29,
+      "Y_num": 43,
+      "attr_code": 31,
+      "delta": 1.5434423262217778,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5024,
+      "X_num": 29,
+      "Y_num": 51,
+      "attr_code": 76,
+      "delta": 1.402608756701425,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5107,
+      "X_num": 29,
+      "Y_num": 93,
+      "attr_code": 34,
+      "delta": 1.7920715452778653,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5114,
+      "X_num": 29,
+      "Y_num": 96,
+      "attr_code": 5,
+      "delta": 2.1239308188887165,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 5202,
+      "X_num": 30,
+      "Y_num": 71,
+      "attr_code": 52,
+      "delta": 0.2641815244107054,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 5573,
+      "X_num": 33,
+      "Y_num": 56,
+      "attr_code": 49,
+      "delta": 1.1388656187056752,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5604,
+      "X_num": 33,
+      "Y_num": 71,
+      "attr_code": 25,
+      "delta": 1.3273499147303887,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5833,
+      "X_num": 35,
+      "Y_num": 57,
+      "attr_code": 62,
+      "delta": 1.6677683178504372,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 5845,
+      "X_num": 35,
+      "Y_num": 63,
+      "attr_code": 77,
+      "delta": 0.8230482134362105,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 5877,
+      "X_num": 35,
+      "Y_num": 79,
+      "attr_code": 56,
+      "delta": 1.0131846565148448,
+      "delta_sign": "pos",
+      "delta_bin": "1-2",
+      "stratum": "pos|1-2"
+    },
+    {
+      "case_id": 6143,
+      "X_num": 37,
+      "Y_num": 87,
+      "attr_code": 26,
+      "delta": -1.2758379530866497,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 6318,
+      "X_num": 39,
+      "Y_num": 53,
+      "attr_code": 63,
+      "delta": -0.8870863418905061,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 6924,
+      "X_num": 44,
+      "Y_num": 71,
+      "attr_code": 35,
+      "delta": 2.3644931549896877,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 7004,
+      "X_num": 45,
+      "Y_num": 57,
+      "attr_code": 14,
+      "delta": 0.5936853819097972,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 7046,
+      "X_num": 45,
+      "Y_num": 78,
+      "attr_code": 69,
+      "delta": -1.1094378430770053,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 7065,
+      "X_num": 45,
+      "Y_num": 88,
+      "attr_code": 24,
+      "delta": -1.383803044281552,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 7222,
+      "X_num": 47,
+      "Y_num": 61,
+      "attr_code": 58,
+      "delta": -0.07856195704666374,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 7232,
+      "X_num": 47,
+      "Y_num": 66,
+      "attr_code": 71,
+      "delta": -0.39572448962122553,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 7264,
+      "X_num": 47,
+      "Y_num": 82,
+      "attr_code": 48,
+      "delta": -3.823791177534201,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 7298,
+      "X_num": 47,
+      "Y_num": 99,
+      "attr_code": 10,
+      "delta": -0.7847850852676505,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 7378,
+      "X_num": 48,
+      "Y_num": 88,
+      "attr_code": 11,
+      "delta": -1.4219470021134684,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 7462,
+      "X_num": 49,
+      "Y_num": 80,
+      "attr_code": 72,
+      "delta": -2.086680310641907,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 7683,
+      "X_num": 51,
+      "Y_num": 94,
+      "attr_code": 56,
+      "delta": -1.2064897579308766,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 7822,
+      "X_num": 53,
+      "Y_num": 70,
+      "attr_code": 29,
+      "delta": 0.6628661663427493,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    },
+    {
+      "case_id": 8076,
+      "X_num": 56,
+      "Y_num": 65,
+      "attr_code": 38,
+      "delta": -1.8935022579730731,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 8081,
+      "X_num": 56,
+      "Y_num": 68,
+      "attr_code": 55,
+      "delta": -0.026222759831908582,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 8113,
+      "X_num": 56,
+      "Y_num": 84,
+      "attr_code": 55,
+      "delta": -0.05006725587695182,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 8275,
+      "X_num": 58,
+      "Y_num": 82,
+      "attr_code": 74,
+      "delta": -3.788314998499475,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 8299,
+      "X_num": 58,
+      "Y_num": 94,
+      "attr_code": 1,
+      "delta": -0.6127698156077581,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 8455,
+      "X_num": 60,
+      "Y_num": 93,
+      "attr_code": 33,
+      "delta": 0.05845854979265602,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 8698,
+      "X_num": 64,
+      "Y_num": 68,
+      "attr_code": 69,
+      "delta": 0.0384456464683649,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 8879,
+      "X_num": 66,
+      "Y_num": 92,
+      "attr_code": 45,
+      "delta": -2.25323090956585,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 8881,
+      "X_num": 66,
+      "Y_num": 93,
+      "attr_code": 18,
+      "delta": -0.031342465195439095,
+      "delta_sign": "neg",
+      "delta_bin": "<=0.5",
+      "stratum": "neg|<=0.5"
+    },
+    {
+      "case_id": 8917,
+      "X_num": 67,
+      "Y_num": 79,
+      "attr_code": 55,
+      "delta": 0.06761396726765628,
+      "delta_sign": "pos",
+      "delta_bin": "<=0.5",
+      "stratum": "pos|<=0.5"
+    },
+    {
+      "case_id": 9056,
+      "X_num": 69,
+      "Y_num": 87,
+      "attr_code": 72,
+      "delta": -1.8969147361021657,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 9372,
+      "X_num": 75,
+      "Y_num": 86,
+      "attr_code": 48,
+      "delta": -2.123721119652675,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 9574,
+      "X_num": 80,
+      "Y_num": 82,
+      "attr_code": 16,
+      "delta": -0.5398758813754185,
+      "delta_sign": "neg",
+      "delta_bin": "0.5-1",
+      "stratum": "neg|0.5-1"
+    },
+    {
+      "case_id": 9746,
+      "X_num": 85,
+      "Y_num": 88,
+      "attr_code": 66,
+      "delta": -2.0896542054611107,
+      "delta_sign": "neg",
+      "delta_bin": ">2",
+      "stratum": "neg|>2"
+    },
+    {
+      "case_id": 9760,
+      "X_num": 85,
+      "Y_num": 95,
+      "attr_code": 48,
+      "delta": -1.4189679419844892,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 9772,
+      "X_num": 86,
+      "Y_num": 88,
+      "attr_code": 73,
+      "delta": -1.284653098597875,
+      "delta_sign": "neg",
+      "delta_bin": "1-2",
+      "stratum": "neg|1-2"
+    },
+    {
+      "case_id": 9797,
+      "X_num": 87,
+      "Y_num": 89,
+      "attr_code": 8,
+      "delta": 2.229811299130066,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 9828,
+      "X_num": 88,
+      "Y_num": 93,
+      "attr_code": 50,
+      "delta": 2.2615245310053465,
+      "delta_sign": "pos",
+      "delta_bin": ">2",
+      "stratum": "pos|>2"
+    },
+    {
+      "case_id": 9935,
+      "X_num": 95,
+      "Y_num": 98,
+      "attr_code": 3,
+      "delta": 0.6373482081526316,
+      "delta_sign": "pos",
+      "delta_bin": "0.5-1",
+      "stratum": "pos|0.5-1"
+    }
+  ]
+}

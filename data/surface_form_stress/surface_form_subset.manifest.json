@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "dataset": "surface_form_subset.json",
+  "status": "FROZEN_PRE_GPU",
+  "frozen_seed": 20260803,
+  "inputs": {
+    "delta_qwen_base.json": {
+      "sha256": "569bf72e4aaf12b43bc98f27cb706c4a6bffbfda1e765a8eb00f5c2332133dfd"
+    },
+    "test_goods.json": {
+      "sha256": "6b47703a995169e92bee0da8b6d9b53cb2c04d6dbcc463ace63cf89a73e12476"
+    },
+    "trial_goods.json": {
+      "sha256": "0497dc91d5eb7e984a3343f955745269a3e65d528e000fb8586073fbb64892f1"
+    }
+  },
+  "n_cases": 96,
+  "per_stratum_selected": {
+    "neg|0.5-1": 12,
+    "neg|1-2": 12,
+    "neg|<=0.5": 12,
+    "neg|>2": 12,
+    "pos|0.5-1": 12,
+    "pos|1-2": 12,
+    "pos|<=0.5": 12,
+    "pos|>2": 12
+  },
+  "sign_balance": {
+    "pos": 48,
+    "neg": 48
+  },
+  "output_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+  "construction_script": "data/surface_form_stress/build_surface_form_subset.py"
+}
