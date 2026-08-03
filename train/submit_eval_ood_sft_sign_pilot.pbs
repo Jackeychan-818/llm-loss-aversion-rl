@@ -1,0 +1,68 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY_POST_HOC OOD-50 (genuinely new goods) eval of TWO pilots:
+#   * matched SFT      seed 1, step 6000
+#   * sign-only GRPO   seed 1, step 6000
+#
+# Tests item/attribute generalization (rule vs shortcut) on 50 UNSEEN goods
+# (1,225 cases). Reuses the EXISTING OOD-50 base (lambda_OOD = 2.209); does NOT
+# re-evaluate the base. Exploratory/post-hoc: OOD-50 is already opened; results
+# may NOT change any checkpoint selection. Compare lambda against the OOD base
+# (2.209), NOT the ID base (7.637).
+#
+#   qsub train/submit_eval_ood_sft_sign_pilot.pbs
+# ============================================================
+#PBS -N lz-ood-sftsign
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/ood_sftsign_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/ood_sftsign_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+BASE_MODEL="models/Qwen2.5-7B-Instruct"
+OOD_GOODS="data/ood_new_goods_50.json"
+OOD_CASES="data/ood_new_goods_50_test.json"
+OUTPUT_ROOT="ood"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+
+SFT_ADAPTER="checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000"
+SIGN_ADAPTER="checkpoints/grpo_qwen_delta_sign_seed1/checkpoint-6000"
+
+for f in "$OOD_GOODS" "$OOD_CASES"; do [[ -f "$f" ]] || { echo "ERROR: missing $f"; exit 1; }; done
+for a in "$SFT_ADAPTER" "$SIGN_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+# Never touch the frozen untouched/semantic suites here.
+case "$OOD_CASES" in *method_comparison*|*semantic*) echo "REFUSED: frozen suite path"; exit 2 ;; esac
+
+nvidia-smi
+
+run_one () {  # $1=adapter $2=model_name
+  echo "=== OOD-50 eval $2 (exploratory, post-hoc) ==="
+  python eval/run_qwen_local.py \
+      --model_path "$BASE_MODEL" --adapter_path "$1" --model_name "$2" \
+      --data_file "$OOD_CASES" --goods_json "$OOD_GOODS" \
+      --treatment baseline --output_root "$OUTPUT_ROOT" \
+      --batch_size "$BATCH_SIZE" --yes 2>&1 | tee "logs/ood_sftsign_$2.log"
+  echo "=== estimate $2 (Model A NLS, link scale T=1) ==="
+  python eval/estimate_qwen_checkpoint.py \
+      --model_name "$2" --feature "$OUTPUT_ROOT" \
+      --robust_model 1 --link-scale 1 2>&1 | tee "logs/ood_sftsign_${2}_est.log"
+}
+
+run_one "$SFT_ADAPTER"  "Qwen-7B-SFT-qd-seed1-ckpt6000-OOD50"
+run_one "$SIGN_ADAPTER" "Qwen-7B-GRPO-sign-seed1-ckpt6000-OOD50"
+
+echo "=== OOD-50 pilot eval complete. Compare lambda vs OOD base 2.209, not ID 7.637. ==="
