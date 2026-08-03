@@ -105,6 +105,17 @@ def main():
     out_dir = ROOT / args.output_root / args.model_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Resume guard: if this model's predictions are already complete, skip it so
+    # a resubmitted (timed-out) job never re-runs or mixes a finished model dir.
+    expected_forms = len(subset["cases"]) * 2 * 48
+    pred_path = out_dir / "form_predictions.jsonl"
+    if pred_path.exists():
+        have = sum(1 for _ in open(pred_path))
+        if have == expected_forms:
+            print(f"RESUME: {args.model_name} already complete ({have} rows) — skipping.")
+            return
+        print(f"RESUME: {args.model_name} partial ({have}/{expected_forms}) — recomputing.")
+
     print(f"Loading {args.model_path} (adapter={args.adapter_path or 'none'})")
     tok = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
     if tok.pad_token_id is None:
@@ -128,8 +139,8 @@ def main():
     probs = score_forms(model, tok, jobs, batch_rows=args.batch_rows)
 
     delta_by_case = {c["case_id"]: c for c in subset["cases"]}
-    pred_path = out_dir / "form_predictions.jsonl"
-    with open(pred_path, "w") as fh:
+    tmp_path = out_dir / "form_predictions.jsonl.tmp"   # atomic: rename only on success
+    with open(tmp_path, "w") as fh:
         for f, pr in zip(all_forms, probs):
             # keep/trade action masses
             p_keep = sum(p for t, p in pr.items()
@@ -149,6 +160,7 @@ def main():
                 "delta_sign": delta_by_case[f.case_id]["delta_sign"],
                 "delta_bin": delta_by_case[f.case_id]["delta_bin"],
             }) + "\n")
+    tmp_path.replace(pred_path)   # atomic completion
 
     meta = {
         "model_name": args.model_name, "model_path": args.model_path,
