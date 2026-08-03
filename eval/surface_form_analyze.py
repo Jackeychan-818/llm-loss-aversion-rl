@@ -26,7 +26,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SUBSET = ROOT / "data" / "surface_form_stress" / "surface_form_subset.json"
 ROOT_OUT = ROOT / "results" / "surface_form_stress"
-MODELS = ["Base", "SFT-seed1-step6000", "SignOnly-seed1-step6000"]
+# Core comparison (2026-08-03 clarification): base, SFT, magnitude-GRPO s1@2000,
+# s2@6000. Sign-only is supplementary (aggregated if its dir is present; the
+# analyzer skips any missing model). Metrics/logic are UNCHANGED.
+MODELS = ["Base", "SFT-seed1-step6000",
+          "GRPO-qd-seed1-ckpt2000", "GRPO-qd-seed2-ckpt6000",
+          "SignOnly-seed1-step6000"]
+CORE_MODELS = ["Base", "SFT-seed1-step6000", "GRPO-qd-seed1-ckpt2000", "GRPO-qd-seed2-ckpt6000"]
 AXES = ["answer_style", "display_order", "attr_order", "paraphrase"]
 
 
@@ -119,13 +125,13 @@ def render_md(results):
          "*EXPLORATORY / POST-HOC. Fresh test_goods subset; frozen suites not "
          "consumed. Invariance alone is insufficient (a constant answer passes it) "
          "— fidelity is co-primary.*", "",
-         "| model | invariance | fidelity | worst-form fid | flip rate | prob spread | keep-both |",
-         "|---|---|---|---|---|---|---|"]
+         "| model | role | invariance | fidelity | worst-form fid | flip rate | prob spread | keep-both |",
+         "|---|---|---|---|---|---|---|---|"]
     for r in results:
         if r is None:
             continue
         wf = f"{r['worst_form_fidelity']:.3f}" if r['worst_form_fidelity'] is not None else "—"
-        L.append(f"| {r['model']} | {r['semantic_invariance_rate']:.3f} | "
+        L.append(f"| {r['model']} | {r.get('role','—')} | {r['semantic_invariance_rate']:.3f} | "
                  f"{r['fidelity_mean']:.3f} | {wf} | {r['mean_pairwise_flip_rate']:.3f} | "
                  f"{r['mean_prob_spread_across_forms']:.3f} | {r['ownership_keep_both_rate']:.3f} |")
     L += ["", "Read: high invariance + high fidelity = ownership-invariant rule; "
@@ -144,8 +150,13 @@ def render_md(results):
 
 def main():
     subset = json.load(open(SUBSET))
-    results = [analyze_model(m, subset) for m in MODELS]
-    have = [r for r in results if r is not None]
+    results = []
+    for m in MODELS:
+        r = analyze_model(m, subset)
+        if r is not None:
+            r["role"] = "core" if m in CORE_MODELS else "supplementary"
+            results.append(r)
+    have = results
     if not have:
         raise SystemExit("No form_predictions found yet — run surface_form_infer first (GPU).")
     ROOT_OUT.mkdir(parents=True, exist_ok=True)

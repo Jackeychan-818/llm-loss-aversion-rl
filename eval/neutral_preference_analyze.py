@@ -18,7 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SUBSET = ROOT / "data" / "surface_form_stress" / "surface_form_subset.json"
 ROOT_OUT = ROOT / "results" / "neutral_preference"
-MODELS = ["Base", "SFT-seed1-step6000", "SignOnly-seed1-step6000"]
+# Core (2026-08-03 clarification): base, SFT, magnitude-GRPO s1@2000, s2@6000.
+# Sign-only supplementary (aggregated only if its dir exists). Logic unchanged.
+MODELS = ["Base", "SFT-seed1-step6000",
+          "GRPO-qd-seed1-ckpt2000", "GRPO-qd-seed2-ckpt6000",
+          "SignOnly-seed1-step6000"]
 
 
 def load_prefs(name):
