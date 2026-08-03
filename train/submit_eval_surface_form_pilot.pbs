@@ -1,0 +1,57 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY surface-form stress inference for the diagnostic.
+# Scores the FROZEN fresh subset (data/surface_form_stress/) across 48 equivalent
+# forms x 2 perspectives, for: matched base, SFT s1@6k, sign-only s1@6k.
+# Fresh test_goods-derived subset — the frozen semantic/method-comparison suites
+# are NOT touched. Exploratory; may not change any checkpoint selection.
+#
+#   qsub train/submit_eval_surface_form_pilot.pbs
+# ============================================================
+#PBS -N lz-surfform
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/surfform_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/surfform_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL="models/Qwen2.5-7B-Instruct"
+SUBSET="data/surface_form_stress/surface_form_subset.json"
+SFT_ADAPTER="checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000"
+SIGN_ADAPTER="checkpoints/grpo_qwen_delta_sign_seed1/checkpoint-6000"
+
+# Verify the frozen subset regenerates byte-identically before spending GPU.
+python3 data/surface_form_stress/build_surface_form_subset.py --check
+python3 eval/test_surface_form_transforms.py >/dev/null && echo "transform unit tests: PASS"
+[[ -f "$SUBSET" ]] || { echo "ERROR: subset missing"; exit 1; }
+for a in "$SFT_ADAPTER" "$SIGN_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+
+nvidia-smi
+
+echo "=== [1/3] matched base ==="
+python eval/surface_form_infer.py --model_path "$MODEL" --adapter_path "" \
+    --model_name Base 2>&1 | tee logs/surfform_base.log
+echo "=== [2/3] SFT s1@6k ==="
+python eval/surface_form_infer.py --model_path "$MODEL" --adapter_path "$SFT_ADAPTER" \
+    --model_name SFT-seed1-step6000 2>&1 | tee logs/surfform_sft.log
+echo "=== [3/3] sign-only s1@6k ==="
+python eval/surface_form_infer.py --model_path "$MODEL" --adapter_path "$SIGN_ADAPTER" \
+    --model_name SignOnly-seed1-step6000 2>&1 | tee logs/surfform_sign.log
+
+echo "=== analysis ==="
+python eval/surface_form_analyze.py 2>&1 | tee logs/surfform_analyze.log
+echo "=== surface-form stress complete ==="
