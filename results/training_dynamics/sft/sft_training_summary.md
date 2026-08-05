@@ -32,7 +32,7 @@ Smoothing in the figures: causal trailing rolling mean, window = 50 observations
 | peak learning rate (step) | 1e-06 (1,510) | 1e-06 (1,510) | 1e-06 (310) |
 | expected warmup boundary | 1,500 | 1,500 | 300 |
 | LR matches configured schedule | yes | yes | yes |
-| max relative LR deviation | 3.8e-16 | 3.8e-16 | 2.82e-16 |
+| max relative LR deviation | < 1e-12 | < 1e-12 | < 1e-12 |
 | final learning rate | 3.04e-15 | 3.04e-15 | 7.59e-14 |
 | train runtime (s) | 5,422 | 4,668 | 1,051 |
 | train steps / second | 5.53 | 6.43 | 5.71 |
@@ -55,15 +55,15 @@ Each logged `loss` is the Trainer's mean over one logging interval (10 optimizer
 - The two full seeds track each other closely on the smoothed loss summaries (late medians 0.2018 vs 0.1873); this is a similarity of optimization trajectories only, not of behavior.
 - `sft_full_seed1`: gradient norm is strongly bimodal (median 0.00743, max 513); 38.2% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.
 - `sft_full_seed1`: no non-finite loss / gradient-norm / learning-rate record.
-- `sft_full_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation of 3.8e-16; peak at step 1,510, consistent with the 1,500-step warmup boundary.
+- `sft_full_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 1,510, consistent with the 1,500-step warmup boundary.
 - `sft_full_seed1`: 5,422 s wall clock (1.51 h) at 5.53 steps/s.
 - `sft_full_seed2`: gradient norm is strongly bimodal (median 0.00394, max 543); 37.3% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.
 - `sft_full_seed2`: no non-finite loss / gradient-norm / learning-rate record.
-- `sft_full_seed2`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation of 3.8e-16; peak at step 1,510, consistent with the 1,500-step warmup boundary.
+- `sft_full_seed2`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 1,510, consistent with the 1,500-step warmup boundary.
 - `sft_full_seed2`: 4,668 s wall clock (1.30 h) at 6.43 steps/s.
 - `sft_pilot6k_seed1`: gradient norm is strongly bimodal (median 0.881, max 182); 61.3% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.
 - `sft_pilot6k_seed1`: no non-finite loss / gradient-norm / learning-rate record.
-- `sft_pilot6k_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation of 2.8e-16; peak at step 310, consistent with the 300-step warmup boundary.
+- `sft_pilot6k_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 310, consistent with the 300-step warmup boundary.
 - `sft_pilot6k_seed1`: 1,051 s wall clock (0.29 h) at 5.71 steps/s.
 
 ## Behavioral / structural trajectory

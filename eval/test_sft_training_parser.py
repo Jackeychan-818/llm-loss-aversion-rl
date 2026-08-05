@@ -27,7 +27,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "eval"))
 
 from plot_sft_training_dynamics import (  # noqa: E402
-    RUNS, causal_rolling, parse_run_summary, parse_trainer_state, theoretical_lr,
+    LR_DEVIATION_FLOOR, RUNS, canonical_deviation, causal_rolling,
+    numerically_equal, parse_run_summary, parse_trainer_state, theoretical_lr,
 )
 
 _fail: list[str] = []
@@ -224,6 +225,50 @@ def t_run_summary(tmp: Path) -> None:
           "summary: two summaries at the same epoch are ambiguous, not guessed")
 
 
+def t_canonical_deviation() -> None:
+    """Sub-floor float noise must collapse to one value across environments."""
+    a = canonical_deviation(3.8e-16)
+    b = canonical_deviation(4.1e-16)   # same quantity on another NumPy/BLAS build
+    check(a == b == 0.0,
+          "canonical: machine-precision deviations collapse to exactly 0.0")
+    check(canonical_deviation(-2e-16) == 0.0, "canonical: sign-insensitive floor")
+    check(canonical_deviation(LR_DEVIATION_FLOOR * 10) > 0,
+          "canonical: a real deviation above the floor survives")
+    check(canonical_deviation(0.123456789) == 0.123457,
+          "canonical: above-floor values round to 6 significant digits")
+    check(canonical_deviation(1.2345678e-3) == 0.00123457,
+          "canonical: rounding is significant-digit, not decimal-place")
+    check(math.isnan(canonical_deviation(float("nan"))),
+          "canonical: non-finite passes through untouched")
+
+
+def t_numeric_tolerance() -> None:
+    """--check must tolerate float noise but still catch real drift."""
+    base = {"runs": {"a": {"loss": 0.5030241, "n": 3000, "ok": True,
+                           "lr": {"dev": 0.0}}},
+            "list": [1.0, 2.0, 3.0], "text": "unchanged"}
+    noise = json.loads(json.dumps(base))
+    noise["runs"]["a"]["loss"] = 0.5030241 * (1 + 1e-13)
+    check(numerically_equal(base, noise) == [],
+          "tolerance: a 1e-13 relative wobble is not a failure")
+    real = json.loads(json.dumps(base))
+    real["runs"]["a"]["loss"] = 0.5031
+    d = numerically_equal(base, real)
+    check(len(d) == 1 and "loss" in d[0],
+          "tolerance: a genuine statistic change is still caught, with its path")
+    flipped = json.loads(json.dumps(base))
+    flipped["runs"]["a"]["ok"] = False
+    check(numerically_equal(base, flipped),
+          "tolerance: booleans compare exactly, never as 0/1")
+    check(numerically_equal({"x": 1}, {"x": 1, "y": 2}),
+          "tolerance: an added key is a difference")
+    check(numerically_equal({"l": [1.0]}, {"l": [1.0, 2.0]}),
+          "tolerance: a length change is a difference")
+    changed = json.loads(json.dumps(base))
+    changed["text"] = "drifted"
+    check(numerically_equal(base, changed), "tolerance: string drift is caught")
+
+
 def t_registry_sanity() -> None:
     roles = {r: m["run_role"] for r, m in RUNS.items()}
     check(sum(v == "full" for v in roles.values()) == 2, "registry: two full runs")
@@ -250,6 +295,8 @@ def main() -> int:
         t_causal_smoothing()
         t_theoretical_lr()
         t_run_summary(tmp)
+        t_canonical_deviation()
+        t_numeric_tolerance()
         t_registry_sanity()
     if _fail:
         print(f"FAILED {len(_fail)} / {_pass + len(_fail)} checks:")

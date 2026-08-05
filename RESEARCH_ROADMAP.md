@@ -28,7 +28,8 @@ scope.
   is noisier. This is an exploratory pilot, not evidence that SFT wins.
 - Full matched SFT training is complete on NSCC for seeds 1 and 2 through
   30,000 steps. Each seed has the complete 15-checkpoint grid (2k–30k);
-  runtime was approximately 5,422 seconds per seed and the two runs cost about
+  measured runtime was 5,422 s (seed 1) and 4,668 s (seed 2), a mean of about
+  5,045 s = 1.40 h/seed = 0.168 s/step, and the two runs cost about
   317 SU. The reported balance is approximately 3,312 SU. The grid has not
   been evaluated and no full-SFT checkpoint has been selected, so this is a
   training milestone rather than a behavioral result.

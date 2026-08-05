@@ -123,6 +123,14 @@ METRIC_COLS = ["loss", "grad_norm", "learning_rate"]
 TIDY_COLS = ["run_id", "run_role", "seed", "max_steps", "step", "epoch",
              "loss", "grad_norm", "learning_rate"]
 
+# Relative LR deviations land at ~1e-16 — pure floating-point noise whose exact
+# value shifts with the NumPy/BLAS build. Anything below this floor is reported
+# as a canonical 0.0 so the tracked summary is byte-stable across environments;
+# --check additionally compares the summary JSON numerically, not byte-wise.
+LR_DEVIATION_FLOOR = 1e-12
+LR_MATCH_TOLERANCE = 1e-6   # what counts as "matches the configured schedule"
+CHECK_RTOL, CHECK_ATOL = 1e-9, 1e-12   # tolerance for the --check JSON compare
+
 SMOOTH_WINDOW = 50          # observations, causal trailing mean
 LOG_SPACING = 10            # trainer logging_steps -> ~500 training steps
 WARMUP_RATIO = 0.05
@@ -189,6 +197,52 @@ def git_commit() -> str:
                                        stderr=subprocess.DEVNULL).strip()
     except Exception:
         return "unknown"
+
+
+def canonical_deviation(x: float) -> float:
+    """Collapse machine-precision noise to a cross-environment-stable value.
+
+    Relative deviations below LR_DEVIATION_FLOOR are reported as exactly 0.0;
+    anything larger is rounded to 6 significant digits. Without this the tracked
+    summary carries a ~1e-16 value that differs between NumPy builds and makes
+    an otherwise identical --check fail on nothing.
+    """
+    if not math.isfinite(x):
+        return x
+    if abs(x) < LR_DEVIATION_FLOOR:
+        return 0.0
+    return float(f"{x:.6g}")
+
+
+def numerically_equal(a, b, rtol: float = CHECK_RTOL,
+                      atol: float = CHECK_ATOL) -> list[str]:
+    """Compare two JSON structures, allowing float slack. Returns difference paths."""
+    diffs: list[str] = []
+
+    def walk(x, y, path: str) -> None:
+        if isinstance(x, dict) and isinstance(y, dict):
+            for k in sorted(set(x) | set(y)):
+                if k not in x or k not in y:
+                    diffs.append(f"{path}.{k} (present on one side only)")
+                else:
+                    walk(x[k], y[k], f"{path}.{k}")
+        elif isinstance(x, list) and isinstance(y, list):
+            if len(x) != len(y):
+                diffs.append(f"{path} (length {len(x)} vs {len(y)})")
+            else:
+                for i, (xi, yi) in enumerate(zip(x, y)):
+                    walk(xi, yi, f"{path}[{i}]")
+        elif isinstance(x, bool) or isinstance(y, bool):
+            if x != y:
+                diffs.append(f"{path} ({x!r} vs {y!r})")
+        elif isinstance(x, (int, float)) and isinstance(y, (int, float)):
+            if not math.isclose(float(x), float(y), rel_tol=rtol, abs_tol=atol):
+                diffs.append(f"{path} ({x!r} vs {y!r})")
+        elif x != y:
+            diffs.append(f"{path} ({x!r} vs {y!r})")
+
+    walk(a, b, "")
+    return diffs
 
 
 def causal_rolling(series: pd.Series, window: int) -> pd.Series:
@@ -578,9 +632,17 @@ def describe_run(run_id: str, df: pd.DataFrame, source_audit: dict) -> dict:
         lr_block.update({
             "compared_against": "linear warmup + cosine decay (HF LambdaLR), "
                                 "evaluated at step-1 to match Trainer logging",
-            "max_relative_deviation": float(rel.max()),
-            "median_relative_deviation": float(np.median(rel)),
-            "matches_configured_schedule": bool(rel.max() < 1e-6),
+            "max_relative_deviation": canonical_deviation(float(rel.max())),
+            "median_relative_deviation": canonical_deviation(float(np.median(rel))),
+            "deviation_floor": LR_DEVIATION_FLOOR,
+            "deviation_below_floor": bool(rel.max() < LR_DEVIATION_FLOOR),
+            "deviation_canonicalization": (
+                f"Deviations below {LR_DEVIATION_FLOOR:g} are reported as 0.0 and "
+                f"larger ones are rounded to 6 significant digits; the raw values "
+                f"are floating-point noise whose exact magnitude varies with the "
+                f"NumPy/BLAS build."),
+            "match_tolerance": LR_MATCH_TOLERANCE,
+            "matches_configured_schedule": bool(rel.max() < LR_MATCH_TOLERANCE),
         })
     else:
         lr_block["compared_against"] = None
@@ -961,7 +1023,9 @@ def render_summary_md(summary: dict) -> str:
                    else "NO" if d["learning_rate_schedule"]["matches_configured_schedule"] is False
                    else "not checked"))
     row("max relative LR deviation",
-        lambda d: f3g(d["learning_rate_schedule"].get("max_relative_deviation")))
+        lambda d: (f"< {d['learning_rate_schedule']['deviation_floor']:g}"
+                   if d["learning_rate_schedule"].get("deviation_below_floor")
+                   else f3g(d["learning_rate_schedule"].get("max_relative_deviation"))))
     row("final learning rate", lambda d: f3g(d["final_learning_rate"]))
     row("train runtime (s)", lambda d: "—" if d["train_runtime_s"] is None
         else f"{d['train_runtime_s']:,.0f}")
@@ -1038,6 +1102,16 @@ python eval/plot_sft_training_dynamics.py --check     # figures/tables agree wit
 logs for the end-of-run runtime line). The default render and `--check` read
 only the tracked CSV/JSON snapshot in this directory and work in a clean
 `git archive` extraction with no checkpoint directories present.
+
+`--check` is tolerant of floating-point noise rather than demanding a bit-for-bit
+match: `sft_training_summary.json` is compared numerically (rtol
+{manifest['reproducibility_tolerances']['summary_json_rtol']:g}), relative
+learning-rate deviations below
+{manifest['reproducibility_tolerances']['lr_deviation_floor']:g} are canonicalised
+to `0.0` before they are written, and a figure-byte mismatch is downgraded to a
+warning when the running NumPy/pandas/matplotlib versions differ from the ones
+recorded in the manifest. Text, CSV and Markdown outputs are still compared
+byte-for-byte.
 
 ## Files
 
@@ -1247,11 +1321,14 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
             f"`{r}`: no non-finite loss / gradient-norm / learning-rate record.")
         lrs = d["learning_rate_schedule"]
         if lrs.get("matches_configured_schedule"):
+            dev = (f"below the {lrs['deviation_floor']:g} machine-precision floor"
+                   if lrs.get("deviation_below_floor")
+                   else f"{lrs['max_relative_deviation']:.3g}")
             obs.append(
                 f"`{r}`: the recorded learning rate reproduces the configured "
-                f"linear-warmup + cosine schedule to a maximum relative "
-                f"deviation of {lrs['max_relative_deviation']:.2g}; peak at step "
-                f"{d['step_of_max_learning_rate']:,}, consistent with the "
+                f"linear-warmup + cosine schedule to a maximum relative deviation "
+                f"{dev}; peak at step {d['step_of_max_learning_rate']:,}, "
+                f"consistent with the "
                 f"{lrs['expected_warmup_boundary_step']:,}-step warmup boundary.")
         if d["train_runtime_s"]:
             obs.append(
@@ -1297,6 +1374,19 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
             "logged rows can be re-derived only on NSCC.",
         ],
         "smoothing": summary["smoothing"],
+        "reproducibility_tolerances": {
+            "summary_json_rtol": CHECK_RTOL,
+            "summary_json_atol": CHECK_ATOL,
+            "lr_deviation_floor": LR_DEVIATION_FLOOR,
+            "lr_match_tolerance": LR_MATCH_TOLERANCE,
+            "note": ("--check compares sft_training_summary.json numerically, not "
+                     "byte-wise, and canonicalises sub-floor learning-rate "
+                     "deviations to 0.0, so a ~1e-16 difference between NumPy/BLAS "
+                     "builds does not fail an otherwise identical render. Figure "
+                     "bytes are compared exactly but downgraded to a warning when "
+                     "the environment differs from the recorded one; CSV and "
+                     "Markdown outputs are always compared byte-for-byte."),
+        },
         "environment": {
             "python": sys.version.split()[0],
             "numpy": np.__version__,
@@ -1380,17 +1470,28 @@ def do_check() -> int:
                 if not same:
                     (fails if env_match else warns).append(
                         f"{name}: re-rendered bytes differ from the tracked figure")
+            elif name == F_SUMMARY_JSON.name:
+                pass    # compared numerically below, not byte-wise
             else:
                 if not filecmp.cmp(p, OUT / name, shallow=False):
                     fails.append(f"{name}: re-rendered content differs from tracked")
-        # 3. the descriptive statistics must be reproducible from the CSVs alone
+        # 3. the descriptive statistics must be reproducible from the CSVs alone.
+        # Compared with float tolerance (rtol=CHECK_RTOL): a bit-for-bit match of
+        # every derived statistic is not portable across NumPy/BLAS builds, and a
+        # ~1e-16 wobble is not a reproducibility failure.
         a = json.loads((tmp / F_SUMMARY_JSON.name).read_text())
         b = json.loads(F_SUMMARY_JSON.read_text())
-        if a != b:
-            fails.append("sft_training_summary.json: recomputed statistics differ")
-        for k in ("smoothing", "refresh", "environment"):
-            if k != "environment" and fresh.get(k) != tracked.get(k):
-                fails.append(f"manifest.{k}: differs after re-render")
+        diffs = numerically_equal(a, b)
+        if diffs:
+            fails.append(f"sft_training_summary.json: recomputed statistics differ "
+                         f"beyond rtol={CHECK_RTOL:g} at "
+                         f"{', '.join(diffs[:5])}"
+                         + (f" (+{len(diffs) - 5} more)" if len(diffs) > 5 else ""))
+        for k in ("smoothing", "refresh"):
+            d = numerically_equal(fresh.get(k), tracked.get(k))
+            if d:
+                fails.append(f"manifest.{k}: differs after re-render at "
+                             f"{', '.join(d[:3])}")
 
     for w in warns:
         print(f"[check] WARN  {w}")

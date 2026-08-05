@@ -25,6 +25,16 @@ logs for the end-of-run runtime line). The default render and `--check` read
 only the tracked CSV/JSON snapshot in this directory and work in a clean
 `git archive` extraction with no checkpoint directories present.
 
+`--check` is tolerant of floating-point noise rather than demanding a bit-for-bit
+match: `sft_training_summary.json` is compared numerically (rtol
+1e-09), relative
+learning-rate deviations below
+1e-12 are canonicalised
+to `0.0` before they are written, and a figure-byte mismatch is downgraded to a
+warning when the running NumPy/pandas/matplotlib versions differ from the ones
+recorded in the manifest. Text, CSV and Markdown outputs are still compared
+byte-for-byte.
+
 ## Files
 
 | file | contents | provenance |

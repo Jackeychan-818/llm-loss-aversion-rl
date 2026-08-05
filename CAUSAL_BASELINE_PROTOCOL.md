@@ -262,10 +262,14 @@ Each run contains all 15 scheduled checkpoints from step 2,000 through step
 30,000. The earlier seed-1 pilot remains preserved separately, and provenance
 manifests are present on NSCC.
 
-Observed training runtime was approximately 5,422 seconds per seed
-(approximately 90 minutes). The two full runs charged approximately 317 SU in
-total, reducing the reported allocation balance from 3,629 SU to approximately
-3,312 SU.
+Measured training runtime was 5,422 seconds for seed 1 and 4,668 seconds for
+seed 2 — a mean of approximately 5,045 seconds (1.40 hours, 0.168 seconds per
+step). An earlier version of this section quoted 5,422 seconds "per seed",
+applying seed 1's runtime to both and understating SFT throughput; corrected on
+August 5, 2026 from the per-run Trainer end-of-training summaries recorded in
+`results/training_dynamics/sft/sft_training_manifest.json`. The two full runs
+charged approximately 317 SU in total, reducing the reported allocation balance
+from 3,629 SU to approximately 3,312 SU.
 
 No full-run checkpoint has yet been evaluated on `test_goods`, and the frozen
 selector has not been run. Therefore:

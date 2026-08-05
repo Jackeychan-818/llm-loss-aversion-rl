@@ -2,8 +2,8 @@
   "title": "SFT training metrics \u2014 provenance manifest",
   "generated_by": "eval/plot_sft_training_dynamics.py",
   "parser_version": "1.0.0",
-  "script_sha256": "8a0297d8c34a9300223ab31fd86454acc7ac6a8d5a512fa7202c91c1f6425f1d",
-  "git_commit_at_render": "0e4b6a963dfcf1b231abe72589b8cc77cf329167",
+  "script_sha256": "c6923db295e50d6e6bd7a9498c21b2951e99a1e0f489609c3029ef51100073f8",
+  "git_commit_at_render": "ac7f7716ddf7dc52514107dbc17b2a5a12cad477",
   "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
   "no_gpu_statement": "CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no frozen selector run, and no frozen/untouched suite was opened to produce these artifacts.",
   "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
@@ -22,6 +22,13 @@
     "uses_future_observations": false,
     "identical_window_for_all_runs": true
   },
+  "reproducibility_tolerances": {
+    "summary_json_rtol": 1e-09,
+    "summary_json_atol": 1e-12,
+    "lr_deviation_floor": 1e-12,
+    "lr_match_tolerance": 1e-06,
+    "note": "--check compares sft_training_summary.json numerically, not byte-wise, and canonicalises sub-floor learning-rate deviations to 0.0, so a ~1e-16 difference between NumPy/BLAS builds does not fail an otherwise identical render. Figure bytes are compared exactly but downgraded to a warning when the environment differs from the recorded one; CSV and Markdown outputs are always compared byte-for-byte."
+  },
   "environment": {
     "python": "3.13.3",
     "numpy": "2.2.4",
@@ -31,7 +38,7 @@
   "refresh": {
     "parser_version": "1.0.0",
     "extraction_date": "2026-08-05",
-    "git_commit_at_extraction": "0e4b6a963dfcf1b231abe72589b8cc77cf329167",
+    "git_commit_at_extraction": "ac7f7716ddf7dc52514107dbc17b2a5a12cad477",
     "runs": {
       "sft_full_seed1": {
         "run_id": "sft_full_seed1",
@@ -467,18 +474,18 @@
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.json": {
-        "sha256": "5a29bac4e36f538cfdb99c4ce99f4c987715225f9bce3a976be6e710dfead2a1",
-        "size_bytes": 17540,
+        "sha256": "d45d2d8590d2290ea0de7e68b0a81f3eb5943693a53a894b6618f63173de3b6d",
+        "size_bytes": 18590,
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.md": {
-        "sha256": "dd0867120ad450b4e3de166494f180c1af56903c7ac4f475071e924dbe0c76d7",
-        "size_bytes": 7750,
+        "sha256": "748e11b103237fa9912414710dca9f7d662ccd4a404d8ec4cba903d55414b6df",
+        "size_bytes": 7836,
         "provenance": "snapshot-rendered"
       },
       "README.md": {
-        "sha256": "d3645918a772f086f0344e9ca0ba5366808e590b5e241ffa84dac54519332e47",
-        "size_bytes": 5890,
+        "sha256": "c3ba0cb53a71a580ff5b0d6b9a88d12002d936efb2574a7eb7212ba2e659a3f3",
+        "size_bytes": 6360,
         "provenance": "snapshot-rendered"
       },
       "sft_behavioral_trajectory.csv": {

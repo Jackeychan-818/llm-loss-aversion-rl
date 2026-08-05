@@ -24,7 +24,7 @@ High-|δ̃| (>1) cases carry **63.1%** of total |δ̃| mass from **27.1%** of ca
 ## Exposure (derived) + measured throughput
 
 - GRPO: 30,000 prompts (0.303 epoch), 480,000 completions, ~50.8 h/seed (6.1 s/step).
-- SFT: same 30,000 prompts, 0 completions, ~1.51 h/seed (0.181 s/step, measured 5,422 s).
+- SFT: same 30,000 prompts, 0 completions, ~1.40 h/seed (0.168 s/step; measured per seed 5,422 s and 4,668 s, mean 5,045 s).
 
 > GRPO generates 480,000 completions; SFT generates 0. Runtime and completion counts are FUNDAMENTALLY different between RL and SFT and are reported, NOT matched. Only unique-prompt exposure (30,000, 0.303 epoch) and optimizer updates (30,000) are matched. Do NOT treat the unequal completion counts as a matched comparison.
 
@@ -33,7 +33,7 @@ High-|δ̃| (>1) cases carry **63.1%** of total |δ̃| mass from **27.1%** of ca
 **Why SFT could dominate this task:**
 - The task is a deterministic one-token (Yes/No) mapping with a fixed rational target, so SFT has a dense per-example gradient on every prompt.
 - GRPO wastes signal: ~56-57% of groups are zero task-reward advantage on the full runs (measured mean frac_reward_zero_std; ~80% is only an early-step observation), so a large share of generation+backward compute carries only a KL-only update; SFT has no such waste.
-- SFT reaches the endpoint in ~1.51 h/seed (measured 5,422 s) vs GRPO ~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt exposure.
+- SFT reaches the endpoint in ~1.40 h/seed (measured 5,422 s and 4,668 s for seeds 1 and 2; mean 5,045 s) vs GRPO ~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt exposure.
 
 **Why that is NOT proof GRPO is useless:**
 - Efficiency is not effectiveness: the method winner is decided on the untouched suite under METHOD_COMPARISON_PROTOCOL.md, not on training cost or training reward (which is a conditional diagnostic).

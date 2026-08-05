@@ -42,10 +42,56 @@ MAX_STEPS = 30_000
 TRAIN_POOL = 98_900
 # Measured throughput.
 GRPO_S_PER_STEP = 6.1      # HF generate + update (confirmatory GRPO run)
-# SFT: measured from the FULL 30k runs (5,422 s / 30,000 steps = 0.1807 s/step,
-# ~1.51 h/seed), which supersedes the earlier ~0.28 s/step smoke estimate.
-SFT_FULL_RUNTIME_S = 5_422
-SFT_S_PER_STEP = SFT_FULL_RUNTIME_S / MAX_STEPS   # 0.1807
+# SFT runtime is read PER SEED from the tracked SFT training-metrics manifest
+# (results/training_dynamics/sft/), which extracts each run's end-of-training
+# Trainer summary. An earlier hardcoded 5,422 s applied seed 1's runtime to both
+# seeds; seed 2 actually finished in 4,668 s, so the single-seed figure
+# understated SFT throughput. The comparison below uses the two-seed MEAN.
+SFT_MANIFEST = (PROJECT_ROOT / "results" / "training_dynamics" / "sft" /
+                "sft_training_manifest.json")
+
+
+def load_sft_runtime() -> dict:
+    """Per-seed measured SFT runtime from the tracked SFT manifest.
+
+    Full runs only — the seed-1 6k pilot has a different cosine endpoint and is
+    never averaged into the 30k figures.
+    """
+    if not SFT_MANIFEST.exists():
+        raise SystemExit(
+            f"Missing {SFT_MANIFEST.relative_to(PROJECT_ROOT)}. Runtime is no "
+            "longer hardcoded; regenerate the SFT snapshot with "
+            "`python eval/plot_sft_training_dynamics.py --refresh` (needs the "
+            "raw NSCC logs) or restore the tracked manifest.")
+    man = json.loads(SFT_MANIFEST.read_text())
+    per_seed = {}
+    for run_id, rec in man["refresh"]["runs"].items():
+        if rec.get("run_role") != "full" or not rec.get("available"):
+            continue
+        rt = (rec.get("end_of_run_summary") or {}).get("train_runtime_s")
+        steps = rec.get("max_steps")
+        if rt is None or steps != MAX_STEPS:
+            continue
+        per_seed[int(rec["seed"])] = {"run_id": run_id, "runtime_seconds": float(rt),
+                                      "s_per_step": float(rt) / MAX_STEPS,
+                                      "hours": float(rt) / 3600.0}
+    if not per_seed:
+        raise SystemExit("No full-run SFT runtime found in the SFT manifest.")
+    vals = [v["runtime_seconds"] for v in per_seed.values()]
+    mean_s = sum(vals) / len(vals)
+    return {
+        "per_seed": {str(k): per_seed[k] for k in sorted(per_seed)},
+        "n_seeds": len(vals),
+        "mean_runtime_seconds": mean_s,
+        "mean_runtime_hours": mean_s / 3600.0,
+        "mean_s_per_step": mean_s / MAX_STEPS,
+        "range_runtime_seconds": [min(vals), max(vals)],
+        "source": str(SFT_MANIFEST.relative_to(PROJECT_ROOT)),
+    }
+
+
+SFT_RUNTIME = load_sft_runtime()
+SFT_S_PER_STEP = SFT_RUNTIME["mean_s_per_step"]
 DELTA_BINS = [(0.0, 0.5), (0.5, 1.0), (1.0, 2.0), (2.0, float("inf"))]
 DELTA_LABELS = ["|d|<=0.5", "0.5<|d|<=1.0", "1.0<|d|<=2.0", "|d|>2.0"]
 
@@ -135,11 +181,20 @@ def exposure_table():
             "epoch_fraction": MAX_STEPS / TRAIN_POOL,
             "optimizer_updates": MAX_STEPS,
             "completions_generated": 0,
-            "runtime_seconds_measured": SFT_FULL_RUNTIME_S,
-            "runtime_hours_measured": SFT_FULL_RUNTIME_S / 3600,
+            "runtime_seconds_measured": SFT_RUNTIME["mean_runtime_seconds"],
+            "runtime_hours_measured": SFT_RUNTIME["mean_runtime_hours"],
             "s_per_step_measured": SFT_S_PER_STEP,
-            "source": "MEASURED from the full 30k runs (5,422 s/seed = 0.181 s/step, "
-                      "~1.51 h/seed); supersedes the earlier ~0.28 s/step smoke estimate.",
+            "runtime_per_seed_measured": SFT_RUNTIME["per_seed"],
+            "runtime_seconds_range": SFT_RUNTIME["range_runtime_seconds"],
+            "source": (
+                f"MEASURED per seed from {SFT_RUNTIME['source']} "
+                f"(seed 1 {SFT_RUNTIME['per_seed']['1']['runtime_seconds']:,.0f} s, "
+                f"seed 2 {SFT_RUNTIME['per_seed']['2']['runtime_seconds']:,.0f} s; "
+                f"mean {SFT_RUNTIME['mean_runtime_seconds']:,.0f} s = "
+                f"{SFT_S_PER_STEP:.3f} s/step, {SFT_RUNTIME['mean_runtime_hours']:.2f} "
+                f"h/seed). Supersedes both the ~0.28 s/step smoke estimate and the "
+                f"earlier single-seed 5,422 s figure, which applied seed 1's runtime "
+                f"to both seeds and understated SFT throughput."),
         },
         "asymmetry_warning": (
             "GRPO generates 480,000 completions; SFT generates 0. Runtime and "
@@ -200,9 +255,13 @@ def build():
             "on the full runs (measured mean frac_reward_zero_std; ~80% is only an "
             "early-step observation), so a large share of generation+backward "
             "compute carries only a KL-only update; SFT has no such waste.",
-            "SFT reaches the endpoint in ~1.51 h/seed (measured 5,422 s) vs GRPO "
-            "~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt "
-            "exposure.",
+            f"SFT reaches the endpoint in ~{SFT_RUNTIME['mean_runtime_hours']:.2f} "
+            f"h/seed (measured "
+            f"{SFT_RUNTIME['per_seed']['1']['runtime_seconds']:,.0f} s and "
+            f"{SFT_RUNTIME['per_seed']['2']['runtime_seconds']:,.0f} s for seeds 1 "
+            f"and 2; mean {SFT_RUNTIME['mean_runtime_seconds']:,.0f} s) vs GRPO "
+            f"~{MAX_STEPS * GRPO_S_PER_STEP / 3600:.0f} h/seed at 30k, a large "
+            f"efficiency gap for the SAME unique-prompt exposure.",
         ],
         "why_this_is_not_proof_grpo_is_useless": [
             "Efficiency is not effectiveness: the method winner is decided on the "
@@ -252,7 +311,10 @@ def render_md(doc) -> str:
           f"- SFT: same {ex['sft']['unique_prompts']:,} prompts, "
           f"{ex['sft']['completions_generated']} completions, "
           f"~{ex['sft']['runtime_hours_measured']:.2f} h/seed "
-          f"({ex['sft']['s_per_step_measured']:.3f} s/step, measured 5,422 s).",
+          f"({ex['sft']['s_per_step_measured']:.3f} s/step; measured per seed "
+          f"{ex['sft']['runtime_per_seed_measured']['1']['runtime_seconds']:,.0f} s "
+          f"and {ex['sft']['runtime_per_seed_measured']['2']['runtime_seconds']:,.0f} s, "
+          f"mean {ex['sft']['runtime_seconds_measured']:,.0f} s).",
           "", f"> {ex['asymmetry_warning']}", "",
           "## Interpretation", "",
           "**Why SFT could dominate this task:**"]

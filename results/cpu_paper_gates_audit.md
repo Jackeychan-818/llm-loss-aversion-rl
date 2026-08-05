@@ -67,7 +67,7 @@ evaluated, no frozen suite opened.*
   one of the 10.
 - **Magnitude weighting concentrates updates:** high-|δ̃|(>1) cases carry 63.1% of
   total |δ̃| mass from 27.1% of cases; measured zero task-reward advantage ≈57%.
-- **Efficiency ≠ effectiveness:** SFT is far cheaper (~1.51 h vs ~51 h/seed at 30k)
+- **Efficiency ≠ effectiveness:** SFT is far cheaper (~1.40 h vs ~51 h/seed at 30k)
   for the same unique-prompt exposure, but the method winner is decided only on
   the untouched suite under the frozen protocol.
 
@@ -138,8 +138,9 @@ Applied transparently before any frozen suite was opened:
    `METHOD_COMPARISON_PROTOCOL.md` (separate grids, selections, comparisons).
 4. **Efficiency reconciled to measured values:** ~56–57% mean zero-task-advantage
    across full seed-1/2/42 runs (seed means 0.569/0.558/0.573); 80% only as an
-   explicitly labelled early logged observation; SFT **5,422 s/seed = 0.181
-   s/step ≈ 1.51 h**.
+   explicitly labelled early logged observation; SFT **5,422 s (seed 1) and
+   4,668 s (seed 2), mean 5,045 s = 0.168 s/step ≈ 1.40 h/seed** (corrected
+   2026-08-05; the earlier single-seed 5,422 s figure understated throughput).
 5. **Scale wording corrected:** `±1` *increases* average magnitude vs
    `E|δ|=0.685`; scale-matched `±0.685` holds the first absolute moment fixed.
 6. **Behavior summary corrected:** 15/40 rows `clean=NO`; of those **10** have

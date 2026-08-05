@@ -19,7 +19,8 @@ Read `AGENTS.md`, `PAPER_READINESS.md`, `RESEARCH_ROADMAP.md`,
 - Full matched SFT training is now complete:
   - seeds 1 and 2 reached 30,000 steps;
   - each seed has all 15 checkpoints from 2k through 30k;
-  - observed training runtime was approximately 5,422 seconds per seed;
+  - measured training runtime was 5,422 s (seed 1) and 4,668 s (seed 2),
+    a mean of approximately 5,045 s = 1.40 h/seed = 0.168 s/step;
   - total charged cost was approximately 317 SU;
   - the reported remaining allocation is approximately 3,312 SU;
   - provenance manifests are present on NSCC;
