@@ -2,8 +2,8 @@
   "title": "SFT training metrics \u2014 provenance manifest",
   "generated_by": "eval/plot_sft_training_dynamics.py",
   "parser_version": "1.0.0",
-  "script_sha256": "c6923db295e50d6e6bd7a9498c21b2951e99a1e0f489609c3029ef51100073f8",
-  "git_commit_at_render": "ac7f7716ddf7dc52514107dbc17b2a5a12cad477",
+  "script_sha256": "1590df8fb65163f8f4c1478a5cad9936a9274acb8d9ec3c65190a1470d2114b1",
+  "git_commit_at_render": "c54e1dea388212bce489a5c6c0eacb6a30673512",
   "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
   "no_gpu_statement": "CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no frozen selector run, and no frozen/untouched suite was opened to produce these artifacts.",
   "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
@@ -12,7 +12,8 @@
     "SFTPROV-001: the existing SFT training manifests (checkpoints/sft_qwen_delta_*/sft_dataset_manifest.json) record git_commit: \"unknown\", so the exact training-time code state is not recoverable from the checkpoints.",
     "checkpoint-N/trainer_state.json carries no train_runtime; runtime and throughput come from the gitignored job log and are matched to a run by its final epoch.",
     "The pilot's sft_dataset_manifest.json still records the pre-rename output_dir checkpoints/sft_qwen_delta_seed1; its max_steps=6000 and the *_pilot6k path are the authoritative identity.",
-    "Raw trainer_state.json sources and job logs are gitignored, so the logged rows can be re-derived only on NSCC."
+    "Raw trainer_state.json sources and job logs are gitignored, so the logged rows can be re-derived only on NSCC.",
+    "git_commit_at_render / git_commit_at_extraction necessarily name the commit that was checked out when this file was written, i.e. the PARENT of the commit that contains it \u2014 a manifest cannot record its own commit hash. --check is unaffected: it reuses the tracked refresh block rather than recomputing these fields."
   ],
   "smoothing": {
     "method": "causal trailing rolling mean (min_periods=1)",
@@ -38,7 +39,7 @@
   "refresh": {
     "parser_version": "1.0.0",
     "extraction_date": "2026-08-05",
-    "git_commit_at_extraction": "ac7f7716ddf7dc52514107dbc17b2a5a12cad477",
+    "git_commit_at_extraction": "c54e1dea388212bce489a5c6c0eacb6a30673512",
     "runs": {
       "sft_full_seed1": {
         "run_id": "sft_full_seed1",

@@ -1372,6 +1372,11 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
             "the *_pilot6k path are the authoritative identity.",
             "Raw trainer_state.json sources and job logs are gitignored, so the "
             "logged rows can be re-derived only on NSCC.",
+            "git_commit_at_render / git_commit_at_extraction necessarily name the "
+            "commit that was checked out when this file was written, i.e. the "
+            "PARENT of the commit that contains it — a manifest cannot record its "
+            "own commit hash. --check is unaffected: it reuses the tracked refresh "
+            "block rather than recomputing these fields.",
         ],
         "smoothing": summary["smoothing"],
         "reproducibility_tolerances": {
