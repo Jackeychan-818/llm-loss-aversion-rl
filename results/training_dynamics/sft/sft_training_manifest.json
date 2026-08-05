@@ -1,0 +1,496 @@
+{
+  "title": "SFT training metrics \u2014 provenance manifest",
+  "generated_by": "eval/plot_sft_training_dynamics.py",
+  "parser_version": "1.0.0",
+  "script_sha256": "8a0297d8c34a9300223ab31fd86454acc7ac6a8d5a512fa7202c91c1f6425f1d",
+  "git_commit_at_render": "0e4b6a963dfcf1b231abe72589b8cc77cf329167",
+  "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
+  "no_gpu_statement": "CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no frozen selector run, and no frozen/untouched suite was opened to produce these artifacts.",
+  "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
+  "interpretation_boundary": "Training loss measures fit to the supervised target tokens, whereas lambda, eta, consistency, and preference preservation are behavioral estimands computed after inference. A lower SFT loss is therefore not itself evidence of lower ownership dependence.",
+  "known_provenance_limitations": [
+    "SFTPROV-001: the existing SFT training manifests (checkpoints/sft_qwen_delta_*/sft_dataset_manifest.json) record git_commit: \"unknown\", so the exact training-time code state is not recoverable from the checkpoints.",
+    "checkpoint-N/trainer_state.json carries no train_runtime; runtime and throughput come from the gitignored job log and are matched to a run by its final epoch.",
+    "The pilot's sft_dataset_manifest.json still records the pre-rename output_dir checkpoints/sft_qwen_delta_seed1; its max_steps=6000 and the *_pilot6k path are the authoritative identity.",
+    "Raw trainer_state.json sources and job logs are gitignored, so the logged rows can be re-derived only on NSCC."
+  ],
+  "smoothing": {
+    "method": "causal trailing rolling mean (min_periods=1)",
+    "window_obs": 50,
+    "step_spacing": 10,
+    "window_steps": 500,
+    "uses_future_observations": false,
+    "identical_window_for_all_runs": true
+  },
+  "environment": {
+    "python": "3.13.3",
+    "numpy": "2.2.4",
+    "pandas": "2.2.3",
+    "matplotlib": "3.10.1"
+  },
+  "refresh": {
+    "parser_version": "1.0.0",
+    "extraction_date": "2026-08-05",
+    "git_commit_at_extraction": "0e4b6a963dfcf1b231abe72589b8cc77cf329167",
+    "runs": {
+      "sft_full_seed1": {
+        "run_id": "sft_full_seed1",
+        "run_role": "full",
+        "seed": 1,
+        "source_path_absolute": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1/checkpoint-30000/trainer_state.json",
+        "source_path_repo_relative": "checkpoints/sft_qwen_delta_seed1/checkpoint-30000/trainer_state.json",
+        "source_is_git_tracked": false,
+        "sha256": "c3664d5c9ce060c0e34131050999ea99df1f2ff642fd1033f2235873aebc34cb",
+        "size_bytes": 570100,
+        "max_steps": 30000,
+        "expected_max_steps": 30000,
+        "max_steps_matches_expected_identity": true,
+        "global_step": 30000,
+        "logging_steps": 10,
+        "save_steps": 2000,
+        "num_train_epochs": 1,
+        "final_epoch": 0.3033367037411527,
+        "total_flos": 1.7498558946215424e+17,
+        "train_batch_size": 1,
+        "n_log_history_entries": 3000,
+        "n_entries_with_loss": 3000,
+        "last_logged_step": 30000,
+        "first_logged_step": 10,
+        "checkpoint_dirs_found": [
+          2000,
+          4000,
+          6000,
+          8000,
+          10000,
+          12000,
+          14000,
+          16000,
+          18000,
+          20000,
+          22000,
+          24000,
+          26000,
+          28000,
+          30000
+        ],
+        "steps_monotonically_increasing": true,
+        "duplicated_steps": [],
+        "n_missing_expected_logging_intervals": 0,
+        "missing_expected_logging_intervals": [],
+        "malformed_or_nonfinite_records": [],
+        "n_malformed_or_nonfinite_records": 0,
+        "n_nonfinite_by_field": {
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "n_missing_by_field": {
+          "epoch": 0,
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "final_train_loss_in_state": null,
+        "train_runtime_in_state": null,
+        "train_steps_per_second_in_state": null,
+        "available": true,
+        "config_manifest": {
+          "present": true,
+          "path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1/sft_dataset_manifest.json",
+          "sha256": "f57d39791e8f18cd7e19f44494640dfdc7a21c3ccf6adfaa9d03d6b40fc084a5",
+          "git_commit_recorded": "unknown",
+          "seed": 1,
+          "loss": "completion-only (prompt tokens masked with -100)",
+          "max_steps": 30000,
+          "learning_rate": 1e-06,
+          "lr_scheduler_type": "cosine",
+          "warmup_ratio": 0.05,
+          "max_grad_norm": 0.1,
+          "output_dir_recorded": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1"
+        },
+        "end_of_run_summary": {
+          "source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed1_run.log",
+          "found": true,
+          "n_summaries_in_log": 3,
+          "ambiguous": false,
+          "train_runtime_s": 5422.0,
+          "train_loss": 0.3374,
+          "train_steps_per_second": 5.533,
+          "train_samples_per_second": 5.533,
+          "matched_epoch": 0.3033,
+          "note": "matched by final epoch in the job log"
+        }
+      },
+      "sft_full_seed2": {
+        "run_id": "sft_full_seed2",
+        "run_role": "full",
+        "seed": 2,
+        "source_path_absolute": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed2/checkpoint-30000/trainer_state.json",
+        "source_path_repo_relative": "checkpoints/sft_qwen_delta_seed2/checkpoint-30000/trainer_state.json",
+        "source_is_git_tracked": false,
+        "sha256": "d4946d66356c44b91f9b6026fd7cbd83da3200e2338ff6e9547d342cf2c8522e",
+        "size_bytes": 570487,
+        "max_steps": 30000,
+        "expected_max_steps": 30000,
+        "max_steps_matches_expected_identity": true,
+        "global_step": 30000,
+        "logging_steps": 10,
+        "save_steps": 2000,
+        "num_train_epochs": 1,
+        "final_epoch": 0.3033367037411527,
+        "total_flos": 1.749445021659095e+17,
+        "train_batch_size": 1,
+        "n_log_history_entries": 3000,
+        "n_entries_with_loss": 3000,
+        "last_logged_step": 30000,
+        "first_logged_step": 10,
+        "checkpoint_dirs_found": [
+          2000,
+          4000,
+          6000,
+          8000,
+          10000,
+          12000,
+          14000,
+          16000,
+          18000,
+          20000,
+          22000,
+          24000,
+          26000,
+          28000,
+          30000
+        ],
+        "steps_monotonically_increasing": true,
+        "duplicated_steps": [],
+        "n_missing_expected_logging_intervals": 0,
+        "missing_expected_logging_intervals": [],
+        "malformed_or_nonfinite_records": [],
+        "n_malformed_or_nonfinite_records": 0,
+        "n_nonfinite_by_field": {
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "n_missing_by_field": {
+          "epoch": 0,
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "final_train_loss_in_state": null,
+        "train_runtime_in_state": null,
+        "train_steps_per_second_in_state": null,
+        "available": true,
+        "config_manifest": {
+          "present": true,
+          "path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed2/sft_dataset_manifest.json",
+          "sha256": "22fc28b83874deb447b07e1c06a2bd195008a4b6cc9bcdd1c5a1df2dcbdac95c",
+          "git_commit_recorded": "unknown",
+          "seed": 2,
+          "loss": "completion-only (prompt tokens masked with -100)",
+          "max_steps": 30000,
+          "learning_rate": 1e-06,
+          "lr_scheduler_type": "cosine",
+          "warmup_ratio": 0.05,
+          "max_grad_norm": 0.1,
+          "output_dir_recorded": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed2"
+        },
+        "end_of_run_summary": {
+          "source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed2_run.log",
+          "found": true,
+          "n_summaries_in_log": 1,
+          "ambiguous": false,
+          "train_runtime_s": 4668.0,
+          "train_loss": 0.3301,
+          "train_steps_per_second": 6.427,
+          "train_samples_per_second": 6.427,
+          "matched_epoch": 0.3033,
+          "note": "matched by final epoch in the job log"
+        }
+      },
+      "sft_pilot6k_seed1": {
+        "run_id": "sft_pilot6k_seed1",
+        "run_role": "pilot",
+        "seed": 1,
+        "source_path_absolute": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000/trainer_state.json",
+        "source_path_repo_relative": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000/trainer_state.json",
+        "source_is_git_tracked": false,
+        "sha256": "d09fd4b34fb20aef9cc5e7a5529aceabc9dcbcfc0404c3e51a7b8d09094f947a",
+        "size_bytes": 113782,
+        "max_steps": 6000,
+        "expected_max_steps": 6000,
+        "max_steps_matches_expected_identity": true,
+        "global_step": 6000,
+        "logging_steps": 10,
+        "save_steps": 2000,
+        "num_train_epochs": 1,
+        "final_epoch": 0.06066734074823053,
+        "total_flos": 3.499588058029056e+16,
+        "train_batch_size": 1,
+        "n_log_history_entries": 600,
+        "n_entries_with_loss": 600,
+        "last_logged_step": 6000,
+        "first_logged_step": 10,
+        "checkpoint_dirs_found": [
+          2000,
+          4000,
+          6000
+        ],
+        "steps_monotonically_increasing": true,
+        "duplicated_steps": [],
+        "n_missing_expected_logging_intervals": 0,
+        "missing_expected_logging_intervals": [],
+        "malformed_or_nonfinite_records": [],
+        "n_malformed_or_nonfinite_records": 0,
+        "n_nonfinite_by_field": {
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "n_missing_by_field": {
+          "epoch": 0,
+          "loss": 0,
+          "grad_norm": 0,
+          "learning_rate": 0
+        },
+        "final_train_loss_in_state": null,
+        "train_runtime_in_state": null,
+        "train_steps_per_second_in_state": null,
+        "available": true,
+        "config_manifest": {
+          "present": true,
+          "path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1_pilot6k/sft_dataset_manifest.json",
+          "sha256": "eea5815392f3fbc39aa14181c686811a824149c2395bac5e7cd1c5c19d0472c8",
+          "git_commit_recorded": "unknown",
+          "seed": 1,
+          "loss": "completion-only (prompt tokens masked with -100)",
+          "max_steps": 6000,
+          "learning_rate": 1e-06,
+          "lr_scheduler_type": "cosine",
+          "warmup_ratio": 0.05,
+          "max_grad_norm": 0.1,
+          "output_dir_recorded": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/sft_qwen_delta_seed1"
+        },
+        "end_of_run_summary": {
+          "source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed1_run.log",
+          "found": true,
+          "n_summaries_in_log": 3,
+          "ambiguous": false,
+          "train_runtime_s": 1051.0,
+          "train_loss": 0.4925,
+          "train_steps_per_second": 5.71,
+          "train_samples_per_second": 5.71,
+          "matched_epoch": 0.06067,
+          "note": "matched by final epoch in the job log"
+        }
+      }
+    },
+    "missing_sources": [],
+    "full_behavioral_grid_scan": {
+      "scanned_roots": [
+        "baselines",
+        "baseline"
+      ],
+      "dir_prefixes": {
+        "1": "Qwen-7B-SFT-qd-seed1-ckpt",
+        "2": "Qwen-7B-SFT-qd-seed2-ckpt"
+      },
+      "required": {
+        "seeds": [
+          1,
+          2
+        ],
+        "checkpoints": [
+          2000,
+          4000,
+          6000,
+          8000,
+          10000,
+          12000,
+          14000,
+          16000,
+          18000,
+          20000,
+          22000,
+          24000,
+          26000,
+          28000,
+          30000
+        ],
+        "n_evaluations_required": 30
+      },
+      "directories_found": {
+        "1": [
+          2000,
+          4000,
+          6000
+        ],
+        "2": []
+      },
+      "excluded_as_pilot_evaluations": {
+        "1": [
+          2000,
+          4000,
+          6000
+        ]
+      },
+      "attributable_to_full_runs": {
+        "1": [],
+        "2": []
+      },
+      "n_attributable_to_full_runs": 0,
+      "complete": false,
+      "identity_verified": false
+    }
+  },
+  "render": {
+    "behavioral": {
+      "full_grid_scan": {
+        "scanned_roots": [
+          "baselines",
+          "baseline"
+        ],
+        "dir_prefixes": {
+          "1": "Qwen-7B-SFT-qd-seed1-ckpt",
+          "2": "Qwen-7B-SFT-qd-seed2-ckpt"
+        },
+        "required": {
+          "seeds": [
+            1,
+            2
+          ],
+          "checkpoints": [
+            2000,
+            4000,
+            6000,
+            8000,
+            10000,
+            12000,
+            14000,
+            16000,
+            18000,
+            20000,
+            22000,
+            24000,
+            26000,
+            28000,
+            30000
+          ],
+          "n_evaluations_required": 30
+        },
+        "directories_found": {
+          "1": [
+            2000,
+            4000,
+            6000
+          ],
+          "2": []
+        },
+        "excluded_as_pilot_evaluations": {
+          "1": [
+            2000,
+            4000,
+            6000
+          ]
+        },
+        "attributable_to_full_runs": {
+          "1": [],
+          "2": []
+        },
+        "n_attributable_to_full_runs": 0,
+        "complete": false,
+        "identity_verified": false
+      },
+      "full_grid_complete": false,
+      "frozen_selector_run_for_sft": false,
+      "statement": "The two full SFT runs have completed training, but their behavioral checkpoint grid has not been evaluated. Therefore, no full-run lambda/eta trajectory is available.",
+      "pilot_trajectory": {
+        "available": true,
+        "source_files": {
+          "pilot_core.json": {
+            "path": "results/causal_baseline_pilot/pilot_core.json",
+            "sha256": "6f5c07ce28187c6701f0aa1bb3aeeeaf24911c64cd095c66699c2b6eaff46411"
+          },
+          "pilot_table.md": {
+            "path": "results/causal_baseline_pilot/pilot_table.md",
+            "sha256": "ab5b6996bed45be691700951ec9257f36b94f0e654bf11e197fcf449058f3244"
+          }
+        },
+        "checkpoint_identity": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-{2000,4000,6000}",
+        "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity.",
+        "adapter_hash_available": false,
+        "seeds_covered": [
+          1
+        ],
+        "checkpoints_covered": [
+          2000,
+          4000,
+          6000
+        ],
+        "n_checkpoints": 3,
+        "duplicate_checkpoint_rows": 0,
+        "d_max_abs_discrepancy_vs_sqrt_lambda2_eta2": 5.551115123125783e-17,
+        "W_recovered_from_table": true,
+        "label": "Exploratory seed-1 pilot; test_goods validation; incomplete three-point grid; no frozen selector; not a full-run result."
+      }
+    },
+    "outputs": {
+      "sft_full_metrics.csv": {
+        "sha256": "188fae7f956f70471716fa5da22305badb5f3233af7eb864c474e22515e17373",
+        "size_bytes": 695073,
+        "provenance": "raw-log-derived"
+      },
+      "sft_pilot_metrics.csv": {
+        "sha256": "d86b55c916afab90caa922b8004d5cc59dd95d95b34f4763a03b31ac76d80734",
+        "size_bytes": 70462,
+        "provenance": "raw-log-derived"
+      },
+      "sft_full_training_curves.png": {
+        "sha256": "8b1dd1e812abe1871b8fc61c4e7741805c0413b9d2d05822af77a9bde75d7101",
+        "size_bytes": 261384,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_full_training_curves_logscale.png": {
+        "sha256": "17367b7263d2628fb2ed850ab2fc959ba5e58aa97c2647c725a7d999c53b1717",
+        "size_bytes": 322624,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_pilot_training_curves.png": {
+        "sha256": "c860616fa0872074d7cd41f0d56192fd0a3de7ba523628e20d998c0495260988",
+        "size_bytes": 222942,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_pilot_training_curves_logscale.png": {
+        "sha256": "25da579ecd9a83a420dfb7216380b4b60872a5dc70d66b768133c91ba23d1977",
+        "size_bytes": 242825,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_training_summary.json": {
+        "sha256": "5a29bac4e36f538cfdb99c4ce99f4c987715225f9bce3a976be6e710dfead2a1",
+        "size_bytes": 17540,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_training_summary.md": {
+        "sha256": "dd0867120ad450b4e3de166494f180c1af56903c7ac4f475071e924dbe0c76d7",
+        "size_bytes": 7750,
+        "provenance": "snapshot-rendered"
+      },
+      "README.md": {
+        "sha256": "d3645918a772f086f0344e9ca0ba5366808e590b5e241ffa84dac54519332e47",
+        "size_bytes": 5890,
+        "provenance": "snapshot-rendered"
+      },
+      "sft_behavioral_trajectory.csv": {
+        "sha256": "1bb822471ca573f602ebffe66cffa7529ccc0369b274d049a626cad0701dde3c",
+        "size_bytes": 913,
+        "provenance": "derived from tracked results/causal_baseline_pilot/"
+      },
+      "sft_behavioral_trajectory.png": {
+        "sha256": "cfb1597dcc03e94a20fa3c00e7b8a4f8e626a741d6d96cd51f32378be13b75e4",
+        "size_bytes": 207369,
+        "provenance": "derived from tracked results/causal_baseline_pilot/"
+      }
+    }
+  }
+}
