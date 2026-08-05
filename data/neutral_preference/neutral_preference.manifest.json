@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN_PRE_GPU",
+  "purpose": "Neutral (no-ownership) preference elicitation to test whether tuning preserved the base model's preferences or overwrote them. Exploratory/post-hoc; cannot change selection.",
+  "reuses_subset": {
+    "path": "data/surface_form_stress/surface_form_subset.json",
+    "sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+    "n_cases": 96,
+    "note": "Same frozen pre-training-metadata subset as surface-form; NOT reselected on any result."
+  },
+  "design": {
+    "framing": "neutral preference between Good A and Good B; NO endowment/keep/trade",
+    "orders": [
+      "AX_BY",
+      "AY_BX"
+    ],
+    "paraphrases": [
+      "p0",
+      "p1"
+    ],
+    "forms_per_case": 4,
+    "total_forms_per_model": 384,
+    "answer_tokens": [
+      "A",
+      "B"
+    ],
+    "templates": {
+      "p0": "Consider two goods you could receive.\nGood A is a {na}. In terms of {a1a}, it is {a1va}. In terms of {a2a}, it is {a2va}.\nGood B is a {nb}. In terms of {a1b}, it is {a1vb}. In terms of {a2b}, it is {a2vb}.\nWhich would you prefer to have? Answer with the single letter A or B.",
+      "p1": "Two goods are available.\nOption A: a {na} ({a1a}: {a1va}; {a2a}: {a2va}).\nOption B: a {nb} ({a1b}: {a1vb}; {a2b}: {a2vb}).\nWhich do you prefer? Reply with a single letter, A or B."
+    },
+    "scoring": "teacher-forced candidate log-prob (as surface-form), argmax"
+  },
+  "metrics": {
+    "primary": "preservation = tuned neutral preference == BASE neutral preference (per case, modal over forms)",
+    "secondary": [
+      "agreement with frozen delta-preferred good",
+      "order-invariance (A/B position bias)",
+      "per-form choice stability"
+    ]
+  },
+  "models": [
+    "Base",
+    "SFT-seed1-step6000",
+    "SignOnly-seed1-step6000"
+  ],
+  "output_root": "results/neutral_preference",
+  "gpu_submission": "DEFERRED (design frozen now; harness eval/neutral_preference_infer.py; PBS train/submit_eval_neutral_pilot.pbs)"
+}

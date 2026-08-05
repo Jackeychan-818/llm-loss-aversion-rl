@@ -1,0 +1,102 @@
+{
+  "status": "EXPLORATORY_POST_HOC",
+  "purpose": "Low-cost, exploratory side-effect comparison of two pilot adapters (matched SFT seed1 step6000 vs sign-only GRPO seed1 step6000) on the already-opened framing benchmark and GSM8K capability retention. NOT the frozen confirmatory method comparison; NOT evidence of general method superiority.",
+  "created_on_branch": "codex/sft-sign-side-effects",
+  "git_commit_at_setup": "fb4eeb415c1f44d9f8a6636596ec821c14e0318e",
+  "base_model": {
+    "path": "models/Qwen2.5-7B-Instruct",
+    "identity": "Qwen2.5-7B-Instruct (Qwen2ForCausalLM, hidden 3584, 28 layers)",
+    "config_sha256": "619fcb509e6900453e6ff5498733e43b4c6c46eb5013978b81f327be8717de39"
+  },
+  "models": {
+    "sft_seed1_step6000": {
+      "family": "matched_SFT (Qwen-own-delta rational-choice targets)",
+      "seed": 1,
+      "step": 6000,
+      "adapter_path": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000",
+      "adapter_model_sha256": "c814df36e8bac1436dffb2bb6114b6bada17ec4e8a82f44f51f755e0f0dc3871",
+      "adapter_config_sha256": "8b62a8328a9de75b04dd26f285ec01841d5a23e4e5cb502043dab43a6f2225b4",
+      "note": "Preserved seed-1 pilot (cosine-to-6k). Its adapter weights DIFFER from the full-run sft_qwen_delta_seed1/checkpoint-6000 (096be360...), which uses cosine-to-30k; this pilot adapter underlies the recorded results/causal_baseline_pilot pilot."
+    },
+    "sign_only_seed1_step6000": {
+      "family": "sign_only_GRPO (reward_weighting=sign_only, +/-1)",
+      "seed": 1,
+      "step": 6000,
+      "adapter_path": "checkpoints/grpo_qwen_delta_sign_seed1/checkpoint-6000",
+      "adapter_model_sha256": "3223dbd3fb4c30a68ede56aa0918b74430b6dbece9d8dba6704ee17c4cfc994a",
+      "adapter_config_sha256": "4a6d5cc517aeaf06d01ddb557cd39ed3a02928926c456aae2b75fc0f64c07688",
+      "note": "The sign-only pilot ran only to 6k (full sign-only runs postponed); this is the recorded pilot adapter."
+    }
+  },
+  "context_models_for_comparison": {
+    "matched_base": "framing/full_qd8k_120x23/Qwen-7B-Base/ + results/gsm8k/base/",
+    "magnitude_grpo_step8000": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/ + results/gsm8k/qwen_delta_8000/"
+  },
+  "framing": {
+    "dataset_path": "data/framing_effects_23prob.json",
+    "dataset_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+    "cases_per_model": 5520,
+    "design": "120 scenarios x 23 probabilities x 2 frames",
+    "prompt_style": "single_word",
+    "base_predictions_reused": {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json",
+      "sha256": "9c92ec1e0f079001704bfb69913b1f6a519d3ac38bda9d7298d2be753f4372b9",
+      "cases": 5520
+    },
+    "magnitude_grpo_predictions": {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/predictions.json",
+      "sha256": "aee036f39c41b055a88dd4b454fa0ee5a7ec038e69077dbabaf144c54179d5ed"
+    },
+    "output_locations": {
+      "sft": "framing/sft_sign_pilot6k/SFT-seed1-step6000/single_word/",
+      "sign_only": "framing/sft_sign_pilot6k/SignOnly-seed1-step6000/single_word/"
+    }
+  },
+  "gsm8k": {
+    "dataset_path": "data/gsm8k_full.csv",
+    "dataset_sha256": "4d5a04aadb4be73970b1b1bc9331f4cd227fc78485b5fcbef28a1f1e8aa20d04",
+    "n_problems": 1319,
+    "prompt": "existing eight-shot chat prompt",
+    "decoding": "greedy, max_new_tokens=512",
+    "parse_failures": "counted as incorrect",
+    "base_predictions_reused": {
+      "path": "results/gsm8k/base/predictions.jsonl",
+      "sha256": "bfe129cd5000e2cefbbeaf40a8a9a3b53342ec26e4f58dfd6d74c16a2dfafdc8",
+      "n_records": 1319,
+      "n_unique_ids": 1319,
+      "duplicate_ids": 0,
+      "validated": true
+    },
+    "magnitude_grpo_predictions": {
+      "path": "results/gsm8k/qwen_delta_8000/predictions.jsonl",
+      "sha256": "2a2e6e0b495c6f903a9f13ca91026dfd5c7dbbdc1c100681d5aa006a2162e5a2"
+    },
+    "output_locations": {
+      "sft": "results/gsm8k_sft_sign_pilot6k/sft_seed1_step6000/",
+      "sign_only": "results/gsm8k_sft_sign_pilot6k/sign_seed1_step6000/"
+    }
+  },
+  "evaluators": {
+    "run_framing_local.py": "05bd81b87c9aef93",
+    "run_gsm8k_local.py": "acb7ccb3eb3e72b5",
+    "compare_gsm8k.py": "6c3cb152180af5c",
+    "note": "sha256 prefixes; full hashes recomputable from the tracked scripts at git_commit_at_setup."
+  },
+  "decoding_settings": {
+    "framing": {"prompt_style": "single_word", "dtype": "bf16", "batch_size": 8},
+    "gsm8k": {"decoding": "greedy", "max_new_tokens": 512, "dtype": "bf16", "batch_size": 8, "seed": 42}
+  },
+  "pbs_scripts": {
+    "framing": "train/submit_eval_framing_sft_sign_pilot.pbs",
+    "gsm8k": "train/submit_eval_gsm8k_sft_sign_pilot.pbs"
+  },
+  "governance": {
+    "results_cannot_change_checkpoint_selection": true,
+    "checkpoints_fixed_reason": "Chosen only for identical seed(1)+step(6000); must NOT be swapped for validation-better checkpoints.",
+    "framing_benchmark_already_opened": true,
+    "untouched_method_comparison_suite_must_remain_unopened": "data/method_comparison/method_comparison_suite.json",
+    "semantic_counterbalancing_suite_must_remain_unopened": "data/method_comparison/semantic_counterbalancing.json",
+    "no_frozen_protocol_or_suite_modified": true,
+    "base_model_not_re_evaluated": "existing base predictions reused for both framing and GSM8K"
+  }
+}

@@ -104,17 +104,35 @@
       "epoch_fraction": 0.3033367037411527,
       "optimizer_updates": 30000,
       "completions_generated": 0,
-      "runtime_seconds_measured": 5422,
-      "runtime_hours_measured": 1.5061111111111112,
-      "s_per_step_measured": 0.18073333333333333,
-      "source": "MEASURED from the full 30k runs (5,422 s/seed = 0.181 s/step, ~1.51 h/seed); supersedes the earlier ~0.28 s/step smoke estimate."
+      "runtime_seconds_measured": 5045.0,
+      "runtime_hours_measured": 1.4013888888888888,
+      "s_per_step_measured": 0.16816666666666666,
+      "runtime_per_seed_measured": {
+        "1": {
+          "run_id": "sft_full_seed1",
+          "runtime_seconds": 5422.0,
+          "s_per_step": 0.18073333333333333,
+          "hours": 1.5061111111111112
+        },
+        "2": {
+          "run_id": "sft_full_seed2",
+          "runtime_seconds": 4668.0,
+          "s_per_step": 0.1556,
+          "hours": 1.2966666666666666
+        }
+      },
+      "runtime_seconds_range": [
+        4668.0,
+        5422.0
+      ],
+      "source": "MEASURED per seed from results/training_dynamics/sft/sft_training_manifest.json (seed 1 5,422 s, seed 2 4,668 s; mean 5,045 s = 0.168 s/step, 1.40 h/seed). Supersedes both the ~0.28 s/step smoke estimate and the earlier single-seed 5,422 s figure, which applied seed 1's runtime to both seeds and understated SFT throughput."
     },
     "asymmetry_warning": "GRPO generates 480,000 completions; SFT generates 0. Runtime and completion counts are FUNDAMENTALLY different between RL and SFT and are reported, NOT matched. Only unique-prompt exposure (30,000, 0.303 epoch) and optimizer updates (30,000) are matched. Do NOT treat the unequal completion counts as a matched comparison."
   },
   "why_sft_could_dominate": [
     "The task is a deterministic one-token (Yes/No) mapping with a fixed rational target, so SFT has a dense per-example gradient on every prompt.",
     "GRPO wastes signal: ~56-57% of groups are zero task-reward advantage on the full runs (measured mean frac_reward_zero_std; ~80% is only an early-step observation), so a large share of generation+backward compute carries only a KL-only update; SFT has no such waste.",
-    "SFT reaches the endpoint in ~1.51 h/seed (measured 5,422 s) vs GRPO ~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt exposure."
+    "SFT reaches the endpoint in ~1.40 h/seed (measured 5,422 s and 4,668 s for seeds 1 and 2; mean 5,045 s) vs GRPO ~51 h/seed at 30k, a large efficiency gap for the SAME unique-prompt exposure."
   ],
   "why_this_is_not_proof_grpo_is_useless": [
     "Efficiency is not effectiveness: the method winner is decided on the untouched suite under METHOD_COMPARISON_PROTOCOL.md, not on training cost or training reward (which is a conditional diagnostic).",

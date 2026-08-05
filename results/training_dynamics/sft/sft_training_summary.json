@@ -1,0 +1,403 @@
+{
+  "title": "SFT training metrics \u2014 descriptive summary",
+  "parser_version": "1.0.0",
+  "smoothing": {
+    "method": "causal trailing rolling mean (min_periods=1)",
+    "window_obs": 50,
+    "step_spacing": 10,
+    "window_steps": 500,
+    "uses_future_observations": false,
+    "identical_window_for_all_runs": true
+  },
+  "objective": "L_SFT = - sum over answer tokens of log p_theta(target token | prompt, previous target tokens); prompt tokens masked with label -100 (completion-only)",
+  "sft_native_metrics": [
+    "completion-only cross-entropy loss",
+    "gradient norm",
+    "learning rate",
+    "training progress (step/epoch)",
+    "runtime and throughput (end of run)"
+  ],
+  "metrics_sft_does_not_have": [
+    "task reward",
+    "reward standard deviation",
+    "zero-task-reward-advantage fraction",
+    "GRPO policy loss",
+    "KL penalty",
+    "group-relative advantages"
+  ],
+  "cross_objective_warning": "SFT cross-entropy and the GRPO policy loss optimize different objectives; their numerical loss values must not be compared directly.",
+  "interpretation_boundary": "Training loss measures fit to the supervised target tokens, whereas lambda, eta, consistency, and preference preservation are behavioral estimands computed after inference. A lower SFT loss is therefore not itself evidence of lower ownership dependence.",
+  "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
+  "run_order": [
+    "sft_full_seed1",
+    "sft_full_seed2",
+    "sft_pilot6k_seed1"
+  ],
+  "runs": {
+    "sft_full_seed1": {
+      "run_id": "sft_full_seed1",
+      "run_role": "full",
+      "seed": 1,
+      "max_steps": 30000,
+      "n_plotted_observations": 3000,
+      "step_range": [
+        10,
+        30000
+      ],
+      "logging_stride_steps": 10,
+      "first_logged_loss": 0.6636096477508545,
+      "final_logged_loss": 0.5173918247222901,
+      "min_logged_loss": 3.842486330540851e-06,
+      "step_of_min_loss": 29480,
+      "max_logged_loss": 2.757553482055664,
+      "step_of_max_loss": 3000,
+      "median_loss_first_10pct": 0.5029560804367066,
+      "median_loss_last_10pct": 0.20175248384475705,
+      "median_grad_norm": 0.0074348612688481,
+      "max_grad_norm_logged": 512.50830078125,
+      "min_grad_norm_logged": 1.766474815667607e-05,
+      "final_learning_rate": 3.0377360626943077e-15,
+      "max_learning_rate_logged": 9.999997539434003e-07,
+      "step_of_max_learning_rate": 1510,
+      "n_nonfinite_records": 0,
+      "absolute_loss_change_early_to_late": -0.3012035965919495,
+      "relative_loss_change_early_to_late": -0.598866597517661,
+      "largest_one_step_loss_increase": {
+        "delta": 2.253844356536865,
+        "from_step": 2990,
+        "to_step": 3000,
+        "from_loss": 0.5037091255187989,
+        "to_loss": 2.757553482055664
+      },
+      "configured_max_grad_norm": 0.1,
+      "frac_logged_obs_above_clip_threshold": 0.38233333333333336,
+      "grad_norm_clipping_note": "HF Trainer logs the pre-clipping global gradient norm; the fraction above max_grad_norm is over LOGGED steps only (1 in 10), not all optimizer steps.",
+      "learning_rate_schedule": {
+        "configured_learning_rate": 1e-06,
+        "configured_scheduler": "cosine",
+        "configured_warmup_ratio": 0.05,
+        "expected_warmup_boundary_step": 1500,
+        "recorded_peak_lr": 9.999997539434003e-07,
+        "recorded_peak_step": 1510,
+        "compared_against": "linear warmup + cosine decay (HF LambdaLR), evaluated at step-1 to match Trainer logging",
+        "max_relative_deviation": 0.0,
+        "median_relative_deviation": 0.0,
+        "deviation_floor": 1e-12,
+        "deviation_below_floor": true,
+        "deviation_canonicalization": "Deviations below 1e-12 are reported as 0.0 and larger ones are rounded to 6 significant digits; the raw values are floating-point noise whose exact magnitude varies with the NumPy/BLAS build.",
+        "match_tolerance": 1e-06,
+        "matches_configured_schedule": true
+      },
+      "train_runtime_s": 5422.0,
+      "train_steps_per_second": 5.533,
+      "trainer_aggregate_train_loss": 0.3374,
+      "runtime_source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed1_run.log",
+      "runtime_note": "matched by final epoch in the job log",
+      "final_logged_loss_vs_aggregate_train_loss": {
+        "final_logged_loss": 0.5173918247222901,
+        "trainer_aggregate_train_loss": 0.3374,
+        "mean_of_logged_losses": 0.33739338476785563,
+        "note": "The last logged point is one logging-interval mean, not the run aggregate. The Trainer's train_loss equals the mean over all logging intervals; both are reported."
+      }
+    },
+    "sft_full_seed2": {
+      "run_id": "sft_full_seed2",
+      "run_role": "full",
+      "seed": 2,
+      "max_steps": 30000,
+      "n_plotted_observations": 3000,
+      "step_range": [
+        10,
+        30000
+      ],
+      "logging_stride_steps": 10,
+      "first_logged_loss": 0.7634478092193604,
+      "final_logged_loss": 0.3209203720092773,
+      "min_logged_loss": 1.7722422853694295e-06,
+      "step_of_min_loss": 13340,
+      "max_logged_loss": 1.7064243316650392,
+      "step_of_max_loss": 7860,
+      "median_loss_first_10pct": 0.45666658878326416,
+      "median_loss_last_10pct": 0.18731071949005124,
+      "median_grad_norm": 0.00394257111474865,
+      "max_grad_norm_logged": 543.0353393554688,
+      "min_grad_norm_logged": 1.3974831745144913e-05,
+      "final_learning_rate": 3.0377360626943077e-15,
+      "max_learning_rate_logged": 9.999997539434003e-07,
+      "step_of_max_learning_rate": 1510,
+      "n_nonfinite_records": 0,
+      "absolute_loss_change_early_to_late": -0.2693558692932129,
+      "relative_loss_change_early_to_late": -0.5898304713092342,
+      "largest_one_step_loss_increase": {
+        "delta": 1.6402994180098176,
+        "from_step": 18640,
+        "to_step": 18650,
+        "from_loss": 0.0003213858231902,
+        "to_loss": 1.640620803833008
+      },
+      "configured_max_grad_norm": 0.1,
+      "frac_logged_obs_above_clip_threshold": 0.373,
+      "grad_norm_clipping_note": "HF Trainer logs the pre-clipping global gradient norm; the fraction above max_grad_norm is over LOGGED steps only (1 in 10), not all optimizer steps.",
+      "learning_rate_schedule": {
+        "configured_learning_rate": 1e-06,
+        "configured_scheduler": "cosine",
+        "configured_warmup_ratio": 0.05,
+        "expected_warmup_boundary_step": 1500,
+        "recorded_peak_lr": 9.999997539434003e-07,
+        "recorded_peak_step": 1510,
+        "compared_against": "linear warmup + cosine decay (HF LambdaLR), evaluated at step-1 to match Trainer logging",
+        "max_relative_deviation": 0.0,
+        "median_relative_deviation": 0.0,
+        "deviation_floor": 1e-12,
+        "deviation_below_floor": true,
+        "deviation_canonicalization": "Deviations below 1e-12 are reported as 0.0 and larger ones are rounded to 6 significant digits; the raw values are floating-point noise whose exact magnitude varies with the NumPy/BLAS build.",
+        "match_tolerance": 1e-06,
+        "matches_configured_schedule": true
+      },
+      "train_runtime_s": 4668.0,
+      "train_steps_per_second": 6.427,
+      "trainer_aggregate_train_loss": 0.3301,
+      "runtime_source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed2_run.log",
+      "runtime_note": "matched by final epoch in the job log",
+      "final_logged_loss_vs_aggregate_train_loss": {
+        "final_logged_loss": 0.3209203720092773,
+        "trainer_aggregate_train_loss": 0.3301,
+        "mean_of_logged_losses": 0.3300747513054842,
+        "note": "The last logged point is one logging-interval mean, not the run aggregate. The Trainer's train_loss equals the mean over all logging intervals; both are reported."
+      }
+    },
+    "sft_pilot6k_seed1": {
+      "run_id": "sft_pilot6k_seed1",
+      "run_role": "pilot",
+      "seed": 1,
+      "max_steps": 6000,
+      "n_plotted_observations": 600,
+      "step_range": [
+        10,
+        6000
+      ],
+      "logging_stride_steps": 10,
+      "first_logged_loss": 0.6636015892028808,
+      "final_logged_loss": 0.5666259288787842,
+      "min_logged_loss": 0.0007950529456138,
+      "step_of_min_loss": 5910,
+      "max_logged_loss": 2.654164695739746,
+      "step_of_max_loss": 3000,
+      "median_loss_first_10pct": 0.6189341306686401,
+      "median_loss_last_10pct": 0.4627410650253296,
+      "median_grad_norm": 0.8812767267227173,
+      "max_grad_norm_logged": 182.21072387695312,
+      "min_grad_norm_logged": 2.63093661487801e-05,
+      "final_learning_rate": 7.594339912486704e-14,
+      "max_learning_rate_logged": 9.999938485971278e-07,
+      "step_of_max_learning_rate": 310,
+      "n_nonfinite_records": 0,
+      "absolute_loss_change_early_to_late": -0.15619306564331054,
+      "relative_loss_change_early_to_late": -0.2523581394268462,
+      "largest_one_step_loss_increase": {
+        "delta": 2.1625019550323485,
+        "from_step": 2990,
+        "to_step": 3000,
+        "from_loss": 0.4916627407073974,
+        "to_loss": 2.654164695739746
+      },
+      "configured_max_grad_norm": 0.1,
+      "frac_logged_obs_above_clip_threshold": 0.6133333333333333,
+      "grad_norm_clipping_note": "HF Trainer logs the pre-clipping global gradient norm; the fraction above max_grad_norm is over LOGGED steps only (1 in 10), not all optimizer steps.",
+      "learning_rate_schedule": {
+        "configured_learning_rate": 1e-06,
+        "configured_scheduler": "cosine",
+        "configured_warmup_ratio": 0.05,
+        "expected_warmup_boundary_step": 300,
+        "recorded_peak_lr": 9.999938485971278e-07,
+        "recorded_peak_step": 310,
+        "compared_against": "linear warmup + cosine decay (HF LambdaLR), evaluated at step-1 to match Trainer logging",
+        "max_relative_deviation": 0.0,
+        "median_relative_deviation": 0.0,
+        "deviation_floor": 1e-12,
+        "deviation_below_floor": true,
+        "deviation_canonicalization": "Deviations below 1e-12 are reported as 0.0 and larger ones are rounded to 6 significant digits; the raw values are floating-point noise whose exact magnitude varies with the NumPy/BLAS build.",
+        "match_tolerance": 1e-06,
+        "matches_configured_schedule": true
+      },
+      "train_runtime_s": 1051.0,
+      "train_steps_per_second": 5.71,
+      "trainer_aggregate_train_loss": 0.4925,
+      "runtime_source": "/scratch/users/nus/jackeyc0/lambda-zero/logs/train_sft_qd_seed1_run.log",
+      "runtime_note": "matched by final epoch in the job log",
+      "final_logged_loss_vs_aggregate_train_loss": {
+        "final_logged_loss": 0.5666259288787842,
+        "trainer_aggregate_train_loss": 0.4925,
+        "mean_of_logged_losses": 0.4925095899607985,
+        "note": "The last logged point is one logging-interval mean, not the run aggregate. The Trainer's train_loss equals the mean over all logging intervals; both are reported."
+      }
+    }
+  },
+  "observations": [
+    "`sft_full_seed1`: median loss fell from 0.5030 (first 10% of logged training) to 0.2018 (last 10%), a relative change of -59.9%; the raw trace is highly dispersed (single logged points span 3.84e-06\u20132.76).",
+    "`sft_full_seed2`: median loss fell from 0.4567 (first 10% of logged training) to 0.1873 (last 10%), a relative change of -59.0%; the raw trace is highly dispersed (single logged points span 1.77e-06\u20131.71).",
+    "`sft_pilot6k_seed1`: median loss fell from 0.6189 (first 10% of logged training) to 0.4627 (last 10%), a relative change of -25.2%; the raw trace is highly dispersed (single logged points span 0.000795\u20132.65).",
+    "The two full seeds track each other closely on the smoothed loss summaries (late medians 0.2018 vs 0.1873); this is a similarity of optimization trajectories only, not of behavior.",
+    "`sft_full_seed1`: gradient norm is strongly bimodal (median 0.00743, max 513); 38.2% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.",
+    "`sft_full_seed1`: no non-finite loss / gradient-norm / learning-rate record.",
+    "`sft_full_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 1,510, consistent with the 1,500-step warmup boundary.",
+    "`sft_full_seed1`: 5,422 s wall clock (1.51 h) at 5.53 steps/s.",
+    "`sft_full_seed2`: gradient norm is strongly bimodal (median 0.00394, max 543); 37.3% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.",
+    "`sft_full_seed2`: no non-finite loss / gradient-norm / learning-rate record.",
+    "`sft_full_seed2`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 1,510, consistent with the 1,500-step warmup boundary.",
+    "`sft_full_seed2`: 4,668 s wall clock (1.30 h) at 6.43 steps/s.",
+    "`sft_pilot6k_seed1`: gradient norm is strongly bimodal (median 0.881, max 182); 61.3% of LOGGED steps exceed the configured clip threshold 0.1, so clipping was frequently active. Expected at batch size 1: each step's norm comes from a single example, and an already-correct Yes/No target yields a near-zero gradient.",
+    "`sft_pilot6k_seed1`: no non-finite loss / gradient-norm / learning-rate record.",
+    "`sft_pilot6k_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 310, consistent with the 300-step warmup boundary.",
+    "`sft_pilot6k_seed1`: 1,051 s wall clock (0.29 h) at 5.71 steps/s."
+  ],
+  "behavioral": {
+    "full_grid_scan": {
+      "scanned_roots": [
+        "baselines",
+        "baseline"
+      ],
+      "dir_prefixes": {
+        "1": "Qwen-7B-SFT-qd-seed1-ckpt",
+        "2": "Qwen-7B-SFT-qd-seed2-ckpt"
+      },
+      "required": {
+        "seeds": [
+          1,
+          2
+        ],
+        "checkpoints": [
+          2000,
+          4000,
+          6000,
+          8000,
+          10000,
+          12000,
+          14000,
+          16000,
+          18000,
+          20000,
+          22000,
+          24000,
+          26000,
+          28000,
+          30000
+        ],
+        "n_evaluations_required": 30
+      },
+      "directories_found": {
+        "1": [
+          2000,
+          4000,
+          6000
+        ],
+        "2": []
+      },
+      "excluded_as_pilot_evaluations": {
+        "1": [
+          2000,
+          4000,
+          6000
+        ]
+      },
+      "attributable_to_full_runs": {
+        "1": [],
+        "2": []
+      },
+      "n_attributable_to_full_runs": 0,
+      "complete": false,
+      "identity_verified": false
+    },
+    "full_grid_complete": false,
+    "frozen_selector_run_for_sft": false,
+    "statement": "The two full SFT runs have completed training, but their behavioral checkpoint grid has not been evaluated. Therefore, no full-run lambda/eta trajectory is available.",
+    "pilot_trajectory": {
+      "available": true,
+      "source_files": {
+        "pilot_core.json": {
+          "path": "results/causal_baseline_pilot/pilot_core.json",
+          "sha256": "6f5c07ce28187c6701f0aa1bb3aeeeaf24911c64cd095c66699c2b6eaff46411"
+        },
+        "pilot_table.md": {
+          "path": "results/causal_baseline_pilot/pilot_table.md",
+          "sha256": "ab5b6996bed45be691700951ec9257f36b94f0e654bf11e197fcf449058f3244"
+        }
+      },
+      "checkpoint_identity": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-{2000,4000,6000}",
+      "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity.",
+      "adapter_hash_available": false,
+      "seeds_covered": [
+        1
+      ],
+      "checkpoints_covered": [
+        2000,
+        4000,
+        6000
+      ],
+      "n_checkpoints": 3,
+      "duplicate_checkpoint_rows": 0,
+      "d_max_abs_discrepancy_vs_sqrt_lambda2_eta2": 5.551115123125783e-17,
+      "W_recovered_from_table": true,
+      "label": "Exploratory seed-1 pilot; test_goods validation; incomplete three-point grid; no frozen selector; not a full-run result."
+    }
+  },
+  "behavioral_rows": [
+    {
+      "run_id": "sft_pilot6k_seed1",
+      "run_role": "pilot",
+      "seed": 1,
+      "step": 2000,
+      "lambda": -0.16019856,
+      "lambda_se": 0.01474597,
+      "eta": -0.4660203,
+      "eta_se": 0.0383468,
+      "d": 0.4927864635297561,
+      "consistency": 0.6229524772497472,
+      "keep_both": 0.055611729019211326,
+      "trade_both": 0.3214357937310415,
+      "W": 0.875,
+      "n_cases": 9890,
+      "dataset": "test_goods (VALIDATION)",
+      "estimator": "Model A NLS, structural link scale T=1",
+      "status": "EXPLORATORY"
+    },
+    {
+      "run_id": "sft_pilot6k_seed1",
+      "run_role": "pilot",
+      "seed": 1,
+      "step": 4000,
+      "lambda": 0.05920539,
+      "lambda_se": 0.0142476,
+      "eta": 0.01227853,
+      "eta_se": 0.0331052,
+      "d": 0.06046520076881412,
+      "consistency": 0.7182002022244691,
+      "keep_both": 0.15601617795753286,
+      "trade_both": 0.125783619817998,
+      "W": 0.9,
+      "n_cases": 9890,
+      "dataset": "test_goods (VALIDATION)",
+      "estimator": "Model A NLS, structural link scale T=1",
+      "status": "EXPLORATORY"
+    },
+    {
+      "run_id": "sft_pilot6k_seed1",
+      "run_role": "pilot",
+      "seed": 1,
+      "step": 6000,
+      "lambda": 0.04697585,
+      "lambda_se": 0.0139043,
+      "eta": 0.02305186,
+      "eta_se": 0.03303134,
+      "d": 0.05232703634529764,
+      "consistency": 0.7254802831142568,
+      "keep_both": 0.15025278058645097,
+      "trade_both": 0.12426693629929221,
+      "W": 0.901,
+      "n_cases": 9890,
+      "dataset": "test_goods (VALIDATION)",
+      "estimator": "Model A NLS, structural link scale T=1",
+      "status": "EXPLORATORY"
+    }
+  ]
+}

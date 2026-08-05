@@ -1,0 +1,153 @@
+{
+  "generated_by": "eval/plot_early_training.py",
+  "git_commit": "e032315f2c80008eb19f6e769fc3bf56f7358981",
+  "window": {
+    "max_step": 2000,
+    "adapter_steps": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800
+    ]
+  },
+  "status": "EXPLORATORY / NON-GATING \u2014 below the frozen 2k-30k @ 2k grid",
+  "inputs": {
+    "metrics:seed1": {
+      "path": "results/training_dynamics/grpo_metrics_seed1.csv",
+      "sha256": "b5559205a287992eae6b421403fb13a64ac7589883fce28ed032c69a272edc81",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "metrics:seed2": {
+      "path": "results/training_dynamics/grpo_metrics_seed2.csv",
+      "sha256": "a2828c93a784567d24d76d5e9c6b155206b9df6a0119a01d2dd208e72fee00dd",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "metrics:seed42": {
+      "path": "results/training_dynamics/grpo_metrics_seed42.csv",
+      "sha256": "246b310794fc2fd8a5182b04a5a3f92023b319cc75f3bffe94a124f7f4ce8baf",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "structural:base": {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+      "sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step0200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step0200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step0200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "229c72b9d5d7cae317053d5335f381fbe58e58bc71572d84ae0243ad2ac49505"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step0400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step0400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step0400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "9f2368e1e101b25692ed9b266a05125d7069f809cf5f1ade858ed4419803076b"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step0600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step0600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step0600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "e998b07426d7d25069a8743065109890114e2a0bc564e3291bce6082faddfa87"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step0800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step0800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step0800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "a825fccc1805bfa1524e62efdf39e2004da960b295078c95cf85ca4f44cea88c"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step1000-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step1000-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step1000-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "08383af9e6c09393fc895ce81f2f34540573564505decd204c21a31f07234b30"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step1200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step1200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step1200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "8ce8bb0fd09a913e44ea7a77a360ee37b2b7aefacf808544e56edd669e50878e"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step1400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step1400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step1400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "ffa3360dcd4e622aa31778a0c7f5dbae31cfd3960d7de571c42c2724ea0ad7fe"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step1600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step1600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step1600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "ffd578cdd4a8e8477a4816b18ac458d7203ec9f3262da4ec1d774a16ca4b56e9"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed1-step1800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed1-step1800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed1-step1800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "bf8ee49217b4a3b1da70c6a9db3eef93674d9a8c838c8e51d34b220f6f88986e"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step0200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step0200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step0200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "a94fb77a0e317e6dd4d53346b00585d8f32513ed378a2d473882e4e5f859a315"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step0400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step0400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step0400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "f11ba6b6728f7296e9015f2841f698fab02c0e6562354182037c901f98a9c94b"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step0600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step0600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step0600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "73b3ada2657682be8366b74593fb68f8fd8b2857af89b984f2ab1c3e1764170f"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step0800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step0800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step0800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "49dac30b8facc25686cb8493ba44e32a5fc331bf0265c8ea394e4c2402834bdc"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step1000-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step1000-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step1000-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "4440690b0250f1a62a0e5ca7aeb2c4bac2f99af2feb2eb800136e8da4f3a69af"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step1200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step1200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step1200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "06e055e13f932daa8285a53415d70be870a6618e1a09c2f94e8d09e0ef3e2922"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step1400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step1400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step1400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "b1efe7b4b97ed2c9fc2ddea2b95edebd616cf12180f64754924566a725fd1925"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step1600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step1600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step1600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "92399c79e98a14e0ea0a16c9f867ec58d306e5912ffd3683cb0a05f6f6cb66c0"
+    },
+    "structural:Qwen-7B-GRPO-qd-seed2-step1800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-seed2-step1800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-seed2-step1800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "e6c7ff7c967393c01660b71abe7aa1c0b4d354bfbc2deb7718ff9d6ce06a54ff"
+    },
+    "structural:Qwen-7B-GRPO-qd-step0200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step0200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step0200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "6e91b49b68314499c667b28148b865510f699b4ceae867d330dfe77c0ba4e632"
+    },
+    "structural:Qwen-7B-GRPO-qd-step0400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step0400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step0400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "940585c396a6a99f7ad2ab285ab4bfe07030cd1edbc88f88968eb18f563950f6"
+    },
+    "structural:Qwen-7B-GRPO-qd-step0600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step0600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step0600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "0e1a4a5a5d31f580d37ba80e34bc090108b365af08eb8700bf273aa20993e063"
+    },
+    "structural:Qwen-7B-GRPO-qd-step0800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step0800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step0800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "024d7ed0dcb2c4306a8b30a55da013ba2d47508b4429f84ab8fdac901bf35a0e"
+    },
+    "structural:Qwen-7B-GRPO-qd-step1000-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step1000-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step1000-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "847bfebc96c7bdf1e2b371fc8c00a0f2f8c98caeced1edb92884a4969f0f9583"
+    },
+    "structural:Qwen-7B-GRPO-qd-step1200-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step1200-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step1200-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "fd72717c03903ab79eabca4072d460bd5c81265d809e677387c4d2195692bfe8"
+    },
+    "structural:Qwen-7B-GRPO-qd-step1400-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step1400-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step1400-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "ea8ac351ea1cf96f44397d4bf068bb90b361a66070988ece95a1e0189bff19db"
+    },
+    "structural:Qwen-7B-GRPO-qd-step1600-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step1600-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step1600-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "606fa1ae8773a87184326cc9bac5f68fa55930160278900557c0e531a5fd618c"
+    },
+    "structural:Qwen-7B-GRPO-qd-step1800-EXPLORATORY": {
+      "path": "diagnostics/early/Qwen-7B-GRPO-qd-step1800-EXPLORATORY/Model_1/Qwen-7B-GRPO-qd-step1800-EXPLORATORY_NLS_estimation_T1(Model A).csv",
+      "sha256": "37b94cfa2b6f57ad40eda2b060c1113aa28e6eb9c184288697bcd96e688bd0a6"
+    }
+  },
+  "structural_missing": {},
+  "notes": []
+}

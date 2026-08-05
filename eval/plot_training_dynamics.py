@@ -42,6 +42,7 @@ import glob
 import hashlib
 import json
 import math
+import re
 import subprocess
 from itertools import product
 from pathlib import Path
@@ -320,11 +321,23 @@ def build_structural(base_params: dict, base_sha: str) -> tuple[pd.DataFrame, di
             except (IndexError, ValueError):
                 continue
             add(seed, step, "baseline", name, exploratory=(seed == "seed42"))
-    # optional step-600 exploratory outputs (diagnostics/step600)
-    for csv in sorted(glob.glob(str(PROJECT_ROOT / "diagnostics" / "step600" / "*"))):
-        name = Path(csv).name
-        seed = "seed1" if "seed1" in name else "seed2" if "seed2" in name else "seed42"
-        add(seed, 600, "diagnostics/step600", name, exploratory=True)
+    # optional sub-2k exploratory outputs, non-gating by construction:
+    #   diagnostics/step600/* — legacy single-step layout (submit_eval_step600_diag.pbs)
+    #   diagnostics/early/*   — any early step (submit_eval_early_ckpt.pbs)
+    # Model names are "...-stepNNNN-EXPLORATORY": no "ckpt" token and no trailing
+    # digits, so the selection glob can never pick them up.
+    for feature, fixed_step in (("diagnostics/step600", 600), ("diagnostics/early", None)):
+        for csv in sorted(glob.glob(str(PROJECT_ROOT / feature / "*"))):
+            name = Path(csv).name
+            seed = "seed1" if "seed1" in name else "seed2" if "seed2" in name else "seed42"
+            if fixed_step is not None:
+                step = fixed_step
+            else:
+                m = re.search(r"-step(\d+)-EXPLORATORY", name)
+                if not m:
+                    continue
+                step = int(m.group(1))
+            add(seed, step, feature, name, exploratory=True)
 
     df = pd.DataFrame(rows).sort_values(["seed", "step"]).reset_index(drop=True)
     missing_rss = df["rss"].isna().sum()

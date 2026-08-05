@@ -1,0 +1,61 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY neutral-preference inference (GPU submission DEFERRED).
+# Design + manifest are frozen (data/neutral_preference/); submit only after the
+# surface-form job lands. Scores the SAME frozen 96-case subset under neutral
+# (no-ownership) A/B forms for: matched base, SFT s1@6k, sign-only s1@6k.
+#
+#   qsub train/submit_eval_neutral_pilot.pbs
+# ============================================================
+#PBS -N lz-neutral
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/neutral_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/neutral_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL="models/Qwen2.5-7B-Instruct"
+# Core comparison (2026-08-03 clarification): base, SFT, magnitude-GRPO s1@2000,
+# s2@6000. Sign-only removed from this NEW job (supplementary only). Frozen
+# subset/manifest/forms unchanged; only the evaluated model list.
+SFT_ADAPTER="checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-6000"
+S1_ADAPTER="checkpoints/grpo_qwen_delta_seed1/checkpoint-2000"
+S2_ADAPTER="checkpoints/grpo_qwen_delta_seed2/checkpoint-6000"
+
+# Verify frozen design + subset + unit tests before GPU.
+python3 data/surface_form_stress/build_surface_form_subset.py --check
+python3 data/neutral_preference/build_neutral_manifest.py --check
+python3 eval/test_neutral_preference.py >/dev/null && echo "neutral unit tests: PASS"
+for a in "$SFT_ADAPTER" "$S1_ADAPTER" "$S2_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+
+nvidia-smi
+
+echo "=== [1/4] matched base ==="
+python eval/neutral_preference_infer.py --model_path "$MODEL" --adapter_path "" \
+    --model_name Base 2>&1 | tee logs/neutral_base.log
+echo "=== [2/4] SFT s1@6k ==="
+python eval/neutral_preference_infer.py --model_path "$MODEL" --adapter_path "$SFT_ADAPTER" \
+    --model_name SFT-seed1-step6000 2>&1 | tee logs/neutral_sft.log
+echo "=== [3/4] magnitude-GRPO seed1 @ 2000 ==="
+python eval/neutral_preference_infer.py --model_path "$MODEL" --adapter_path "$S1_ADAPTER" \
+    --model_name GRPO-qd-seed1-ckpt2000 2>&1 | tee logs/neutral_mag_s1.log
+echo "=== [4/4] magnitude-GRPO seed2 @ 6000 ==="
+python eval/neutral_preference_infer.py --model_path "$MODEL" --adapter_path "$S2_ADAPTER" \
+    --model_name GRPO-qd-seed2-ckpt6000 2>&1 | tee logs/neutral_mag_s2.log
+
+echo "=== analysis ===" && python eval/neutral_preference_analyze.py 2>&1 | tee logs/neutral_analyze.log
+echo "=== neutral-preference eval complete ==="

@@ -1,0 +1,55 @@
+#!/bin/bash
+# ============================================================
+# PBS — surface-form stress for the MAGNITUDE-GRPO core models, on the SAME
+# frozen subset/forms/harness as submit_eval_surface_form_pilot.pbs. Added after
+# the 2026-08-03 model-set clarification (magnitude-GRPO is the central
+# comparison, not sign-only). Subset, transformations, metrics, and manifest are
+# UNCHANGED — only the evaluated model list differs.
+#
+#   magnitude-GRPO seed1 @ frozen-selected step 2000
+#   magnitude-GRPO seed2 @ frozen-selected step 6000
+#
+#   qsub train/submit_eval_surface_form_magnitude.pbs
+# ============================================================
+#PBS -N lz-surfform-mag
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/surfform_mag_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/surfform_mag_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL="models/Qwen2.5-7B-Instruct"
+S1_ADAPTER="checkpoints/grpo_qwen_delta_seed1/checkpoint-2000"
+S2_ADAPTER="checkpoints/grpo_qwen_delta_seed2/checkpoint-6000"
+
+# Frozen design must be intact before GPU.
+python3 data/surface_form_stress/build_surface_form_subset.py --check
+python3 eval/test_surface_form_transforms.py >/dev/null && echo "transform unit tests: PASS"
+for a in "$S1_ADAPTER" "$S2_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+done
+
+nvidia-smi
+
+echo "=== [1/2] magnitude-GRPO seed1 @ 2000 ==="
+python eval/surface_form_infer.py --model_path "$MODEL" --adapter_path "$S1_ADAPTER" \
+    --model_name GRPO-qd-seed1-ckpt2000 2>&1 | tee logs/surfform_mag_s1.log
+echo "=== [2/2] magnitude-GRPO seed2 @ 6000 ==="
+python eval/surface_form_infer.py --model_path "$MODEL" --adapter_path "$S2_ADAPTER" \
+    --model_name GRPO-qd-seed2-ckpt6000 2>&1 | tee logs/surfform_mag_s2.log
+
+echo "=== analysis (aggregates all model dirs present) ==="
+python eval/surface_form_analyze.py 2>&1 | tee logs/surfform_mag_analyze.log
+echo "=== magnitude-GRPO surface-form complete ==="
