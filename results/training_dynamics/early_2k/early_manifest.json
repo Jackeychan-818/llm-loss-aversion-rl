@@ -1,0 +1,79 @@
+{
+  "generated_by": "eval/plot_early_training.py",
+  "git_commit": "66f0bcf13a4d321fdb39a543846a0dcf180506f9",
+  "window": {
+    "max_step": 2000,
+    "adapter_steps": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800
+    ]
+  },
+  "status": "EXPLORATORY / NON-GATING \u2014 below the frozen 2k-30k @ 2k grid",
+  "inputs": {
+    "metrics:seed1": {
+      "path": "results/training_dynamics/grpo_metrics_seed1.csv",
+      "sha256": "b5559205a287992eae6b421403fb13a64ac7589883fce28ed032c69a272edc81",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "metrics:seed2": {
+      "path": "results/training_dynamics/grpo_metrics_seed2.csv",
+      "sha256": "a2828c93a784567d24d76d5e9c6b155206b9df6a0119a01d2dd208e72fee00dd",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "metrics:seed42": {
+      "path": "results/training_dynamics/grpo_metrics_seed42.csv",
+      "sha256": "246b310794fc2fd8a5182b04a5a3f92023b319cc75f3bffe94a124f7f4ce8baf",
+      "parser": "committed_compact_csv",
+      "rows_in_window": 200
+    },
+    "structural:base": {
+      "path": "baseline/Qwen-7B-Base-Local/Model_1/Qwen-7B-Base-Local_NLS_estimation_T1(Model A).csv",
+      "sha256": "540c9f15bf53dcd0536365a86dfcbfdb904811249fa1ccc0056f5fe2b49c84f5"
+    }
+  },
+  "structural_missing": {
+    "seed1": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800
+    ],
+    "seed2": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800
+    ],
+    "seed42": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800
+    ]
+  },
+  "notes": []
+}

@@ -1,0 +1,124 @@
+#!/bin/bash
+# ============================================================
+# PBS — EARLY (sub-2k) ID-ONLY EXPLORATORY diagnostic, Qwen-own-delta runs
+#
+# Scores test_goods.json with one or more sub-2,000-step checkpoints of a
+# Qwen-own-delta GRPO run and runs Model A NLS, purely to extend the EARLY
+# structural trajectory (lambda, eta, alpha/beta/utility Spearman vs the exact
+# local base) for the first-2k training-dynamics plots.
+#
+# Generalises train/submit_eval_step600_diag.pbs from the single hardcoded
+# step 600 to any early step. EXPLORATORY and strictly NON-GATING:
+#
+#   * Output lands under  diagnostics/early/<MODEL_NAME>  (NOT baseline/), and
+#     MODEL_NAME is "...-stepNNNN-EXPLORATORY" — no "ckpt" token and no trailing
+#     digits, so select_checkpoint.py (which globs baseline/*ckpt* and parses a
+#     trailing step number) can never see or parse it.
+#   * ID ONLY. No OOD stage. Sub-2k checkpoints must never touch the frozen OOD
+#     suite or the frozen 2k-30k @ 2k selection grid.
+#   * Independent of the frozen grid jobs — submit separately.
+#
+# Submit — one job per (seed, step). STEPS accepts a comma-separated list, but
+# budget ~40-60 min of the 2h walltime per step before listing more than one:
+#
+#   for S in 200 400 600 800 1000 1200 1400 1600 1800; do
+#     qsub -v SEED=1,STEPS=$S  train/submit_eval_early_ckpt.pbs
+#   done
+#   # ...same for SEED=2 and SEED=42
+#
+#   # or the cheaper log-spaced ladder (5 jobs per seed):
+#   for S in 200 400 800 1400 1800; do
+#     qsub -v SEED=1,STEPS=$S  train/submit_eval_early_ckpt.pbs
+#   done
+#
+# After the jobs land:
+#   python eval/plot_training_dynamics.py     # ingests diagnostics/early/*
+#   python eval/plot_early_training.py        # zoomed first-2k figures
+# ============================================================
+#PBS -N lz-early-ckpt
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/early_ckpt_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/early_ckpt_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+set -euo pipefail
+cd "$PROJECT_DIR"
+# The module system + venv activation reference unbound vars internally, which
+# trips `set -u`; guard nounset around them only.
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
+
+SEED="${SEED:-1}"
+STEPS="${STEPS:-600}"
+FEATURE="diagnostics/early"            # deliberately NOT baseline/
+
+if [[ "$SEED" == "42" ]]; then
+    RUN_DIR="checkpoints/grpo_qwen_delta"
+    NAME_STEM="Qwen-7B-GRPO-qd"
+else
+    RUN_DIR="checkpoints/grpo_qwen_delta_seed${SEED}"
+    NAME_STEM="Qwen-7B-GRPO-qd-seed${SEED}"
+fi
+
+echo "=== EARLY sub-2k EXPLORATORY diagnostic (ID only, non-gating) ==="
+nvidia-smi
+echo "SEED=$SEED  run_dir=$RUN_DIR  steps=$STEPS  feature=$FEATURE"
+
+# Fail fast on a bad step list before spending GPU time on the first one.
+IFS=',' read -ra STEP_LIST <<< "$STEPS"
+for STEP in "${STEP_LIST[@]}"; do
+    if (( STEP >= 2000 )); then
+        echo "ERROR: step $STEP is >= 2000 — that is the FROZEN selection grid."
+        echo "       Grid checkpoints must be evaluated by the frozen grid jobs"
+        echo "       into baseline/, never as an exploratory diagnostic."
+        exit 1
+    fi
+    if [[ ! -d "${RUN_DIR}/checkpoint-${STEP}" ]]; then
+        echo "ERROR: adapter dir not found: ${RUN_DIR}/checkpoint-${STEP}"; exit 1
+    fi
+done
+
+for STEP in "${STEP_LIST[@]}"; do
+    # Zero-padded to 4 digits so the name sorts correctly and never ends in a
+    # bare step number that a selection glob could parse.
+    MODEL_NAME="${NAME_STEM}-step$(printf '%04d' "$STEP")-EXPLORATORY"
+    ADAPTER="${RUN_DIR}/checkpoint-${STEP}"
+
+    if [[ -f "${FEATURE}/${MODEL_NAME}/Model_1/${MODEL_NAME}_NLS_estimation_T1(Model A).csv" ]]; then
+        echo "--- SKIP ${MODEL_NAME}: already estimated"
+        continue
+    fi
+
+    echo "--- ${MODEL_NAME}  (adapter=${ADAPTER})"
+
+    # ---------- ID eval on test_goods (teacher-forced log-probs) ----------
+    python eval/run_qwen_local.py \
+        --model_path models/Qwen2.5-7B-Instruct \
+        --adapter_path "$ADAPTER" \
+        --model_name "$MODEL_NAME" \
+        --data_file data/test_goods.json \
+        --treatment baseline \
+        --output_root "$FEATURE" \
+        --batch_size 8 \
+        --yes \
+        2>&1 | tee "logs/eval_${MODEL_NAME}.log"
+
+    # ---------- Model A NLS (link scale T=1; T<=0 hard-errors) ----------
+    python eval/estimate_qwen_checkpoint.py \
+        --model_name "$MODEL_NAME" \
+        --feature "$FEATURE" \
+        --link-scale 1 \
+        2>&1 | tee "logs/estimate_${MODEL_NAME}.log"
+
+    echo "--- Done: ${FEATURE}/${MODEL_NAME}"
+done
+
+echo "=== All steps done (EXPLORATORY, never enters selection/OOD) ==="
