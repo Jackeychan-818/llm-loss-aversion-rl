@@ -257,6 +257,7 @@
         "baselines",
         "baseline"
       ],
+      "scan_is_recursive": false,
       "dir_prefixes": {
         "1": "Qwen-7B-SFT-qd-seed1-ckpt",
         "2": "Qwen-7B-SFT-qd-seed2-ckpt"
@@ -286,25 +287,12 @@
         "n_evaluations_required": 30
       },
       "directories_found": {
-        "1": [
-          2000,
-          4000,
-          6000
-        ],
-        "2": []
-      },
-      "excluded_as_pilot_evaluations": {
-        "1": [
-          2000,
-          4000,
-          6000
-        ]
-      },
-      "attributable_to_full_runs": {
         "1": [],
         "2": []
       },
       "n_attributable_to_full_runs": 0,
+      "pilot_evaluations_quarantined_at": "baselines/pilot6k",
+      "pilot_exclusion_mechanism": "structural: the seed-1 pilot evaluations were moved into baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat full-run names, and this non-recursive scan cannot reach them.",
       "complete": false,
       "identity_verified": false
     },
@@ -324,7 +312,8 @@
         }
       },
       "checkpoint_identity": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-{2000,4000,6000}",
-      "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity.",
+      "evaluation_outputs": "baselines/pilot6k/Qwen-7B-SFT-qd-seed1-ckpt{2000,4000,6000}",
+      "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity. On 2026-08-06 the pilot's evaluation outputs were moved from the flat baselines/ names into baselines/pilot6k/ so a full-run evaluation cannot resume from them and silently return pilot numbers; see that directory's PROVENANCE.md.",
       "adapter_hash_available": false,
       "seeds_covered": [
         1

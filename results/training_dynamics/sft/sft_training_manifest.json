@@ -2,8 +2,8 @@
   "title": "SFT training metrics \u2014 provenance manifest",
   "generated_by": "eval/plot_sft_training_dynamics.py",
   "parser_version": "1.0.0",
-  "script_sha256": "1590df8fb65163f8f4c1478a5cad9936a9274acb8d9ec3c65190a1470d2114b1",
-  "git_commit_at_render": "c54e1dea388212bce489a5c6c0eacb6a30673512",
+  "script_sha256": "20f806d5c5b0fa1c0f1f600112685fbe64fd89319f6fdcbd84fa97272d631c3b",
+  "git_commit_at_render": "605b6c1d743283acfbc6a1ae27ec06882aa5cd77",
   "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
   "no_gpu_statement": "CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no frozen selector run, and no frozen/untouched suite was opened to produce these artifacts.",
   "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
@@ -38,8 +38,8 @@
   },
   "refresh": {
     "parser_version": "1.0.0",
-    "extraction_date": "2026-08-05",
-    "git_commit_at_extraction": "c54e1dea388212bce489a5c6c0eacb6a30673512",
+    "extraction_date": "2026-08-06",
+    "git_commit_at_extraction": "605b6c1d743283acfbc6a1ae27ec06882aa5cd77",
     "runs": {
       "sft_full_seed1": {
         "run_id": "sft_full_seed1",
@@ -300,6 +300,7 @@
         "baselines",
         "baseline"
       ],
+      "scan_is_recursive": false,
       "dir_prefixes": {
         "1": "Qwen-7B-SFT-qd-seed1-ckpt",
         "2": "Qwen-7B-SFT-qd-seed2-ckpt"
@@ -329,25 +330,12 @@
         "n_evaluations_required": 30
       },
       "directories_found": {
-        "1": [
-          2000,
-          4000,
-          6000
-        ],
-        "2": []
-      },
-      "excluded_as_pilot_evaluations": {
-        "1": [
-          2000,
-          4000,
-          6000
-        ]
-      },
-      "attributable_to_full_runs": {
         "1": [],
         "2": []
       },
       "n_attributable_to_full_runs": 0,
+      "pilot_evaluations_quarantined_at": "baselines/pilot6k",
+      "pilot_exclusion_mechanism": "structural: the seed-1 pilot evaluations were moved into baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat full-run names, and this non-recursive scan cannot reach them.",
       "complete": false,
       "identity_verified": false
     }
@@ -359,6 +347,7 @@
           "baselines",
           "baseline"
         ],
+        "scan_is_recursive": false,
         "dir_prefixes": {
           "1": "Qwen-7B-SFT-qd-seed1-ckpt",
           "2": "Qwen-7B-SFT-qd-seed2-ckpt"
@@ -388,25 +377,12 @@
           "n_evaluations_required": 30
         },
         "directories_found": {
-          "1": [
-            2000,
-            4000,
-            6000
-          ],
-          "2": []
-        },
-        "excluded_as_pilot_evaluations": {
-          "1": [
-            2000,
-            4000,
-            6000
-          ]
-        },
-        "attributable_to_full_runs": {
           "1": [],
           "2": []
         },
         "n_attributable_to_full_runs": 0,
+        "pilot_evaluations_quarantined_at": "baselines/pilot6k",
+        "pilot_exclusion_mechanism": "structural: the seed-1 pilot evaluations were moved into baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat full-run names, and this non-recursive scan cannot reach them.",
         "complete": false,
         "identity_verified": false
       },
@@ -426,7 +402,8 @@
           }
         },
         "checkpoint_identity": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-{2000,4000,6000}",
-        "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity.",
+        "evaluation_outputs": "baselines/pilot6k/Qwen-7B-SFT-qd-seed1-ckpt{2000,4000,6000}",
+        "provenance_note": "The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity. On 2026-08-06 the pilot's evaluation outputs were moved from the flat baselines/ names into baselines/pilot6k/ so a full-run evaluation cannot resume from them and silently return pilot numbers; see that directory's PROVENANCE.md.",
         "adapter_hash_available": false,
         "seeds_covered": [
           1
@@ -475,13 +452,13 @@
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.json": {
-        "sha256": "d45d2d8590d2290ea0de7e68b0a81f3eb5943693a53a894b6618f63173de3b6d",
-        "size_bytes": 18590,
+        "sha256": "0bbfb46ab41ffe0b95b28c2cb08b18f16b8a107d57ecc9ce63f1b26f7bda0c8f",
+        "size_bytes": 18974,
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.md": {
-        "sha256": "748e11b103237fa9912414710dca9f7d662ccd4a404d8ec4cba903d55414b6df",
-        "size_bytes": 7836,
+        "sha256": "ddea29ff50dad2d04d026e7b9eb8f2b8b7112880692bd518e8ad4e0b6b291436",
+        "size_bytes": 8067,
         "provenance": "snapshot-rendered"
       },
       "README.md": {
@@ -495,8 +472,8 @@
         "provenance": "derived from tracked results/causal_baseline_pilot/"
       },
       "sft_behavioral_trajectory.png": {
-        "sha256": "cfb1597dcc03e94a20fa3c00e7b8a4f8e626a741d6d96cd51f32378be13b75e4",
-        "size_bytes": 207369,
+        "sha256": "e5b639aeb3105d9ece04767f9bf2053043f2faad3ddc82eea6cbb6a5d40c3d48",
+        "size_bytes": 184568,
         "provenance": "derived from tracked results/causal_baseline_pilot/"
       }
     }

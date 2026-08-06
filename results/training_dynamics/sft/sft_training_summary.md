@@ -78,7 +78,7 @@ The two full SFT runs have completed training, but their behavioral checkpoint g
 | 4,000 | +0.059 (0.014) | +0.012 (0.033) | 0.060 | 0.718 | 0.156 | 0.126 | 0.900 |
 | 6,000 | +0.047 (0.014) | +0.023 (0.033) | 0.052 | 0.725 | 0.150 | 0.124 | 0.901 |
 
-The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity.
+The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity. On 2026-08-06 the pilot's evaluation outputs were moved from the flat baselines/ names into baselines/pilot6k/ so a full-run evaluation cannot resume from them and silently return pilot numbers; see that directory's PROVENANCE.md.
 
 The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.
 

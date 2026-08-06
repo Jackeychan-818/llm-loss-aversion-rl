@@ -785,11 +785,10 @@ def scan_full_behavioural_grid() -> dict:
     look at the machine) and is recorded in the manifest; render and --check
     then consume the recorded scan, which keeps them snapshot-reproducible.
 
-    Directory NAMES are not identity. The seed-1 2k/4k/6k evaluation directories
-    were produced on 2026-07-27 from the PILOT adapters, back when the pilot
-    still occupied checkpoints/sft_qwen_delta_seed1 (renamed to *_pilot6k before
-    the full run reused that path on 2026-07-29). They are therefore listed but
-    excluded from the full-run grid count.
+    Only the FLAT `<root>/<prefix><step>/Model_1` layout counts. The seed-1
+    pilot's own 2k/4k/6k evaluations used exactly these names and now live one
+    level down in `baselines/pilot6k/` (see that directory's PROVENANCE.md), so
+    they are structurally excluded rather than excluded by a hardcoded step list.
     """
     grid_steps = list(range(SELECTION_GRID_STRIDE, 30001, SELECTION_GRID_STRIDE))
     found: dict[int, list[int]] = {}
@@ -803,21 +802,24 @@ def scan_full_behavioural_grid() -> dict:
                 if (base / f"{prefix}{step}" / "Model_1").is_dir():
                     hits.append(step)
         found[seed] = sorted(set(hits))
-    known_pilot = {1: [2000, 4000, 6000]}
-    attributable = {s: [k for k in v if k not in known_pilot.get(s, [])]
-                    for s, v in found.items()}
     n_needed = len(grid_steps) * len(FULL_GRID_PREFIX)
-    n_attr = sum(len(v) for v in attributable.values())
+    n_found = sum(len(v) for v in found.values())
+    pilot_dir = PROJECT_ROOT / "baselines" / "pilot6k"
     return {
         "scanned_roots": FULL_GRID_ROOTS,
+        "scan_is_recursive": False,
         "dir_prefixes": {str(k): v for k, v in FULL_GRID_PREFIX.items()},
         "required": {"seeds": list(FULL_GRID_PREFIX), "checkpoints": grid_steps,
                      "n_evaluations_required": n_needed},
         "directories_found": {str(k): v for k, v in found.items()},
-        "excluded_as_pilot_evaluations": {str(k): v for k, v in known_pilot.items()},
-        "attributable_to_full_runs": {str(k): v for k, v in attributable.items()},
-        "n_attributable_to_full_runs": n_attr,
-        "complete": n_attr == n_needed,
+        "n_attributable_to_full_runs": n_found,
+        "pilot_evaluations_quarantined_at": (
+            str(pilot_dir.relative_to(PROJECT_ROOT)) if pilot_dir.is_dir() else None),
+        "pilot_exclusion_mechanism": (
+            "structural: the seed-1 pilot evaluations were moved into "
+            "baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat "
+            "full-run names, and this non-recursive scan cannot reach them."),
+        "complete": n_found == n_needed,
         "identity_verified": False,
     }
 
@@ -896,13 +898,18 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
                                "sha256": sha256_of(PILOT_TABLE)},
         },
         "checkpoint_identity": "checkpoints/sft_qwen_delta_seed1_pilot6k/checkpoint-{2000,4000,6000}",
+        "evaluation_outputs": "baselines/pilot6k/Qwen-7B-SFT-qd-seed1-ckpt{2000,4000,6000}",
         "provenance_note": (
             "The July-27 evaluation logs record the adapter path as "
             "checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained "
             "into that path on July 26 and was renamed to *_pilot6k before the "
             "full run reused the name on July 29, so those logs refer to the "
             "PILOT adapters. Directory mtimes and the pilot's own manifest "
-            "(max_steps=6000) confirm the identity."),
+            "(max_steps=6000) confirm the identity. On 2026-08-06 the pilot's "
+            "evaluation outputs were moved from the flat baselines/ names into "
+            "baselines/pilot6k/ so a full-run evaluation cannot resume from them "
+            "and silently return pilot numbers; see that directory's "
+            "PROVENANCE.md."),
         "adapter_hash_available": False,
         "seeds_covered": [1],
         "checkpoints_covered": sorted(int(x) for x in df["step"]),
@@ -917,14 +924,16 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
 
 
 def plot_behavioural(df: pd.DataFrame, path: Path) -> None:
+    # d = sqrt(lambda^2 + eta^2) is retained in the CSV but no longer plotted:
+    # it is a deterministic function of the first two panels, so the panel added
+    # no information the reader could not already see.
     panels = [("lambda", "λ  (loss aversion)", True),
               ("eta", "η  (status-quo bias)", True),
-              ("d", "d = sqrt(λ² + η²)", False),
               ("consistency", "paired consistency", False),
               ("keep_both", "keep-both fraction", False),
               ("trade_both", "trade-both fraction", False),
               ("W", "W", False)]
-    fig, axes = plt.subplots(2, 4, figsize=(18, 8))
+    fig, axes = plt.subplots(2, 3, figsize=(14.5, 8))
     c = RUNS["sft_pilot6k_seed1"]["color"]
     for ax, (col, title, zero) in zip(axes.ravel(), panels):
         if col in ("lambda", "eta"):
@@ -939,17 +948,12 @@ def plot_behavioural(df: pd.DataFrame, path: Path) -> None:
         ax.set_xlabel("pilot training step")
         ax.set_xticks(sorted(df["step"]))
         ax.grid(alpha=0.25)
-    axes.ravel()[-1].axis("off")
-    axes.ravel()[-1].text(
-        0.0, 0.5,
-        "EXPLORATORY seed-1 PILOT\n"
-        "test_goods = VALIDATION\n"
-        "incomplete 3-point grid\n"
-        "no frozen selector run\n"
-        "NOT a full-run result\n\n"
-        "Model A NLS, link scale T=1\n"
-        "N = 9,890 cases per point",
-        fontsize=9.5, va="center", ha="left", color="#7a2020")
+    fig.text(0.5, 0.012,
+             "EXPLORATORY seed-1 PILOT  ·  test_goods = VALIDATION  ·  incomplete "
+             "3-point grid  ·  no frozen selector run  ·  NOT a full-run result"
+             "     |     Model A NLS, structural link scale T=1  ·  N = 9,890 "
+             "cases per point  ·  error bars = ±1 SE",
+             fontsize=9, ha="center", va="bottom", color="#7a2020")
     fig.suptitle(
         "SFT behavioral trajectory — EXPLORATORY seed-1 pilot (cosine -> 6,000), "
         "test_goods VALIDATION, incomplete three-point grid, no frozen selector; "
@@ -958,7 +962,7 @@ def plot_behavioural(df: pd.DataFrame, path: Path) -> None:
         "implied by, the SFT training-metric curves.", fontsize=11, y=0.985,
         va="top")
     fig.tight_layout()
-    fig.subplots_adjust(top=0.885)
+    fig.subplots_adjust(top=0.885, bottom=0.10)
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
