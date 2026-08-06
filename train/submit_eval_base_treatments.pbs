@@ -1,0 +1,116 @@
+#!/bin/bash
+# ============================================================
+# PBS — MATCHED LOCAL BASE under a PROMPT-LEVEL treatment (debias / forced)
+#
+# Why this job exists
+# -------------------
+# The project's premise is that post-training removes ownership-dependent
+# choice. The cheap alternative is a PROMPT: the `debias` treatment already
+# instructs the model to ignore status-quo and gain-loss framing. If a prompt
+# alone collapsed lambda, the case for training would be much weaker.
+#
+# That comparison has never been run. `debias/` and `forced/` contain ONLY
+# Qwen-7B-GRPO; there is no base-model measurement under either treatment. So
+# the repository cannot currently answer "does prompting alone do what training
+# does?" — the treatment numbers exist only for a model that was already trained.
+#
+# This job fills that gap: the EXACT local base weights, NO adapter, the same
+# 9,890 test_goods rows, the same teacher-forced scorer, the same Model A NLS at
+# structural link scale T=1 — differing from baseline/Qwen-7B-Base-Local
+# (lambda = 7.637, eta = 1.007) in the PROMPT ALONE.
+#
+# Reads as a matched contrast:
+#     baseline/Qwen-7B-Base-Local   base weights, plain prompt      lambda = 7.637
+#     debias/Qwen-7B-Base-Local     base weights, debias prompt     lambda = ?
+#     baselines/Qwen-7B-SFT-...     trained weights, plain prompt   lambda = ?
+#
+# Submit (debias is the informative one; forced completes the triple):
+#   qsub -v TREATMENT=debias train/submit_eval_base_treatments.pbs
+#   qsub -v TREATMENT=forced train/submit_eval_base_treatments.pbs
+#   qsub -v TREATMENT=debias,LIMIT=20 train/submit_eval_base_treatments.pbs  # smoke
+#
+# ~20-25 min per treatment (9,890 cases at ~1.15 batches/s, batch 8, + NLS).
+#
+# Scope guards:
+#   * test_goods ONLY. Never OOD-50, never the frozen-unused set, never the
+#     frozen method-comparison or semantic suites.
+#   * Output root is the treatment name (debias/ or forced/), so this cannot
+#     collide with baseline/ or with the confirmatory selector globs.
+#   * The model name carries no `ckpt` token and no trailing step number, so
+#     eval/select_checkpoint.py can neither match nor parse it.
+#   * This is a BASE-MODEL measurement. It selects nothing and gates nothing.
+# ============================================================
+#PBS -N lz-base-treat
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/base_treat_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/base_treat_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
+
+TREATMENT="${TREATMENT:-debias}"
+MODEL_NAME="${MODEL_NAME:-Qwen-7B-Base-Local}"
+DATA="data/test_goods.json"          # VALIDATION rows; not overridable here
+LIMIT="${LIMIT:-}"
+LIMIT_ARGS=()
+[[ -n "$LIMIT" ]] && LIMIT_ARGS+=(--limit "$LIMIT")
+
+# The whole point is the PROMPT contrast; `baseline` here would silently
+# duplicate the existing matched base and overwrite nothing useful.
+case "$TREATMENT" in
+  debias|forced) ;;
+  *) echo "REFUSED: TREATMENT='$TREATMENT' must be debias or forced."
+     echo "         The plain-prompt base already exists at baseline/$MODEL_NAME."
+     exit 2 ;;
+esac
+# Defence in depth: never let a treatment eval reach a final/frozen suite.
+case "$DATA" in
+  *ood_new_goods*|*frozen_unused*|*method_comparison*|*semantic*)
+     echo "REFUSED: base-treatment eval must use test_goods only."; exit 2 ;;
+esac
+
+echo "=== GPU check ==="; nvidia-smi
+if [[ ! -f models/Qwen2.5-7B-Instruct/config.json ]]; then
+    echo "ERROR: local base model not found at models/Qwen2.5-7B-Instruct"; exit 1
+fi
+echo "Base + '$TREATMENT' prompt  ->  $TREATMENT/$MODEL_NAME   (NO adapter, data=$DATA)"
+
+# ---------- Eval: exact local base, NO adapter, treatment prompt ----------
+# --output_root defaults to the treatment name, so this lands in debias/ or
+# forced/ and leaves baseline/Qwen-7B-Base-Local untouched.
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --model_name "$MODEL_NAME" \
+    --data_file "$DATA" \
+    --treatment "$TREATMENT" \
+    --batch_size 8 \
+    "${LIMIT_ARGS[@]}" \
+    --yes \
+    2>&1 | tee "logs/eval_${TREATMENT}_${MODEL_NAME}.log"
+
+# ---------- Same structural code as every other checkpoint ----------
+if [[ -z "$LIMIT" ]]; then
+    python eval/estimate_qwen_checkpoint.py \
+        --feature "$TREATMENT" \
+        --model_name "$MODEL_NAME" \
+        --link-scale 1 \
+        2>&1 | tee "logs/estimate_${TREATMENT}_${MODEL_NAME}.log"
+else
+    echo "LIMIT set ($LIMIT) — skipping NLS (structural estimation needs the full set)."
+fi
+
+echo "=== Done: $TREATMENT/$MODEL_NAME ==="
+echo "Compare against baseline/$MODEL_NAME (lambda = 7.637, eta = 1.007):"
+echo "  same weights, same rows, same scorer, same estimator — prompt differs only."

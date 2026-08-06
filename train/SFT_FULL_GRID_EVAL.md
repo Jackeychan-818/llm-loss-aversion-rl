@@ -46,6 +46,35 @@ done
 Note that a partial grid is **not** eligible for the frozen selector, which
 requires the complete 2k–30k @ 2k grid. It is fine for the trajectory plot.
 
+## Run this first — the base model under a debias prompt (2 jobs, ~45 min)
+
+Cheapest high-value measurement available, and it is a **prerequisite for
+interpreting the grid**, not a side quest.
+
+The `debias` treatment instructs the model to ignore status-quo and gain–loss
+framing — it is the no-training alternative to everything this project does. But
+`debias/` and `forced/` currently contain **only** `Qwen-7B-GRPO`. There is no
+base-model measurement under either treatment, so the repository cannot answer
+"does prompting alone do what training does?" If a prompt collapsed λ from 7.637
+on its own, the entire grid would be measuring something far less interesting.
+
+```bash
+cd $HOME/scratch/lambda-zero
+qsub -v TREATMENT=debias train/submit_eval_base_treatments.pbs   # the informative one
+qsub -v TREATMENT=forced train/submit_eval_base_treatments.pbs   # completes the triple
+```
+
+Same weights, same 9,890 rows, same scorer, same Model A NLS at T=1 as
+`baseline/Qwen-7B-Base-Local` (λ = 7.637, η = 1.007) — **the prompt is the only
+thing that differs**. Results land in `debias/Qwen-7B-Base-Local/` and
+`forced/Qwen-7B-Base-Local/`.
+
+Smoke-test one first if you want to confirm the path end to end:
+
+```bash
+qsub -v TREATMENT=debias,LIMIT=20 train/submit_eval_base_treatments.pbs
+```
+
 ## Budget
 
 The two full SFT *training* runs consumed 2.8 GPU-hours and were charged ≈317 SU,
@@ -53,6 +82,10 @@ which naively scales to roughly **1,000–1,400 SU for the 30-job grid** against
 reported balance of ≈3,312 SU. Confirm the actual charging rate before committing
 to the full grid — this is a material fraction of the remaining allocation and
 the estimate is an extrapolation, not a measurement.
+
+The two base-treatment jobs above are ≈2 checkpoint-equivalents (~45 min), so
+running them first costs almost nothing and tells you whether the grid is worth
+its full price.
 
 ## Monitoring
 
