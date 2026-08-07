@@ -1,143 +1,76 @@
-# Evaluating the full SFT checkpoint grid (behavioral trajectory)
+# Full SFT checkpoint-grid evaluation
 
-How to produce the λ/η trajectory for the two **completed full matched-SFT runs**
-(seed 1 and seed 2, cosine → 30,000). Training is done; this is the behavioral
-measurement that training completion does *not* provide.
+## Status: complete (August 7, 2026)
 
-Nothing here is submitted automatically. Copy the block you want and `qsub` it.
+Both completed matched-SFT runs were evaluated at every frozen checkpoint:
 
-## What each job does
+- seeds 1 and 2;
+- steps 2,000 through 30,000 at a 2,000-step stride;
+- 30/30 evaluations, each with 9,890 paired `test_goods` validation cases;
+- deterministic teacher-forced Yes/No scoring and Model A NLS at structural
+  link scale T=1;
+- zero recorded parse failures.
 
-`train/submit_eval_baseline_ckpt.pbs` (unchanged, already frozen) loads one LoRA
-checkpoint, scores all 9,890 `test_goods` cases from both perspectives with
-deterministic greedy decoding, then fits Model A NLS at structural link scale
-T=1. Output lands in `baselines/Qwen-7B-SFT-qd-seed{N}-ckpt{S}/`.
+The unchanged selector then chose seed 1 at step 4,000 and seed 2 at step
+6,000. These are validation selections, not final-test estimates. Any
+SFT-versus-GRPO winner claim still requires the untouched method-comparison
+suite under `METHOD_COMPARISON_PROTOCOL.md`.
 
-Measured cost per checkpoint, from the pilot logs: 1,237 batches at ~1.15 it/s
-≈ **18 min inference + a few minutes NLS ≈ 20–25 min**. Walltime is 2 h, so each
-job has ample headroom.
+Results and checks:
 
-## Full grid — 2,000 stride (the frozen grid; 30 jobs, ~11–13 GPU-hours)
+- `results/sft_grid_verification.json`
+- `results/checkpoint_selection/Qwen-7B-SFT-qd-seed{1,2}.json`
+- `results/training_dynamics/sft/sft_behavioral_trajectory.{csv,png}`
+- `results/training_dynamics/sft/sft_training_summary.{json,md}`
 
-```bash
-cd $HOME/scratch/lambda-zero
-for SEED in 1 2; do
-  for CKPT in 2000 4000 6000 8000 10000 12000 14000 16000 18000 \
-              20000 22000 24000 26000 28000 30000; do
-    qsub -v METHOD=sft,SEED=$SEED,CKPT=$CKPT train/submit_eval_baseline_ckpt.pbs
-  done
-done
-```
+The historical evaluation did not emit an eval-time manifest. The verification
+snapshot establishes expected-adapter hashes and complete evaluation artifacts,
+but it cannot cryptographically prove which adapter generated each prediction
+file. Raw predictions also remain untracked. Future verifier runs hash both raw
+perspective files; future evaluation infrastructure should bind adapter, data,
+code, and output hashes at inference time.
 
-## Reduced grid — 4,000 stride (16 jobs, ~6 GPU-hours)
+## Important separation from the pilot
 
-Use this if the SU budget is tight; it gives the shape of the trajectory and can
-be infilled later with the remaining steps.
+The earlier seed-1 pilot used a cosine schedule ending at 6,000. The full runs
+used a cosine schedule ending at 30,000, so their step-6,000 weights are not
+interchangeable. Pilot evaluations remain quarantined in `baselines/pilot6k/`
+and are excluded structurally from the flat full-grid scan.
 
-```bash
-cd $HOME/scratch/lambda-zero
-for SEED in 1 2; do
-  for CKPT in 2000 6000 10000 14000 18000 22000 26000 30000; do
-    qsub -v METHOD=sft,SEED=$SEED,CKPT=$CKPT train/submit_eval_baseline_ckpt.pbs
-  done
-done
-```
+## Rerunning a checkpoint (only if recovery is required)
 
-Note that a partial grid is **not** eligible for the frozen selector, which
-requires the complete 2k–30k @ 2k grid. It is fine for the trajectory plot.
-
-## Run this first — the base model under a debias prompt (2 jobs, ~45 min)
-
-Cheapest high-value measurement available, and it is a **prerequisite for
-interpreting the grid**, not a side quest.
-
-The `debias` treatment instructs the model to ignore status-quo and gain–loss
-framing — it is the no-training alternative to everything this project does. But
-`debias/` and `forced/` currently contain **only** `Qwen-7B-GRPO`. There is no
-base-model measurement under either treatment, so the repository cannot answer
-"does prompting alone do what training does?" If a prompt collapsed λ from 7.637
-on its own, the entire grid would be measuring something far less interesting.
+`train/submit_eval_baseline_ckpt.pbs` evaluates one checkpoint. It is restricted
+to `test_goods` validation and refuses the OOD/frozen suites.
 
 ```bash
-cd $HOME/scratch/lambda-zero
-qsub -v TREATMENT=debias train/submit_eval_base_treatments.pbs   # the informative one
-qsub -v TREATMENT=forced train/submit_eval_base_treatments.pbs   # completes the triple
+cd "$HOME/scratch/lambda-zero"
+qsub -v METHOD=sft,SEED=1,CKPT=4000 train/submit_eval_baseline_ckpt.pbs
 ```
 
-Same weights, same 9,890 rows, same scorer, same Model A NLS at T=1 as
-`baseline/Qwen-7B-Base-Local` (λ = 7.637, η = 1.007) — **the prompt is the only
-thing that differs**. Results land in `debias/Qwen-7B-Base-Local/` and
-`forced/Qwen-7B-Base-Local/`.
+Do not launch the full 30-job grid again: the outputs already exist and the
+runner resumes existing prediction files. If recovery is genuinely needed,
+first identify the exact failed cell and preserve the existing artifacts.
 
-Smoke-test one first if you want to confirm the path end to end:
-
-```bash
-qsub -v TREATMENT=debias,LIMIT=20 train/submit_eval_base_treatments.pbs
-```
-
-## Budget
-
-The two full SFT *training* runs consumed 2.8 GPU-hours and were charged ≈317 SU,
-which naively scales to roughly **1,000–1,400 SU for the 30-job grid** against a
-reported balance of ≈3,312 SU. Confirm the actual charging rate before committing
-to the full grid — this is a material fraction of the remaining allocation and
-the estimate is an extrapolation, not a measurement.
-
-The two base-treatment jobs above are ≈2 checkpoint-equivalents (~45 min), so
-running them first costs almost nothing and tells you whether the grid is worth
-its full price.
-
-## Monitoring
+Monitor the stable per-model logs rather than a wildcard PBS directive path:
 
 ```bash
 qstat -u jackeyc0
-ls -d baselines/Qwen-7B-SFT-qd-seed*-ckpt*/Model_1 | wc -l   # 30 when complete
-tail -f logs/eval_baseline_*.out
+tail -f logs/eval_Qwen-7B-SFT-qd-seed1-ckpt4000.log
+tail -f logs/estimate_Qwen-7B-SFT-qd-seed1-ckpt4000.log
 ```
 
-## After the jobs land
+PBS stdout/stderr is left at the scheduler's default job-specific path because
+PBS does not expand `${PBS_JOBID}` inside `#PBS -o/-e` directives.
 
-```bash
-python eval/plot_sft_training_dynamics.py --refresh   # rescans the grid
-python eval/plot_sft_training_dynamics.py --check
-```
+## Separate base-prompt treatment control
 
-`--refresh` rescans `baselines/` and records what it found in the manifest. The
-behavioral figure then gains the two full-run trajectories alongside the pilot.
+`train/submit_eval_base_treatments.pbs` is available for matched local-base
+`debias` and `forced` prompt evaluations. No result artifact for those jobs is
+part of this branch, so their status is **not established here**.
 
-## Guard rails already in place
+## Guard rails
 
-- **`test_goods` is VALIDATION**, never a final test. The PBS script hard-refuses
-  OOD-50 and the frozen-unused suite, and the frozen method-comparison and
-  semantic suites are untouched.
-- **Output root is `baselines/`, not `baseline/`.** The confirmatory selector
-  globs `baseline/*`, so these evaluations cannot be swept into the frozen
-  seed1→2,000 / seed2→6,000 GRPO selection.
-- **The pilot's evaluations are quarantined** in `baselines/pilot6k/` (moved
-  2026-08-06; see its `PROVENANCE.md`). They previously occupied the exact flat
-  names these jobs write to, and `eval/run_qwen_local.py` resumes from any
-  existing `loss_aversion_X/Y.json` in the output directory — so three of the
-  thirty jobs would have printed `Already complete: 9890 / Nothing to do` and
-  returned **pilot** numbers under a full-run label. Verify the quarantine held
-  before submitting:
-
-  ```bash
-  ls -d baselines/Qwen-7B-SFT-qd-seed*-ckpt* 2>/dev/null   # must be empty
-  ```
-
-- **No selector run.** Producing the trajectory does not select a checkpoint.
-  Running `eval/select_checkpoint.py` on this grid is a separate, deliberate act
-  governed by `CAUSAL_BASELINE_PROTOCOL.md`, and it requires the
-  `--provenance_note` recording that OOD-50 and the frozen-unused suite are
-  already opened, so any SFT-vs-GRPO comparison is post-hoc unless a new
-  untouched suite is frozen first.
-
-## What the resulting curve will and will not show
-
-It will show how λ, η, consistency, keep-both, trade-both and W evolve across
-training for both full seeds, on validation data.
-
-It will **not** establish that SFT beats GRPO, that any particular checkpoint is
-the right one, or that the behavior generalizes — those need the frozen untouched
-method-comparison suite. And the pilot's step-6,000 point is still not comparable
-to the full runs' step-6,000 point: different cosine endpoints, different weights.
+- `test_goods` is validation/checkpoint-selection data, not an untouched test.
+- Output root is `baselines/`, not the confirmatory GRPO `baseline/` root.
+- The frozen unused-configuration suite and OOD-50 are never reopened here.
+- The trajectory and selector do not establish an SFT-versus-GRPO winner.

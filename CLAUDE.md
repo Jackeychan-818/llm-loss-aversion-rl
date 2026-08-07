@@ -61,10 +61,12 @@ confirmatory seeds passed the frozen ID-selection, OOD-50, and GSM8K gates.**
 - Raw-prediction archival (derived results + manifests ARE committed; the raw
   X/Y predictions, ~167 MB, are not — numbers are traceable but not
   independently re-derivable from the repo alone).
-- Full matched SFT training is complete for seeds 1 and 2 through 30,000 steps,
-  with 15 checkpoints per seed and provenance manifests on NSCC. Full-grid
-  evaluation and frozen SFT selection have not run; training completion is not
-  a behavioral result. Sign-only remains a one-seed 6k exploratory pilot.
+- Full matched SFT training is complete for seeds 1 and 2 through 30,000 steps.
+  The 30/30 checkpoint `test_goods` validation grid is evaluated and the frozen
+  selector chose seed 1 at 4k (lambda=-0.034, eta=0.027) and seed 2 at 6k
+  (lambda=-0.089, eta=-0.143). These are validation-selected behavioral
+  results, not an untouched method comparison. Sign-only remains a one-seed 6k
+  exploratory pilot.
   A new untouched comparison suite, robust inference, prompt-semantic
   robustness, and IFEval remain active.
 - **CPU-only paper-gate package complete (July 30, branch
@@ -125,7 +127,7 @@ Estimation methods (in `core_exp_refactored.py`):
 | 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen ID/OOD/GSM8K verdicts pass |
 | 4. Primary evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and once-opened prospective configuration results exist; raw/durable artifacts remain incomplete |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | 🟡 SFT trained; evaluation gated | Full SFT seeds 1/2 reached 30k; full SFT grid/selection, full sign-only runs, scale-matched sign control, robust inference, prompt robustness, and IFEval pending |
+| 6. Baselines/robustness | 🟡 SFT validation complete; comparison gated | Full SFT training/grid/selection complete; full sign-only/scale-matched runs, untouched comparison, robust headline inference, prompt robustness, and IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---

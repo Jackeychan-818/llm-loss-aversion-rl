@@ -28,6 +28,7 @@ This file combines the recent git commits into a project-level history, so the r
 | Jul 28, 2026 | `6c31e81` plus status reconciliation | Committed the manuscript source tree, result registry, paper scripts, and Qwen-utility delta builder; the follow-up reconciliation reduced the redundant root TeX manuscript to a deprecated pointer. | The earlier untracked/canonical-source problem is substantially resolved. Generated outputs, duplicate local copies, and the overlapping utility-delta builders still require classification. |
 | Jul 30, 2026 | NSCC full SFT runs; manifests pending repository sync | Completed matched SFT seeds 1 and 2 through 30k with all 15 checkpoints per seed; preserved the seed-1 pilot separately. Measured runtime was 5,422 seconds for seed 1 and 4,668 seconds for seed 2 (mean approximately 5,045 seconds, 1.40 hours per seed, 0.168 seconds per step); total charged cost approximately 317 SU. An earlier entry applied seed 1's 5,422 seconds to both seeds and therefore understated SFT throughput; corrected Aug 5, 2026 from the per-run Trainer summaries recorded in `results/training_dynamics/sft/sft_training_manifest.json`. | SFT training is complete, but full-grid evaluation and selection have not run. The reported balance is approximately 3,312 SU; no full-SFT behavioral or method-superiority claim is yet supported. |
 | Jul 30, 2026 | `adc729b`–`5554c9a` (branch `codex/cpu-paper-gates`) | CPU-only paper-gate package: froze a new untouched method-comparison suite + semantic-counterbalancing (`data/method_comparison/`); froze `METHOD_COMPARISON_PROTOCOL.md`; specified+tested the scale-matched reward control and added an ENV-001 hard-fail; added a robustness inference layer (pair-clustered bootstrap + estimator recovery) with CPU-only PBS jobs; produced deterministic full-behavior (`results/full_behavior/`) and GRPO-efficiency (`results/grpo_efficiency/`) analyses. No GPU jobs, no inference, no frozen suite opened. | Experiment and analysis are frozen and auditable ahead of the GPU phase. ABLATION-001 is spec-complete/run-pending; PAIR-001/INFER-001/ENV-001 are partially addressed; a provenance gap (`git_commit:"unknown"` in the SFT manifests, `SFTPROV-001`) is recorded. No new behavioral or method-winner claim. |
+| Aug 6–7, 2026 | `581b075`–`16574b9` plus governance correction | Quarantined the pilot outputs, evaluated and verified the complete 2-seed × 15-checkpoint SFT validation grid, ran the unchanged selector, and added the full training/behavioral trajectories. | Seed 1 selected step 4k (lambda=-0.034, eta=0.027); seed 2 selected step 6k (lambda=-0.089, eta=-0.143). These are validation-selected results, not a method winner. Historical outputs lack eval-time adapter-to-prediction binding and tracked raw predictions. |
 
 ## Current Research Snapshot
 
@@ -53,20 +54,19 @@ This file combines the recent git commits into a project-level history, so the r
 - The exploratory causal-baseline pilot is complete on `test_goods`: SFT and
   sign-only GRPO both reduce lambda, but the one-seed, three-checkpoint pilot
   is hypothesis-generating only.
-- Full matched SFT training is complete for both predeclared seeds through
-  30,000 steps, with the complete checkpoint grids. Full-grid behavioral
-  evaluation and frozen selection remain pending.
+- Full matched SFT training and the complete 30-checkpoint validation grid are
+  complete. Frozen selection chose seed 1 at 4k and seed 2 at 6k; the untouched
+  method-comparison suite remains unopened, so no SFT-versus-GRPO winner is
+  established.
 - The framing result is adverse for any broad “general debiasing” claim.
 - Human and frontier-superiority claims are paused pending comparable tasks,
   estimands, model endpoints, samples, scorers, and estimators.
 
 ## Remaining Work
 
-- Freeze a new untouched comparison suite and method-comparison protocol before
-  opening the full SFT trajectories. The already-opened prospective suite
-  cannot be reused for method development.
-- Evaluate and select the complete two-seed SFT grids only after that freeze;
-  complete the two-seed sign-only/scale-matched program when budget permits.
+- Complete the two-seed sign-only/scale-matched program when budget permits,
+  resolve every family selector manifest, then open the already-frozen
+  untouched method-comparison suite once.
 - Finish raw prediction, adapter, environment, and reproduction archival for
   every claim-carrying result.
 - Add pair/good-aware inference, estimator-recovery simulations, and explicit

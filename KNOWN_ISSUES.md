@@ -4,7 +4,7 @@ A running log of problems encountered, potential risks, and things to verify
 before they become bugs. `PAPER_READINESS.md` is the authoritative prioritized
 summary for the current full-paper plan.
 
-## Current Paper Direction — July 30, 2026
+## Current Paper Direction — August 7, 2026
 
 - **Primary model:** Qwen-own-delta GRPO, with checkpoint 8,000 as the current
   exploratory selected candidate.
@@ -20,10 +20,10 @@ summary for the current full-paper plan.
   was opened once on the matched base and two selected seeds. Lambda was 5.946
   for base, 0.031 for seed 1, and −0.053 for seed 2. This is new
   configurations of familiar goods/pairs, not unseen-goods OOD.
-- **Causal baselines:** infrastructure and a one-seed 6k pilot exist. Full SFT
-  seeds 1 and 2 have completed 30k training with all 15 checkpoints per seed,
-  but the full grids have not been evaluated or selected. Sign-only remains a
-  pilot. No method winner or confirmatory comparison exists.
+- **Causal baselines:** full SFT seeds 1 and 2 completed 30k training, all 30
+  validation checkpoint evaluations, and frozen selection (seed 1 → 4k; seed
+  2 → 6k). Sign-only remains a pilot. No method winner or confirmatory
+  cross-method comparison exists.
 - **Economic rationale:** use Qwen's own estimated preference ordering rather
   than imposing the preferences of frontier models. Both reward sources remain
   pseudo-utility signals, not objective cardinal ground truth.
@@ -47,17 +47,17 @@ what already happened.
 | `BUILD-001` | P0 reproducibility | Open | `draft/aaai27/main.tex` requires `figures/task_overview.pdf`, but the figure is untracked. The submission checker passes only because local untracked figures mask the clean-checkout failure. | Track the required vector figures or make the default documented build generate them before checking; verify from `git archive`. |
 | `RESUME-001` | P1 correctness | Open | Explicit resume paths in `train/grpo_train.py` and `train/sft_train.py` are not required to belong to the current output directory and are not checked against immutable seed/config/data manifests. | Validate ancestry and the prior manifest before loading; never overwrite provenance before the check passes. |
 | `ABLATION-001` | P0 identification | Spec-complete, run-pending | Sign-only GRPO changes `±|delta|` to `±1` while reward-scale normalization is disabled. It therefore changes both relative case weighting and global gradient scale. A `scale_matched` control (±c, c=E[\|delta\|]=0.685029) is now specified, implemented (default path unchanged), and tested (`train/build_scale_matched_spec.py`, `train/test_scale_matched_reward.py`, config `qwen25_7b_qwen_delta_scale_matched.yaml`). | Train the scale-matched (and sign-only) runs and compare under `METHOD_COMPARISON_PROTOCOL.md` (GPU, budget-gated). |
-| `SFT-EVAL-001` | P0 claim validity | Open | Full SFT seeds 1 and 2 completed 30k training with complete checkpoint grids, but no full-run checkpoint has been behaviorally evaluated and no selector has run. Training loss or completion cannot establish that SFT beats GRPO. | Freeze the new untouched suite and comparison protocol first; then evaluate the complete validation grids, apply the unchanged selector, and reserve method claims for the new untouched comparison. |
+| `SFT-EVAL-001` | P0 claim validity | Resolved for validation (2026-08-07) | The complete 2-seed × 15-checkpoint grid was evaluated on `test_goods` validation and the unchanged selector chose seed 1 → 4k and seed 2 → 6k. This closes the missing-trajectory problem, not method superiority. | Closed for SFT validation. Cross-method claims remain gated by ABLATION-001, the unfinished sign-only/scale-matched families, and the one-shot untouched comparison. |
 | `PILOT-001` | P0 provenance | Open | `results/causal_baseline_pilot/` contains only a summary JSON and hand-facing table. W, Jacobian condition numbers, and runtimes are not in the JSON; raw predictions, fit CSVs, hashes, commands, and a deterministic generator are absent. | Add immutable run/eval manifests, machine-readable inputs for every table cell, and a deterministic aggregation command before citation beyond exploratory status. |
 | `ENV-001` | P1 reproducibility | Partial | `train/grpo_train.py` now HARD-FAILS if the installed TRL drops any algorithm-defining GRPOConfig key (`beta`, `epsilon`, `loss_type`, `scale_rewards`, `num_generations`, `temperature`, `mask_truncated_completions`, `max_completion_length`); non-critical keys still warn. A repository-wide environment/version lock is still absent (`ENVIRONMENT.md` now declares the CPU-phase Python>=3.10 + SciPy/NumPy minimums, explicitly NOT a full lock). | Also record exact Torch/Transformers/TRL/PEFT versions and model revision/hash in immutable run manifests. |
 | `SFTPROV-001` | P1 provenance | Open | Full-SFT and pilot `sft_dataset_manifest.json` record `git_commit: "unknown"` (the `git rev-parse` subprocess failed on the NSCC compute node). Source data/delta/goods SHAs match the protocol so runs are traceable, but the exact training commit is not captured and cannot be reconstructed with certainty. | Capture git commit robustly at run time (e.g. pass it via the PBS environment) for future runs; note the gap for the completed SFT runs. |
-| `EVAL-001` | P1 correctness | Open | `eval/run_qwen_local.py` resumes an output directory keyed mainly by model name without validating adapter, base, dataset, treatment, or hashes. Different evaluations can be silently mixed. | Create and validate an immutable evaluation manifest before resume; refuse mismatches and concurrent directory reuse. |
+| `EVAL-001` | P1 correctness | Open | `eval/run_qwen_local.py` resumes an output directory keyed mainly by model name without validating adapter, base, dataset, treatment, or hashes. The completed SFT grid records expected adapter/NLS hashes and completeness, but its historical evaluator emitted no eval-time manifest, so adapter-to-prediction binding cannot be proved retrospectively. | Create and validate an immutable evaluation manifest before resume; bind adapter, base, dataset, treatment, code, and output hashes; refuse mismatches and concurrent directory reuse. |
 | `PBS-001` | P1 operations | Open | Several original PBS scripts pipe Python through `tee` without `set -o pipefail`, so a failed job can appear successful and leave stale/partial inputs for estimation. | Add failure propagation consistently and test representative failing commands. |
 | `ARTIFACT-001` | P0 reproducibility | Partial | Derived manifests make headline numbers traceable, but raw OOD/GSM8K generations, selected adapters, and a durable environment/package are not all available from a clean clone. | Publish or archive every claim-carrying raw artifact and adapter with hashes, licenses, exact commands, and environment metadata. |
 | `DOC-001` | P1 governance | In progress | Project status has drifted across `AGENTS.md`, `CLAUDE.md`, `PROJECT_OVERVIEW.md`, the canonical manuscript, and the historical AAAI workboard. | All mirrors point to this ledger/readiness/roadmap and contain no contradictory current statuses or prohibited claims. |
 | `REPO-001` | P2 hygiene | Open | Generated outputs, numbered duplicate copies, redundant delta builders/data, stale stashes/worktrees, and large loose Git objects obscure source state. | Classify or remove each item safely, update scoped ignores/build rules, then verify a clean worktree and clean-clone build. |
 
-The full two-seed causal-baseline launch should not begin until at least
+Any remaining two-seed causal-baseline launch should not begin until at least
 `PAIR-001`, `PROV-001`, `SELECT-001`, `RESUME-001`, `ABLATION-001`, and
 `ENV-001` are resolved or explicitly frozen as documented design limitations.
 
@@ -135,9 +135,9 @@ consistency.
 
 - derived result manifests are committed, but the full raw prediction,
   adapter, environment, and durable-release package is incomplete;
-- matched SFT and sign-only GRPO code is hardened, a pilot exists, and the two
-  full SFT training runs are complete, but full-grid SFT evaluation, full
-  sign-only training, and the new untouched comparison suite do not; and
+- matched SFT and sign-only GRPO code is hardened; full SFT training,
+  validation-grid evaluation, and selection are complete, but full sign-only/
+  scale-matched training and the untouched comparison do not; and
 - multi-start/conditioning diagnostics exist, but pair/good-aware inference
   and estimator-recovery validation remain incomplete.
 

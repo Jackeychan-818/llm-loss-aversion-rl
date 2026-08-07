@@ -23,7 +23,7 @@ readiness descriptions elsewhere in this file.
 A 7B model can be post-trained to reduce ownership-dependent choice while
 preserving its own estimated preference ordering.
 
-> **Status (July 30, 2026):** Exploratory checkpoint 8,000 remains the primary
+> **Status (August 7, 2026):** Exploratory checkpoint 8,000 remains the primary
 > candidate, and the **replication is CONFIRMED — 2/2 confirmatory seeds PASS**.
 > Seeds 1 and 2 reached the frozen 30,000-step endpoint; frozen ID selection
 > gave seed 1 → step 2,000 and seed 2 → step 6,000, and the one-shot OOD-50 +
@@ -33,10 +33,12 @@ preserving its own estimated preference ordering.
 > pseudo-utility validation are complete. The prospective unused-configuration
 > suite was evaluated once: matched-base λ=5.946 versus 0.031 and −0.053 for
 > the two selected seeds. Full matched SFT training is now complete for seeds
-> 1 and 2 through 30,000 steps, with all 15 checkpoints per seed and provenance
-> manifests present on NSCC. The full SFT evaluation grid and frozen selection
-> have not run, so there is no full-SFT behavioral result or method winner yet.
-> Sign-only remains a pilot only. The CPU-only paper-gate package (branch
+> 1 and 2 through 30,000 steps. The complete 30-checkpoint `test_goods`
+> validation grid was evaluated and the frozen selector chose seed 1 at step
+> 4,000 (lambda=-0.034, eta=0.027) and seed 2 at step 6,000
+> (lambda=-0.089, eta=-0.143). This is full-SFT behavioral validation, but not
+> an untouched comparison or a method-winner result. Sign-only remains a pilot
+> only. The CPU-only paper-gate package (branch
 > `codex/cpu-paper-gates`) is complete: a new untouched method-comparison suite
 > (`data/method_comparison/`) and comparison protocol
 > (`METHOD_COMPARISON_PROTOCOL.md`) are frozen; the scale-matched reward control
@@ -44,8 +46,8 @@ preserving its own estimated preference ordering.
 > (`eval/robust_inference.py`) and deterministic full-behavior
 > (`results/full_behavior/`) and GRPO-efficiency (`results/grpo_efficiency/`)
 > analyses exist — all with no GPU jobs, inference, or frozen-suite opening.
-> Still required for a full paper: GPU-phase SFT-grid evaluation + sign-only/
-> scale-matched training under the frozen protocol, prompt robustness, and
+> Still required for a full paper: sign-only/scale-matched training and one-shot
+> untouched method comparison under the frozen protocol, prompt robustness, and
 > complete raw-artifact archival. The project is venue-agnostic; `draft/aaai27/`
 > is historical.
 
@@ -61,6 +63,8 @@ preserving its own estimated preference ordering.
 | Qwen-own-delta GRPO, step 8k OOD | 0.226 | 0.790 | Intended final evidence; raw artifacts pending |
 | Confirmatory seed 1, frozen unused configs | 0.031 | 0.089 | Selected at step 2k; opened once |
 | Confirmatory seed 2, frozen unused configs | -0.053 | 0.693 | Selected at step 6k; opened once |
+| Matched SFT seed 1, selected ID | -0.034 | 0.027 | Step 4k; `test_goods` validation/post-hoc |
+| Matched SFT seed 2, selected ID | -0.089 | -0.143 | Step 6k; `test_goods` validation/post-hoc |
 | Consensus-delta GRPO, baseline | 0.177 | -0.048 | Reward-source ablation/reference |
 | Qwen-7B-GRPO, debias | 0.205 | 0.090 | Treatment robustness |
 | Qwen-7B-GRPO, forced | 0.173 | -0.379 | Treatment robustness |
@@ -137,7 +141,7 @@ where U = α + β item/attribute fixed effects, λ is loss aversion, and η is s
 | 3. Qwen-own GRPO training | ✅ Replication complete | Seeds 1 and 2 reached 30k; 2/2 frozen verdicts pass |
 | 4. Primary-model evaluation | 🟡 Evidence complete, release partial | ID, OOD-50, GSM8K, and prospective configuration results exist; raw/durable artifacts pending |
 | 5. Reward-source ablation | ✅ Consensus run complete | Consensus ID result committed |
-| 6. Baselines/robustness | 🟡 SFT trained; evaluation gated | Full SFT seeds 1/2 reached 30k; full SFT grid/selection, full sign-only runs, robust inference, prompt robustness, and IFEval pending |
+| 6. Baselines/robustness | 🟡 SFT validation complete; comparison gated | Full SFT grid/selection complete; full sign-only/scale-matched runs, untouched comparison, robust headline inference, prompt robustness, and IFEval pending |
 | 7. Paper writeup | ⏳ | Full paper after Priority-0 items in `PAPER_READINESS.md` |
 
 ---

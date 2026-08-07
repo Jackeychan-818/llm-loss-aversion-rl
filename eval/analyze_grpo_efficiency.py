@@ -327,6 +327,34 @@ def render_md(doc) -> str:
     return "\n".join(L)
 
 
+def numeric_differences(a, b, path="$", rtol=1e-12, atol=1e-15):
+    """Return JSON paths that differ beyond portable floating-point noise."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return [] if type(a) is type(b) and a == b else [path]
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return [] if math.isclose(float(a), float(b), rel_tol=rtol,
+                                  abs_tol=atol) else [path]
+    if type(a) is not type(b):
+        return [path]
+    if isinstance(a, dict):
+        if set(a) != set(b):
+            return [path]
+        out = []
+        for key in sorted(a):
+            out.extend(numeric_differences(a[key], b[key], f"{path}.{key}",
+                                           rtol, atol))
+        return out
+    if isinstance(a, list):
+        if len(a) != len(b):
+            return [path]
+        out = []
+        for i, (left, right) in enumerate(zip(a, b)):
+            out.extend(numeric_differences(left, right, f"{path}[{i}]",
+                                           rtol, atol))
+        return out
+    return [] if a == b else [path]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true")
@@ -334,10 +362,19 @@ def main():
     doc = build()
     outputs = {OUT_JSON: json.dumps(doc, indent=2) + "\n", OUT_MD: render_md(doc)}
     if args.check:
-        bad = [p.name for p, s in outputs.items() if not p.exists() or p.read_text() != s]
+        bad = []
+        if not OUT_JSON.exists():
+            bad.append(OUT_JSON.name)
+        else:
+            diffs = numeric_differences(json.loads(OUT_JSON.read_text()), doc)
+            if diffs:
+                bad.append(f"{OUT_JSON.name} ({', '.join(diffs[:3])})")
+        if not OUT_MD.exists() or OUT_MD.read_text() != outputs[OUT_MD]:
+            bad.append(OUT_MD.name)
         if bad:
             raise SystemExit("CHECK FAILED: drifted/missing " + ", ".join(bad))
-        print("CHECK PASSED: GRPO-efficiency outputs byte-identical.")
+        print("CHECK PASSED: GRPO-efficiency Markdown byte-identical; JSON "
+              "numerically identical within rtol=1e-12, atol=1e-15.")
         return
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for p, s in outputs.items():

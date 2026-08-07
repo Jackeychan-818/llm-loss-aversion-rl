@@ -1,5 +1,5 @@
 {
-  "title": "SFT grid verification \u2014 checkpoint identity and completeness",
+  "title": "SFT grid verification \u2014 adapter/artifact consistency and completeness",
   "generated_utc": "2026-08-07T06:12:08+00:00",
   "code_commit": "b749761fe0a5801f53263ede40937d972b616e42",
   "protocol": {
@@ -33,6 +33,13 @@
     "decoding": "deterministic greedy (do_sample=False)",
     "W_reference_utility_table": "baseline/Qwen-7B/Model_1/Qwen-7B_utility_of_each_goods_Model_A.csv",
     "comparator": "matched local base under the SAME plain `baseline` prompt (baseline/Qwen-7B-Base-Local, lambda=7.637, eta=1.007) \u2014 the grid used --treatment baseline, so the debias-treated base is NOT the matched comparator",
+    "verification_scope": {
+      "adapter_artifact_present_and_hashed": true,
+      "raw_prediction_files_present_and_hashed": false,
+      "structural_output_present_and_hashed": true,
+      "adapter_to_predictions_cryptographically_bound": false,
+      "limitation": "This historical verification snapshot records expected adapter and NLS hashes plus evaluation completeness, but not raw-prediction hashes. The evaluator emitted no eval-time run manifest, so it does not cryptographically prove which adapter generated each prediction file."
+    },
     "suites_not_opened": [
       "data/ood_new_goods*",
       "data/frozen_unused_test_goods.json",
@@ -43,7 +50,7 @@
   "n_verified": 30,
   "n_failed": 0,
   "complete": true,
-  "identity_verified": true,
+  "adapter_and_artifact_consistency_verified": true,
   "problems": [],
   "checkpoints": [
     {

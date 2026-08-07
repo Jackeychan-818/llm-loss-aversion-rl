@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Per-checkpoint IDENTITY + COMPLETENESS verification for the full SFT grid.
+Per-checkpoint ADAPTER/ARTIFACT CONSISTENCY + COMPLETENESS verification for the
+full SFT grid.
 
 Why this exists
 ---------------
@@ -13,9 +14,12 @@ estimation is still running — or died halfway — presents an indistinguishabl
 finished and unfinished checkpoints.
 
 This module is the explicit verification the plotting script's
-`build_behavioural` asks for before a complete grid may be plotted. It binds
-every grid cell to its adapter and its evaluation, and HARD-FAILS on anything
-missing, duplicated, mismatched or partial.
+`build_behavioural` asks for before a complete grid may be plotted. It checks
+the expected adapter and evaluation artifacts for every grid cell and
+HARD-FAILS on anything missing, duplicated, mismatched or partial. The old
+wording said this "binds" predictions to the adapter. That was too strong:
+the historical evaluator did not write an eval-time manifest, so the verifier
+cannot prove retrospectively which adapter produced a prediction file.
 
 Per checkpoint it checks:
   * adapter directory exists at the path the eval job used, and carries a
@@ -23,6 +27,7 @@ Per checkpoint it checks:
   * evaluation output dir resolves under exactly ONE scanned root (duplicate
     evaluations of the same seed/step are a hard failure).
   * both perspectives present: loss_aversion_X.json and _Y.json.
+  * both raw prediction files recorded with size + sha256.
   * N == EXPECTED_N paired case_ids, X and Y covering the same case_id set.
   * no parse failures: every row carries a finite [P(Yes), P(No)] pair.
   * NLS CSV exists, is named for structural link scale T=1, and yields finite
@@ -171,6 +176,12 @@ def verify_evaluation(seed: int, step: int, case_utilities: dict | None = None) 
             out["problems"].append(f"missing perspective file {p.name}")
     if out["problems"]:
         return out
+    out["raw_prediction_files"] = {
+        "X": {"path": str(xp.relative_to(PROJECT_ROOT)),
+              "size_bytes": xp.stat().st_size, "sha256": sha256_of(xp)},
+        "Y": {"path": str(yp.relative_to(PROJECT_ROOT)),
+              "size_bytes": yp.stat().st_size, "sha256": sha256_of(yp)},
+    }
     try:
         xr, yr = load_rows(xp), load_rows(yp)
     except Exception as exc:
@@ -315,7 +326,7 @@ def verify_grid() -> dict:
 
     n_required = len(SEEDS) * len(GRID_STEPS)
     return {
-        "title": "SFT grid verification — checkpoint identity and completeness",
+        "title": "SFT grid verification — adapter/artifact consistency and completeness",
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "code_commit": git_commit(),
         "protocol": {
@@ -336,6 +347,19 @@ def verify_grid() -> dict:
                 "(baseline/Qwen-7B-Base-Local, lambda=7.637, eta=1.007) — the "
                 "grid used --treatment baseline, so the debias-treated base is "
                 "NOT the matched comparator"),
+            "verification_scope": {
+                "adapter_artifact_present_and_hashed": True,
+                "raw_prediction_files_present_and_hashed": True,
+                "structural_output_present_and_hashed": True,
+                "adapter_to_predictions_cryptographically_bound": False,
+                "limitation": (
+                    "The historical evaluator did not emit an evaluation-time "
+                    "manifest binding its resolved adapter path/hash and data/code "
+                    "hashes to the prediction files. This verifier establishes "
+                    "expected-path consistency and artifact completeness at "
+                    "verification time, not cryptographic proof that the expected "
+                    "adapter produced those predictions."),
+            },
             "suites_not_opened": [
                 "data/ood_new_goods*", "data/frozen_unused_test_goods.json",
                 "data/method_comparison/"],
@@ -344,7 +368,7 @@ def verify_grid() -> dict:
         "n_verified": len(verified),
         "n_failed": n_required - len(verified),
         "complete": len(verified) == n_required,
-        "identity_verified": len(verified) == n_required,
+        "adapter_and_artifact_consistency_verified": len(verified) == n_required,
         "problems": problems,
         "checkpoints": cells,
     }

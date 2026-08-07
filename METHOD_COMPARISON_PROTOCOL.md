@@ -138,6 +138,15 @@ for this comparison.
 
 ## Append-only execution record
 
-*(none yet — no full-grid SFT checkpoint has been evaluated; the untouched suite
-is unopened. Add entries here when the GPU phase runs, without editing the rules
-above.)*
+### August 7, 2026 — SFT validation grids opened and selected
+
+The complete SFT grids were evaluated on `test_goods` validation (2 seeds × 15
+checkpoints, 9,890 cases per checkpoint) and the unchanged selector was run
+with the required provenance note. It selected seed 1 at step 4,000
+(lambda=-0.034, eta=0.027, d=0.043) and seed 2 at step 6,000
+(lambda=-0.089, eta=-0.143, d=0.168). This is post-freeze execution under the
+rules above, not an amendment.
+
+The untouched method-comparison and semantic suites remain unopened. Sign-only
+and scale-matched full runs/selections remain unresolved, so the pre-opening
+gate must continue to refuse evaluation and no method winner may be declared.

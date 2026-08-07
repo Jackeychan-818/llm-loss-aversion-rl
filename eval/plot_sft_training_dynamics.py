@@ -62,7 +62,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
 
 import matplotlib
@@ -827,9 +827,12 @@ def scan_full_behavioural_grid() -> dict:
     writes its PNGs before the NLS CSV lands, so a directory test marks a
     checkpoint complete while its estimation is still running — observed
     directly on 2026-08-06, when seed-1 step 24,000 had a populated `Model_1/`
-    and no CSV. The verifier instead requires, per checkpoint: the adapter
-    (hashed), both perspectives, N = 9,890 paired cases, zero parse failures, a
-    T=1 Model-A CSV, and finite estimates with positive standard errors.
+    and no CSV. The verifier instead requires, per checkpoint: the expected
+    adapter (hashed), both raw prediction files (hashed), N = 9,890 paired
+    cases, zero parse failures, a T=1 Model-A CSV, and finite estimates with
+    positive standard errors. Because the historical evaluator wrote no
+    eval-time manifest, this establishes artifact consistency, not
+    cryptographic binding from an adapter to its predictions.
 
     Only the FLAT `<root>/<prefix><step>` layout counts. The seed-1 pilot's own
     2k/4k/6k evaluations used exactly these names and now live one level down in
@@ -858,6 +861,7 @@ def scan_full_behavioural_grid() -> dict:
             "adapter_weight_sha256": a.get("adapter_weight_sha256"),
             "eval_dir": e["eval_dir"], "nls_csv": e["nls_csv"],
             "nls_csv_sha256": e["nls_csv_sha256"],
+            "raw_prediction_files": e.get("raw_prediction_files"),
             "lambda": e["lambda"], "lambda_se": e["lambda_se"],
             "eta": e["eta"], "eta_se": e["eta_se"], "d": e["d"],
             "consistency": e["consistency"], "keep_both": e["keep_both_rate"],
@@ -869,9 +873,11 @@ def scan_full_behavioural_grid() -> dict:
         "verifier": "eval/verify_sft_grid.py",
         "verification_manifest": "results/sft_grid_verification.json",
         "completion_test": (
-            "per-checkpoint verification (adapter hash, both perspectives, "
-            "N=9,890 paired cases, zero parse failures, T=1 Model-A CSV, finite "
-            "estimates with positive SEs) — NOT Model_1 directory existence"),
+            "per-checkpoint adapter/artifact consistency verification (expected "
+            "adapter hash, both raw predictions hashed, N=9,890 paired cases, "
+            "zero parse failures, T=1 Model-A CSV, finite estimates with positive "
+            "SEs) — NOT Model_1 directory existence"),
+        "verification_scope": man["protocol"]["verification_scope"],
         "scanned_roots": list(EVAL_ROOTS),
         "scan_is_recursive": False,
         "dir_prefixes": {str(k): v for k, v in FULL_GRID_PREFIX.items()},
@@ -887,7 +893,8 @@ def scan_full_behavioural_grid() -> dict:
             "full-run names, and this non-recursive scan cannot reach them."),
         "problems": man["problems"],
         "complete": man["complete"],
-        "identity_verified": man["identity_verified"],
+        "adapter_and_artifact_consistency_verified":
+            man["adapter_and_artifact_consistency_verified"],
         "verified_rows": rows,
         "protocol": man["protocol"],
     }
@@ -917,8 +924,6 @@ def load_frozen_selection() -> dict:
             "provenance_note": sel.get("provenance_note"),
             "manifest": str(p.relative_to(PROJECT_ROOT)),
             "manifest_sha256": sha256_of(p),
-            "manifest_mtime_utc": datetime.fromtimestamp(
-                p.stat().st_mtime, tz=timezone.utc).isoformat(timespec="seconds"),
             "read_only": ("selection performed earlier by "
                           "eval/select_checkpoint.py; this script only reads it"),
         }
@@ -986,25 +991,50 @@ def load_base_comparator() -> dict:
     }
 
 
+def normalize_grid_scan(grid_scan: dict | None) -> dict:
+    """Migrate the tracked pre-scope snapshot without using filesystem state."""
+    scan = dict(grid_scan or {"complete": False, "note": "no grid scan recorded"})
+    if "adapter_and_artifact_consistency_verified" not in scan:
+        scan["adapter_and_artifact_consistency_verified"] = bool(
+            scan.get("identity_verified"))
+    scan.pop("identity_verified", None)
+    scan.setdefault("verification_scope", {
+        "adapter_artifact_present_and_hashed": bool(
+            scan["adapter_and_artifact_consistency_verified"]),
+        "raw_prediction_files_present_and_hashed": False,
+        "structural_output_present_and_hashed": bool(
+            scan["adapter_and_artifact_consistency_verified"]),
+        "adapter_to_predictions_cryptographically_bound": False,
+        "limitation": (
+            "This recorded grid predates raw-prediction hashing and an eval-time "
+            "run manifest. It verifies expected adapter hashes plus evaluation "
+            "completeness, but does not cryptographically bind the predictions "
+            "to the adapter that generated them."),
+    })
+    return scan
+
+
 def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict]:
     """Assemble the ONLY already-evaluated SFT structural trajectory.
 
     Read-only: no inference, no estimator run, no selector. Uses the recorded
     full-grid scan and reports honestly when the grid is absent.
     """
-    scan = grid_scan or {"complete": False, "note": "no grid scan recorded"}
+    scan = normalize_grid_scan(grid_scan)
     grid_complete = bool(scan.get("complete"))
 
-    grid_verified = bool(scan.get("identity_verified"))
+    grid_verified = bool(scan.get("adapter_and_artifact_consistency_verified"))
     if grid_verified:
         statement = ("A complete 2-seed x 15-checkpoint SFT grid was located and "
-                     "every cell passed per-checkpoint identity and completeness "
-                     "verification; it is plotted read-only from the recorded "
-                     "verification manifest.")
+                     "every cell passed the recorded adapter/artifact consistency "
+                     "and completeness checks; it is plotted read-only from that "
+                     "snapshot. The historical run lacks an eval-time manifest, "
+                     "so adapter-to-prediction binding is not cryptographically "
+                     "proved.")
     elif grid_complete:
-        statement = ("A complete-looking grid was found but identity "
-                     "verification did not pass, so no full-run trajectory is "
-                     "plotted.")
+        statement = ("A complete-looking grid was found but adapter/artifact "
+                     "consistency verification did not pass, so no full-run "
+                     "trajectory is plotted.")
     else:
         statement = ("The two full SFT runs have completed training, but their "
                      "behavioral checkpoint grid is not fully evaluated and "
@@ -1013,17 +1043,15 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
     status = {
         "full_grid_scan": scan,
         "full_grid_complete": grid_complete,
-        "full_grid_identity_verified": grid_verified,
+        "full_grid_artifact_consistency_verified": grid_verified,
         "frozen_selector_run_for_sft": False,
         "statement": statement,
     }
 
     # The verified-grid path. A complete grid is only plotted when every cell
-    # passed eval/verify_sft_grid.py — identity, completeness and estimator
-    # checks — never on directory existence alone. `identity_verified` is set by
-    # the verifier, so a merely-complete-looking scan still falls through to the
-    # pilot branch below.
-    if grid_complete and scan.get("identity_verified"):
+    # passed eval/verify_sft_grid.py — adapter/artifact consistency,
+    # completeness and estimator checks — never on directory existence alone.
+    if grid_complete and scan.get("adapter_and_artifact_consistency_verified"):
         rows = scan.get("verified_rows") or []
         n_req = scan.get("required", {}).get("n_evaluations_required")
         if n_req is not None and len(rows) != n_req:
@@ -1071,8 +1099,12 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
             "W_available": bool(df["W"].notna().all()),
             "adapter_hash_available": bool(
                 df["adapter_weight_sha256"].notna().all()),
-            "identity_verification": scan.get("verification_manifest"),
-            "label": ("Full 2-seed x 15-checkpoint SFT grid, every cell verified; "
+            "artifact_verification": scan.get("verification_manifest"),
+            "inference_binding_verified": bool(
+                scan.get("verification_scope", {}).get(
+                    "adapter_to_predictions_cryptographically_bound")),
+            "label": ("Full 2-seed x 15-checkpoint SFT grid, every cell passed "
+                      "adapter/artifact consistency checks; "
                       "test_goods VALIDATION estimates used for checkpoint "
                       "selection — not final-test performance."),
         }
@@ -1260,16 +1292,19 @@ def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -
     if h2:
         fig.legend(h2, l2, loc="lower center", ncol=min(len(h2), 4),
                    frameon=False, fontsize=8.5,
-                   bbox_to_anchor=(0.5, 0.005 if is_full else 0.055))
+                   bbox_to_anchor=(0.5, 0.035 if is_full else 0.055))
 
     if is_full:
-        # No suptitle and no footer: this figure is meant to be dropped into a
-        # document whose CAPTION carries the context. The caveats it would
-        # otherwise print — test_goods is VALIDATION / checkpoint-selection data
-        # rather than final-test performance, the comparator is the matched base
-        # under the same plain prompt, and no SFT-vs-GRPO winner is implied —
-        # remain in README.md, sft_training_summary.{json,md} and the manifest.
-        pass
+        fig.suptitle(
+            "SFT behavioral trajectory  ·  test_goods validation  ·  "
+            "2 seeds × 15 checkpoints",
+            fontsize=12, y=0.988, va="top")
+        fig.text(
+            0.5, 0.006,
+            "Checkpoint-selection data, not an untouched test  ·  "
+            "Model A NLS (T=1), N=9,890 per point, error bars=±1 SE  ·  "
+            "No SFT-vs-GRPO winner implied",
+            fontsize=8.5, ha="center", va="bottom", color="#555555")
     else:
         fig.text(0.5, 0.012,
                  "EXPLORATORY seed-1 PILOT  ·  test_goods = VALIDATION  ·  incomplete "
@@ -1286,7 +1321,7 @@ def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -
             va="top")
     fig.tight_layout()
     if is_full:
-        fig.subplots_adjust(bottom=0.125)   # room for the series key only
+        fig.subplots_adjust(top=0.93, bottom=0.15)
     else:
         fig.subplots_adjust(top=0.875, bottom=0.10)
     fig.savefig(path, dpi=130)
@@ -1394,12 +1429,14 @@ def render_summary_md(summary: dict) -> str:
         ft = b["full_trajectory"]
         base = b.get("base_comparator") or {}
         L += [f"*{ft['label']}*", "",
-              f"Identity and completeness verified per checkpoint by "
-              f"`eval/verify_sft_grid.py` → `{ft['identity_verification']}`: "
-              f"adapter hash, both perspectives, N = 9,890 paired cases, zero "
-              f"parse failures, a T=1 Model-A CSV, and finite estimates with "
-              f"positive standard errors. A `Model_1/` directory alone is not a "
-              f"completion test.", ""]
+              f"Adapter/artifact consistency and completeness were checked per "
+              f"checkpoint by `eval/verify_sft_grid.py` → "
+              f"`{ft['artifact_verification']}`: expected adapter hash, both "
+              f"perspectives, N = 9,890 paired cases, zero parse failures, a "
+              f"T=1 Model-A CSV, and finite estimates with positive standard "
+              f"errors. The historical evaluator wrote no eval-time manifest, "
+              f"so this does **not** cryptographically prove which adapter "
+              f"generated each prediction file.", ""]
         if base.get("available"):
             L += [f"Comparator — matched local base under the **same plain "
                   f"`baseline` prompt** (same rows, scorer and estimator; only "
@@ -1446,6 +1483,30 @@ def render_summary_md(summary: dict) -> str:
 
 def render_readme(summary: dict, manifest: dict) -> str:
     w = summary["smoothing"]
+    behavioral = summary.get("behavioral", {})
+    full = behavioral.get("full_trajectory", {})
+    if full.get("available"):
+        selection = behavioral.get("frozen_selection", {})
+        picks = ", ".join(
+            f"seed {seed} → step {record.get('selected_step'):,}"
+            for seed, record in sorted(selection.items())
+            if record.get("selected_step") is not None)
+        behavioral_detail = f"""The full behavioral trajectory is recorded in
+`sft_behavioral_trajectory.csv` / `.png`: **2 seeds × 15 checkpoints**, all
+9,890 `test_goods` validation cases per checkpoint, Model A NLS at link scale
+T=1. The frozen selector was run after the complete grid: {picks}.
+
+The verifier established expected-adapter and evaluation-artifact consistency,
+not cryptographic adapter-to-prediction binding: the historical evaluator wrote
+no eval-time run manifest. The raw prediction files are not tracked in this
+repository, so the current 30 rows cannot be independently re-derived from a
+clean clone. The pilot remains quarantined and separate; it is not part of this
+full-run trajectory."""
+    else:
+        behavioral_detail = """The only recorded SFT structural trajectory is the
+**exploratory seed-1 pilot** (`sft_behavioral_trajectory.csv` / `.png`):
+`test_goods` validation, an incomplete 2k/4k/6k grid, Model A NLS at T=1, and
+no frozen selector. It is not a full-run result."""
     return f"""# SFT training metrics
 
 Native training curves for the two **completed full matched-SFT runs** (seed 1
@@ -1494,7 +1555,7 @@ byte-for-byte.
 | `sft_pilot_training_curves.png` | 3-panel pilot figure (linear axes) | snapshot-rendered |
 | `sft_pilot_training_curves_logscale.png` | log-y companion | snapshot-rendered |
 | `sft_training_summary.json` / `.md` | descriptive statistics + interpretation bounds | snapshot-rendered |
-| `sft_behavioral_trajectory.csv` / `.png` | exploratory pilot λ/η/d/consistency/keep/trade/W | derived from tracked `results/causal_baseline_pilot/` |
+| `sft_behavioral_trajectory.csv` / `.png` | full 2-seed × 15-checkpoint λ/η/consistency/keep/trade/W validation trajectory | snapshot-rendered from the recorded verified-grid scan |
 | `sft_training_manifest.json` | sources, hashes, versions, limitations | mixed |
 
 ## What SFT logs, and what it does not
@@ -1553,16 +1614,7 @@ though it were the first 6,000 steps of the full seed-1 trajectory.
 
 {summary['behavioral']['statement']}
 
-The only recorded SFT structural trajectory is the **exploratory seed-1 pilot**
-(`sft_behavioral_trajectory.csv` / `.png`): `test_goods` **validation**, an
-incomplete three-point grid (2k / 4k / 6k), Model A NLS at link scale T=1, no
-frozen selector, **not a full-run result**. It is read verbatim from the tracked
-`results/causal_baseline_pilot/` outputs; nothing was re-estimated here.
-
-The evaluation directories named `Qwen-7B-SFT-qd-seed1-ckpt{{2000,4000,6000}}`
-were produced from the **pilot** adapters, before the pilot directory was renamed
-and the full run reused its path. They are therefore reported by the grid scan
-but excluded from any full-run grid count.
+{behavioral_detail}
 
 ## Governance
 
@@ -1588,6 +1640,14 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
         if not manifest_path.exists():
             raise SystemExit(f"{manifest_path} missing — run --refresh first.")
         refresh_block = json.loads(manifest_path.read_text())["refresh"]
+
+    # The first full-grid snapshot used the over-broad key `identity_verified`.
+    # Migrate it deterministically during render so old tracked snapshots remain
+    # usable while all newly emitted artifacts state the narrower proof scope.
+    refresh_block = json.loads(json.dumps(refresh_block))
+    if "full_behavioral_grid_scan" in refresh_block:
+        refresh_block["full_behavioral_grid_scan"] = normalize_grid_scan(
+            refresh_block["full_behavioral_grid_scan"])
 
     # redirect outputs when rendering into a temp dir for --check
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1755,6 +1815,11 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
             "the *_pilot6k path are the authoritative identity.",
             "Raw trainer_state.json sources and job logs are gitignored, so the "
             "logged rows can be re-derived only on NSCC.",
+            "The historical SFT checkpoint evaluator emitted no eval-time run "
+            "manifest. The recorded grid verifies expected adapter hashes and "
+            "complete evaluation artifacts, but cannot cryptographically prove "
+            "which adapter generated each raw prediction file; those raw files "
+            "are also not tracked in the repository.",
             "git_commit_at_render / git_commit_at_extraction necessarily name the "
             "commit that was checked out when this file was written, i.e. the "
             "PARENT of the commit that contains it — a manifest cannot record its "
@@ -1811,8 +1876,8 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
         F_SUMMARY_JSON.name: "snapshot-rendered",
         F_SUMMARY_MD.name: "snapshot-rendered",
         F_README.name: "snapshot-rendered",
-        F_BEHAV_CSV.name: "derived from tracked results/causal_baseline_pilot/",
-        F_BEHAV_PNG.name: "derived from tracked results/causal_baseline_pilot/",
+        F_BEHAV_CSV.name: "snapshot-rendered from recorded verified-grid scan",
+        F_BEHAV_PNG.name: "snapshot-rendered from recorded verified-grid scan",
     }
     for name, kind in provenance.items():
         p = out_dir / name

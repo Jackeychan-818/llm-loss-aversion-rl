@@ -68,11 +68,11 @@ Each logged `loss` is the Trainer's mean over one logging interval (10 optimizer
 
 ## Behavioral / structural trajectory
 
-A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed per-checkpoint identity and completeness verification; it is plotted read-only from the recorded verification manifest.
+A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed the recorded adapter/artifact consistency and completeness checks; it is plotted read-only from that snapshot. The historical run lacks an eval-time manifest, so adapter-to-prediction binding is not cryptographically proved.
 
-*Full 2-seed x 15-checkpoint SFT grid, every cell verified; test_goods VALIDATION estimates used for checkpoint selection — not final-test performance.*
+*Full 2-seed x 15-checkpoint SFT grid, every cell passed adapter/artifact consistency checks; test_goods VALIDATION estimates used for checkpoint selection — not final-test performance.*
 
-Identity and completeness verified per checkpoint by `eval/verify_sft_grid.py` → `results/sft_grid_verification.json`: adapter hash, both perspectives, N = 9,890 paired cases, zero parse failures, a T=1 Model-A CSV, and finite estimates with positive standard errors. A `Model_1/` directory alone is not a completion test.
+Adapter/artifact consistency and completeness were checked per checkpoint by `eval/verify_sft_grid.py` → `results/sft_grid_verification.json`: expected adapter hash, both perspectives, N = 9,890 paired cases, zero parse failures, a T=1 Model-A CSV, and finite estimates with positive standard errors. The historical evaluator wrote no eval-time manifest, so this does **not** cryptographically prove which adapter generated each prediction file.
 
 Comparator — matched local base under the **same plain `baseline` prompt** (same rows, scorer and estimator; only training differs): λ = 7.637 (SE 0.627), η = 1.007 (SE 0.120), consistency = 0.009, keep-both = 0.991, trade-both = 0.000, W = 0.744.
 

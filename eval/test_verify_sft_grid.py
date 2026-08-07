@@ -12,6 +12,7 @@ that decides "the grid is ready" must look past the directory.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -106,6 +107,11 @@ def t_complete_cell_verifies(root: Path):
     check(ev["lambda_se"] > 0 and ev["eta_se"] > 0, "SEs must be positive")
     check(ev["n_cases"] == vsg.EXPECTED_N, "N must be 9,890 paired cases")
     check(ev["parse_failures"] == 0, "no parse failures expected")
+    check(set(ev["raw_prediction_files"]) == {"X", "Y"},
+          "both raw prediction files must be hashed")
+    check(all(len(v["sha256"]) == 64
+              for v in ev["raw_prediction_files"].values()),
+          "raw prediction hashes must be SHA-256")
     check("T1" in Path(ev["nls_csv"]).name, "CSV must record link scale T=1")
 
 
@@ -149,7 +155,8 @@ def t_partial_grid_hard_fails(root: Path):
     make_cell(root, 2, 2000)          # seed 2 only 1/15
     man = vsg.verify_grid()
     check(man["complete"] is False, "a 16/30 grid must not be complete")
-    check(man["identity_verified"] is False, "partial grid is not identity-verified")
+    check(man["adapter_and_artifact_consistency_verified"] is False,
+          "partial grid is not artifact-consistency verified")
     check(man["n_verified"] == 16, f"expected 16 verified, got {man['n_verified']}")
     check(len(man["problems"]) > 0, "problems must be reported for a partial grid")
 
@@ -160,7 +167,8 @@ def t_full_grid_verifies(root: Path):
             make_cell(root, seed, step)
     man = vsg.verify_grid()
     check(man["complete"] is True, f"30/30 grid should be complete: {man['problems'][:3]}")
-    check(man["identity_verified"] is True, "30/30 grid should be identity-verified")
+    check(man["adapter_and_artifact_consistency_verified"] is True,
+          "30/30 grid should pass artifact-consistency verification")
     check(man["n_verified"] == 30, f"expected 30 verified, got {man['n_verified']}")
     check(man["protocol"]["expected_n_per_checkpoint"] == 9890, "N recorded")
     check("baseline" in man["protocol"]["comparator"],
@@ -170,10 +178,11 @@ def t_full_grid_verifies(root: Path):
 # ── the plotting path ────────────────────────────────────────────────────────
 def t_plotting_refuses_unverified_grid():
     import plot_sft_training_dynamics as P
-    # complete=True but identity_verified=False must NOT produce a full trajectory.
-    df, status = P.build_behavioural({"complete": True, "identity_verified": False})
-    check(status["full_grid_identity_verified"] is False,
-          "status must record that identity verification did not pass")
+    # A complete-looking grid without consistency verification is still refused.
+    df, status = P.build_behavioural({
+        "complete": True, "adapter_and_artifact_consistency_verified": False})
+    check(status["full_grid_artifact_consistency_verified"] is False,
+          "status must record that consistency verification did not pass")
     check(df is None or str(df["run_role"].iloc[0]) != "full",
           "an unverified grid must never yield a full-run trajectory")
 
@@ -194,7 +203,9 @@ def t_plotting_accepts_verified_grid():
                 "d": 0.2236, "consistency": 0.8, "keep_both": 0.1,
                 "trade_both": 0.1, "W": 0.9, "n_cases": 9890, "parse_failures": 0,
             })
-    scan = {"complete": True, "identity_verified": True, "verified_rows": rows,
+    scan = {"complete": True,
+            "adapter_and_artifact_consistency_verified": True,
+            "verified_rows": rows,
             "required": {"n_evaluations_required": 30},
             "verification_manifest": "results/sft_grid_verification.json"}
     df, status = P.build_behavioural(scan)
@@ -219,11 +230,39 @@ def t_plotting_accepts_verified_grid():
 
 def t_partial_verified_rows_refused():
     import plot_sft_training_dynamics as P
-    scan = {"complete": True, "identity_verified": True,
+    scan = {"complete": True,
+            "adapter_and_artifact_consistency_verified": True,
             "verified_rows": [], "required": {"n_evaluations_required": 30}}
     df, status = P.build_behavioural(scan)
     check(df is None or str(df["run_role"].iloc[0]) != "full",
           "row count below the required grid must refuse the full path")
+
+
+def t_frozen_selection_is_mtime_independent():
+    import plot_sft_training_dynamics as P
+    real = P.PROJECT_ROOT
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        d = root / "results/checkpoint_selection"
+        d.mkdir(parents=True)
+        p = d / "Qwen-7B-SFT-qd-seed1.json"
+        p.write_text(json.dumps({"selected_step": 4000,
+                                 "protocol_frozen": "2026-07-15",
+                                 "rule": {"primary": "min d"},
+                                 "selection_data": "validation",
+                                 "provenance_note": "test"}))
+        P.PROJECT_ROOT = root
+        try:
+            first = P.load_frozen_selection()
+            os.utime(p, (1_900_000_000, 1_900_000_000))
+            second = P.load_frozen_selection()
+        finally:
+            P.PROJECT_ROOT = real
+    check(first == second, "frozen selection must not depend on filesystem mtime")
+    check("manifest_mtime_utc" not in first["1"],
+          "mtime must not enter the reproducible snapshot")
+    check(len(first["1"]["manifest_sha256"]) == 64,
+          "content hash remains the stable selection identifier")
 
 
 def main() -> int:
@@ -234,7 +273,8 @@ def main() -> int:
         with_root(fn)
         print(f"{fn.__name__}: done")
     for fn in (t_plotting_refuses_unverified_grid, t_plotting_accepts_verified_grid,
-               t_partial_verified_rows_refused):
+               t_partial_verified_rows_refused,
+               t_frozen_selection_is_mtime_independent):
         fn()
         print(f"{fn.__name__}: done")
 

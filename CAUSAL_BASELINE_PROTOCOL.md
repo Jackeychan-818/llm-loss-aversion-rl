@@ -271,8 +271,9 @@ August 5, 2026 from the per-run Trainer end-of-training summaries recorded in
 charged approximately 317 SU in total, reducing the reported allocation balance
 from 3,629 SU to approximately 3,312 SU.
 
-No full-run checkpoint has yet been evaluated on `test_goods`, and the frozen
-selector has not been run. Therefore:
+At the July 30 training milestone, no full-run checkpoint had yet been
+evaluated on `test_goods`, and the frozen selector had not been run. Therefore,
+at that time:
 
 - this entry records training completion, not SFT behavioral performance;
 - the seed-1 pilot remains the only evaluated SFT evidence and is exploratory;
@@ -282,8 +283,8 @@ selector has not been run. Therefore:
 - the complete 15-point grid must be retained because the frozen selector
   rejects incomplete grids.
 
-The next authorized phase is the CPU-only work package in
-`NSCC_CPU_WORK_PROMPT.md`. GPU evaluation remains budget-gated.
+The next authorized phase was the CPU-only work package in
+`NSCC_CPU_WORK_PROMPT.md`. The later evaluation outcome is recorded below.
 
 ### July 30, 2026 — CPU-only paper-gate package completed (branch codex/cpu-paper-gates)
 
@@ -319,3 +320,23 @@ record `git_commit: "unknown"` (the `git rev-parse` subprocess failed on the
 compute node). Source data/delta/goods SHAs match this protocol, so the runs are
 traceable, but the exact training commit is not captured. Recorded in
 `KNOWN_ISSUES.md`; cannot be reconstructed retroactively with certainty.
+
+### August 7, 2026 — full SFT validation grid and selection completed
+
+All 30 predeclared SFT checkpoints (2 seeds × 15 steps) were evaluated on the
+9,890-case `test_goods` validation set with the plain baseline prompt and Model
+A NLS at T=1. The recorded grid contains zero parse failures. The unchanged
+selector chose:
+
+- seed 1 → step 4,000: lambda=-0.034, eta=0.027, d=0.043,
+  consistency=0.730;
+- seed 2 → step 6,000: lambda=-0.089, eta=-0.143, d=0.168,
+  consistency=0.767.
+
+These are validation-selected results and may benefit from selection. They do
+not establish SFT-versus-GRPO superiority; the untouched method-comparison
+suite remains unopened until the sign-only and scale-matched families are
+trained and selected. The historical evaluator wrote no eval-time manifest,
+so `results/sft_grid_verification.json` establishes expected-adapter and
+evaluation-artifact consistency, not cryptographic adapter-to-prediction
+binding. Raw SFT-grid prediction files remain untracked.

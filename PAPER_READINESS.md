@@ -349,17 +349,16 @@ ordinary supervised LoRA fine-tuning is sufficient.
 5. preferably sign-only flat-reward GRPO to test whether delta magnitude adds
    value.
 
-**Status (July 30, 2026): infrastructure complete; exploratory pilot complete;
-full SFT training complete; confirmatory comparison still open.** Both SFT
-seeds reached 30,000 steps on NSCC and contain the complete 15-checkpoint grid.
-The full grid has not been evaluated and the selector has not run, so there is
-no full-SFT behavioral result. The seed-1 pilot evaluated steps
-2k/4k/6k on `test_goods` validation. Both methods reduce lambda sharply; SFT
-reaches `d = sqrt(lambda^2 + eta^2)` of 0.060 and 0.052 at 4k and 6k, while
-sign-only GRPO is less stable across the three checkpoints. These results do
-not show that SFT wins: the pilot has one seed, no frozen selector, an
-incomplete grid, and no untouched method-comparison suite. See
-`results/causal_baseline_pilot/pilot_table.md`.
+**Status (August 7, 2026): full SFT training, 30-checkpoint validation grid,
+and frozen per-seed selection complete; confirmatory method comparison still
+open.** Both SFT seeds reached 30,000 steps and all 15 checkpoints per seed were
+evaluated on `test_goods` validation. The unchanged selector chose seed 1 at
+step 4,000 (lambda=-0.034, eta=0.027, d=0.043, consistency=0.730) and seed 2 at
+step 6,000 (lambda=-0.089, eta=-0.143, d=0.168, consistency=0.767). These
+selected values are validation minima and may benefit from selection; they do
+not show that SFT wins. The historical evaluator also lacks an eval-time
+adapter-to-prediction manifest, and the raw prediction files are not tracked.
+See `results/training_dynamics/sft/` and `results/sft_grid_verification.json`.
 
 **Required next action:** before opening the full SFT checkpoint trajectories,
 freeze a new untouched comparison suite and the full method-comparison
@@ -367,9 +366,9 @@ protocol. **DONE (2026-07-30, branch `codex/cpu-paper-gates`):** the untouched
 suite is frozen (`data/method_comparison/`, 19,780 cases + semantic
 counterbalancing, unevaluated) and the protocol is frozen
 (`METHOD_COMPARISON_PROTOCOL.md`); the scale-matched control is specified+tested
-(ABLATION-001, run-pending). **Still pending (GPU/budget-gated):** evaluate the
-complete SFT grid, apply the unchanged selector, complete the matched
-sign-only/scale-matched runs, then open the untouched suite once. If matched SFT
+(ABLATION-001, run-pending). **Still pending (GPU/budget-gated):** complete the
+matched sign-only/scale-matched runs, resolve all selector manifests, then open
+the untouched suite once. If matched SFT
 confirms the effect, narrow the central claim from “GRPO is necessary” to
 “targeted post-training can remove ownership dependence,” with GRPO versus SFT
 treated as a mechanism and efficiency comparison (see
@@ -527,12 +526,11 @@ reproducibility work above.
 6. IN PROGRESS — archive and reproduce all Qwen-own-delta checkpoint and OOD
    artifacts. Derived results are traceable; complete raw predictions,
    adapters, environment, and durable release remain incomplete.
-7. IN PROGRESS — matched SFT seeds 1 and 2 have completed 30k training with the
-   full checkpoint grids, but full-grid evaluation/selection has not started.
-   Sign-only remains a one-seed 6k pilot. Freeze the new untouched
-   method-comparison suite and protocol before opening the full SFT
-   trajectories; then complete matched evaluations and sign-only training when
-   budget permits.
+7. IN PROGRESS — matched SFT seeds 1 and 2 completed 30k training, the full
+   30-checkpoint validation grid, and frozen selection (seed 1 → 4k; seed 2 →
+   6k). Sign-only remains a one-seed 6k pilot. The untouched method-comparison
+   suite and protocol are frozen but unopened; complete sign-only and
+   scale-matched training/selection before its one-shot opening.
 8. Add robust structural inference, multi-start optimization/utility
    diagnostics, and estimator-recovery checks.
 9. Add direct frozen preference-preservation and prompt-semantic robustness

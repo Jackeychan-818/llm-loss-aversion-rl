@@ -1,6 +1,10 @@
 # Prompt for the NSCC LLM — CPU-only paper gates, tasks 1–6
 
-Copy the prompt below into the NSCC-side LLM from the repository root.
+> **Historical execution prompt (completed July 30, 2026). Do not rerun.** The
+> status inside the quoted prompt is intentionally preserved as the state seen
+> before execution. Current status: the CPU gates are merged; the full 30-point
+> SFT validation grid and frozen selection are complete (seed 1 → 4k, seed 2 →
+> 6k); sign-only/scale-matched training and the untouched comparison remain.
 
 ---
 

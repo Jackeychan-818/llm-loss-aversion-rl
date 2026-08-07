@@ -56,7 +56,7 @@
       "median_grad_norm": 0.0074348612688481,
       "max_grad_norm_logged": 512.50830078125,
       "min_grad_norm_logged": 1.766474815667607e-05,
-      "final_learning_rate": 3.0377360626943077e-15,
+      "final_learning_rate": 3.0377360626943073e-15,
       "max_learning_rate_logged": 9.999997539434003e-07,
       "step_of_max_learning_rate": 1510,
       "n_nonfinite_records": 0,
@@ -122,7 +122,7 @@
       "median_grad_norm": 0.00394257111474865,
       "max_grad_norm_logged": 543.0353393554688,
       "min_grad_norm_logged": 1.3974831745144913e-05,
-      "final_learning_rate": 3.0377360626943077e-15,
+      "final_learning_rate": 3.0377360626943073e-15,
       "max_learning_rate_logged": 9.999997539434003e-07,
       "step_of_max_learning_rate": 1510,
       "n_nonfinite_records": 0,
@@ -378,7 +378,6 @@
       "pilot_exclusion_mechanism": "structural: the seed-1 pilot evaluations were moved into baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat full-run names, and this non-recursive scan cannot reach them.",
       "problems": [],
       "complete": true,
-      "identity_verified": true,
       "verified_rows": [
         {
           "seed": 1,
@@ -1047,12 +1046,20 @@
           "data/frozen_unused_test_goods.json",
           "data/method_comparison/"
         ]
+      },
+      "adapter_and_artifact_consistency_verified": true,
+      "verification_scope": {
+        "adapter_artifact_present_and_hashed": true,
+        "raw_prediction_files_present_and_hashed": false,
+        "structural_output_present_and_hashed": true,
+        "adapter_to_predictions_cryptographically_bound": false,
+        "limitation": "This recorded grid predates raw-prediction hashing and an eval-time run manifest. It verifies expected adapter hashes plus evaluation completeness, but does not cryptographically bind the predictions to the adapter that generated them."
       }
     },
     "full_grid_complete": true,
-    "full_grid_identity_verified": true,
+    "full_grid_artifact_consistency_verified": true,
     "frozen_selector_run_for_sft": true,
-    "statement": "A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed per-checkpoint identity and completeness verification; it is plotted read-only from the recorded verification manifest.",
+    "statement": "A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed the recorded adapter/artifact consistency and completeness checks; it is plotted read-only from that snapshot. The historical run lacks an eval-time manifest, so adapter-to-prediction binding is not cryptographically proved.",
     "full_trajectory": {
       "available": true,
       "seeds_covered": [
@@ -1100,8 +1107,9 @@
       "d_max_abs_discrepancy_vs_sqrt_lambda2_eta2": 1.1102230246251565e-16,
       "W_available": true,
       "adapter_hash_available": true,
-      "identity_verification": "results/sft_grid_verification.json",
-      "label": "Full 2-seed x 15-checkpoint SFT grid, every cell verified; test_goods VALIDATION estimates used for checkpoint selection \u2014 not final-test performance."
+      "artifact_verification": "results/sft_grid_verification.json",
+      "inference_binding_verified": false,
+      "label": "Full 2-seed x 15-checkpoint SFT grid, every cell passed adapter/artifact consistency checks; test_goods VALIDATION estimates used for checkpoint selection \u2014 not final-test performance."
     },
     "frozen_selection": {
       "1": {
@@ -1117,7 +1125,6 @@
         "provenance_note": "Matched-SFT causal baseline. OOD-50 and the frozen unused-configuration suite are already opened, so this selection is validation-based (test_goods, N=9,890) and any cross-method SFT-vs-GRPO comparison is post-hoc; a confirmatory method claim requires the untouched suite in METHOD_COMPARISON_PROTOCOL.md.",
         "manifest": "results/checkpoint_selection/Qwen-7B-SFT-qd-seed1.json",
         "manifest_sha256": "d1fa3fb8295073e77fa565e77650939c659b95f58dd7367a470a8bd7c232bc93",
-        "manifest_mtime_utc": "2026-08-06T11:21:07+00:00",
         "read_only": "selection performed earlier by eval/select_checkpoint.py; this script only reads it"
       },
       "2": {
@@ -1133,13 +1140,12 @@
         "provenance_note": "Matched-SFT causal baseline. OOD-50 and the frozen unused-configuration suite are already opened, so this selection is validation-based (test_goods, N=9,890) and any cross-method SFT-vs-GRPO comparison is post-hoc; a confirmatory method claim requires the untouched suite in METHOD_COMPARISON_PROTOCOL.md.",
         "manifest": "results/checkpoint_selection/Qwen-7B-SFT-qd-seed2.json",
         "manifest_sha256": "611233693a0a0967e5236ea1cba95ed1c316e71a19e3a7437945d573be146e6c",
-        "manifest_mtime_utc": "2026-08-06T11:21:26+00:00",
         "read_only": "selection performed earlier by eval/select_checkpoint.py; this script only reads it"
       }
     },
     "base_comparator": {
       "available": true,
-      "W": 0.7436334919879924,
+      "W": 0.7436334919879894,
       "rational_choice_rate": 0.5042467138523762,
       "model_name": "Qwen-7B-Base-Local",
       "treatment": "baseline (plain prompt) \u2014 matched to the SFT grid",

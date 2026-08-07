@@ -46,7 +46,7 @@ byte-for-byte.
 | `sft_pilot_training_curves.png` | 3-panel pilot figure (linear axes) | snapshot-rendered |
 | `sft_pilot_training_curves_logscale.png` | log-y companion | snapshot-rendered |
 | `sft_training_summary.json` / `.md` | descriptive statistics + interpretation bounds | snapshot-rendered |
-| `sft_behavioral_trajectory.csv` / `.png` | exploratory pilot λ/η/d/consistency/keep/trade/W | derived from tracked `results/causal_baseline_pilot/` |
+| `sft_behavioral_trajectory.csv` / `.png` | full 2-seed × 15-checkpoint λ/η/consistency/keep/trade/W validation trajectory | snapshot-rendered from the recorded verified-grid scan |
 | `sft_training_manifest.json` | sources, hashes, versions, limitations | mixed |
 
 ## What SFT logs, and what it does not
@@ -103,18 +103,19 @@ though it were the first 6,000 steps of the full seed-1 trajectory.
 
 ## Behavioral status
 
-A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed per-checkpoint identity and completeness verification; it is plotted read-only from the recorded verification manifest.
+A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed the recorded adapter/artifact consistency and completeness checks; it is plotted read-only from that snapshot. The historical run lacks an eval-time manifest, so adapter-to-prediction binding is not cryptographically proved.
 
-The only recorded SFT structural trajectory is the **exploratory seed-1 pilot**
-(`sft_behavioral_trajectory.csv` / `.png`): `test_goods` **validation**, an
-incomplete three-point grid (2k / 4k / 6k), Model A NLS at link scale T=1, no
-frozen selector, **not a full-run result**. It is read verbatim from the tracked
-`results/causal_baseline_pilot/` outputs; nothing was re-estimated here.
+The full behavioral trajectory is recorded in
+`sft_behavioral_trajectory.csv` / `.png`: **2 seeds × 15 checkpoints**, all
+9,890 `test_goods` validation cases per checkpoint, Model A NLS at link scale
+T=1. The frozen selector was run after the complete grid: seed 1 → step 4,000, seed 2 → step 6,000.
 
-The evaluation directories named `Qwen-7B-SFT-qd-seed1-ckpt{2000,4000,6000}`
-were produced from the **pilot** adapters, before the pilot directory was renamed
-and the full run reused its path. They are therefore reported by the grid scan
-but excluded from any full-run grid count.
+The verifier established expected-adapter and evaluation-artifact consistency,
+not cryptographic adapter-to-prediction binding: the historical evaluator wrote
+no eval-time run manifest. The raw prediction files are not tracked in this
+repository, so the current 30 rows cannot be independently re-derived from a
+clean clone. The pilot remains quarantined and separate; it is not part of this
+full-run trajectory.
 
 ## Governance
 

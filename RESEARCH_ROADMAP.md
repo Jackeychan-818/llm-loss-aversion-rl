@@ -1,6 +1,6 @@
 # Research Roadmap
 
-*Decision recorded: July 25, 2026; status reconciled July 30, 2026*
+*Decision recorded: July 25, 2026; status reconciled August 7, 2026*
 
 This document records the next experimental priorities after the confirmatory
 seed replication and the prospective unused-configuration evaluation. It is a
@@ -30,9 +30,11 @@ scope.
   30,000 steps. Each seed has the complete 15-checkpoint grid (2k–30k);
   measured runtime was 5,422 s (seed 1) and 4,668 s (seed 2), a mean of about
   5,045 s = 1.40 h/seed = 0.168 s/step, and the two runs cost about
-  317 SU. The reported balance is approximately 3,312 SU. The grid has not
-  been evaluated and no full-SFT checkpoint has been selected, so this is a
-  training milestone rather than a behavioral result.
+  317 SU. The reported balance is approximately 3,312 SU. All 30 checkpoints
+  were evaluated on `test_goods` validation; the frozen selector chose seed 1
+  at 4k (lambda=-0.034, eta=0.027) and seed 2 at 6k
+  (lambda=-0.089, eta=-0.143). These are validation-selected results, not an
+  untouched method comparison.
 
 The next work should therefore test why the intervention works, whether it is
 robust to prompt semantics, and whether capability retention extends beyond
@@ -54,9 +56,10 @@ Before treating any new comparison as a headline paper result:
 
 ## Priority 1: Matched causal baselines
 
-> **Implementation status (2026-07-30): infrastructure hardened; exploratory
-> pilot complete; full SFT training complete for both seeds; SFT full-grid
-> evaluation/selection and full sign-only training remain pending.**
+> **Implementation status (2026-08-07): infrastructure hardened; exploratory
+> pilot complete; full SFT training, full-grid validation evaluation, and
+> frozen selection complete for both seeds; full sign-only and scale-matched
+> training remain pending.**
 > The frozen design is in `CAUSAL_BASELINE_PROTOCOL.md`. Code: `train/sft_train.py`
 > (+ `configs/qwen25_7b_sft_qwen_delta.yaml`, `submit_train_sft_qwen_delta.pbs`) for
 > SFT; a `reward_weighting: magnitude|sign_only` option in the existing GRPO reward
@@ -68,10 +71,10 @@ Before treating any new comparison as a headline paper result:
 > The seed-1, 6k pilot is recorded in
 > `results/causal_baseline_pilot/pilot_table.md`. It used three validation
 > checkpoints per method, did not run the frozen selector, and cannot declare a
-> winner. Full SFT training now supplies the predeclared checkpoints, but no
-> full-grid behavioral results exist yet. Confirmatory method-comparison claims
-> require a newly frozen untouched comparison suite and completed matched
-> evaluation across methods.
+> winner. Full SFT now supplies all predeclared validation trajectories and
+> selections (seed 1 → 4k; seed 2 → 6k). Confirmatory method-comparison claims
+> still require completed sign-only/scale-matched families and the one-shot
+> frozen untouched comparison.
 
 ## Immediate CPU-only work package — COMPLETE (2026-07-30, branch codex/cpu-paper-gates)
 
@@ -92,9 +95,8 @@ inference, and no frozen suite opened:
    estimated separated).
 
 Original execution instructions: `NSCC_CPU_WORK_PROMPT.md`. The remaining
-Priority-1 steps are GPU/budget-gated: evaluate the full SFT grid, train
-sign-only + scale-matched, then open the new untouched suite once under the
-frozen protocol.
+Priority-1 steps are GPU/budget-gated: train and select sign-only +
+scale-matched, then open the new untouched suite once under the frozen protocol.
 
 ### 1A. Matched supervised fine-tuning
 

@@ -44,8 +44,10 @@
 #PBS -q normal
 #PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
 #PBS -l walltime=04:00:00
-#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/base_treat_${PBS_JOBID}.out
-#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/base_treat_${PBS_JOBID}.err
+# Leave PBS stdout/stderr at its default job-specific path. PBS does not expand
+# ${PBS_JOBID} in #PBS directives, so explicit paths here would make concurrent
+# submissions overwrite one literal shared filename. The commands below also
+# tee stable, per-treatment logs under logs/.
 #PBS -j oe
 #PBS -P personal-jackeyc0
 

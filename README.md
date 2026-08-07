@@ -76,20 +76,21 @@ construction: `data/FROZEN_UNUSED_TEST.md` + `data/frozen_unused_test_goods.mani
   early-trajectory point; frozen selection remains 2k–30k @ 2k.
 - Archive the Qwen-own-delta checkpoint sweep and OOD prediction/estimation
   artifacts.
-- **Priority-1 causal baselines — full SFT training complete; evaluation and
-  matched comparison pending.**
+- **Priority-1 causal baselines — full SFT training, validation grid, and
+  selection complete; matched comparison pending.**
   Matched **SFT** (tests whether RL is necessary) and **sign-only GRPO** (tests
   whether reward magnitude |δ̃| adds beyond the sign) — two different questions,
   both distinct from the frontier-consensus-delta reward-*source* ablation. The
   frozen design (incl. the SFT↔GRPO data-exposure calculation) is in
   `CAUSAL_BASELINE_PROTOCOL.md`. Default GRPO behavior is unchanged
   (`reward_weighting: magnitude`). The one-seed 6k validation pilot shows large
-  reductions for both methods, with SFT near `d=0.05` at 4k–6k, but it has no
-  frozen selector or untouched comparison suite and declares no winner. Full
-  SFT seeds 1 and 2 have now reached 30k with all 15 checkpoints per seed;
-  those full trajectories have not been evaluated or selected. See
-  `results/causal_baseline_pilot/pilot_table.md`; confirmatory claims require a
-  newly frozen suite plus completed matched evaluation.
+  reductions for both methods, but it declares no winner. Full SFT seeds 1 and
+  2 reached 30k and all 30 validation checkpoints were evaluated; the frozen
+  selector chose seed 1 at 4k (`lambda=-0.034`, `eta=0.027`) and seed 2 at 6k
+  (`lambda=-0.089`, `eta=-0.143`). These are validation-selected results, not
+  an untouched comparison. See `results/training_dynamics/sft/`; confirmatory
+  method claims require the frozen untouched suite after all families are
+  trained and selected.
 - **Later priorities:** frozen prompt-semantic counterbalancing, IFEval, one
   compact GSM-Symbolic-500 capability extension; confidence calibration is
   explicitly lower priority. See `RESEARCH_ROADMAP.md` for ordering.
