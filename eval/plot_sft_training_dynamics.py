@@ -51,7 +51,9 @@ Run from the repository root:
 from __future__ import annotations
 
 import argparse
+import csv as csv_module
 import filecmp
+import glob
 import hashlib
 import json
 import math
@@ -60,20 +62,26 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.ticker as mticker  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-PARSER_VERSION = "1.0.0"
+PARSER_VERSION = "1.1.0"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUT = PROJECT_ROOT / "results" / "training_dynamics" / "sft"
+sys.path.insert(0, str(PROJECT_ROOT / "eval"))
+# Same choice/row helpers the frozen selector uses, so the base comparator and
+# the grid rows are computed by one code path rather than two.
+from sweep_partition_estimate import (  # noqa: E402
+    choice_from_row as choice_helper, load_rows as load_rows_helper)
 
 # ── run registry ──────────────────────────────────────────────────────────────
 # run_id -> identity. `state` / `runlog` are RAW NSCC sources, needed only by
@@ -175,9 +183,13 @@ PILOT_SEPARATION = (
     "interchangeable."
 )
 NO_GPU_STATEMENT = (
-    "CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no "
-    "frozen selector run, and no frozen/untouched suite was opened to produce "
-    "these artifacts."
+    "CPU-only rendering. This script ran no GPU/PBS job, no inference and no "
+    "checkpoint evaluation, and opened no frozen or untouched suite. It also "
+    "selects nothing: where a frozen checkpoint selection is shown it is READ "
+    "from manifests written earlier by eval/select_checkpoint.py, and this "
+    "script neither re-ranks nor breaks a tie. The underlying checkpoint "
+    "evaluations were produced by separate GPU jobs "
+    "(train/submit_eval_baseline_ckpt.pbs)."
 )
 
 
@@ -779,48 +791,173 @@ def parse_pilot_W() -> dict[int, float]:
 
 
 def scan_full_behavioural_grid() -> dict:
-    """Read-only filesystem scan for an already-evaluated FULL SFT grid.
+    """Read-only VERIFICATION of an already-evaluated FULL SFT grid.
 
     A working-tree observation, so it runs in --refresh (the mode allowed to
     look at the machine) and is recorded in the manifest; render and --check
     then consume the recorded scan, which keeps them snapshot-reproducible.
 
-    Only the FLAT `<root>/<prefix><step>/Model_1` layout counts. The seed-1
-    pilot's own 2k/4k/6k evaluations used exactly these names and now live one
-    level down in `baselines/pilot6k/` (see that directory's PROVENANCE.md), so
-    they are structurally excluded rather than excluded by a hardcoded step list.
+    Completion is decided by eval/verify_sft_grid.py, NOT by the presence of a
+    `Model_1` directory. `estimate_qwen_checkpoint.py` creates `Model_1/` and
+    writes its PNGs before the NLS CSV lands, so a directory test marks a
+    checkpoint complete while its estimation is still running — observed
+    directly on 2026-08-06, when seed-1 step 24,000 had a populated `Model_1/`
+    and no CSV. The verifier instead requires, per checkpoint: the adapter
+    (hashed), both perspectives, N = 9,890 paired cases, zero parse failures, a
+    T=1 Model-A CSV, and finite estimates with positive standard errors.
+
+    Only the FLAT `<root>/<prefix><step>` layout counts. The seed-1 pilot's own
+    2k/4k/6k evaluations used exactly these names and now live one level down in
+    `baselines/pilot6k/` (see that directory's PROVENANCE.md), so they are
+    structurally excluded rather than excluded by a hardcoded step list.
     """
-    grid_steps = list(range(SELECTION_GRID_STRIDE, 30001, SELECTION_GRID_STRIDE))
-    found: dict[int, list[int]] = {}
-    for seed, prefix in FULL_GRID_PREFIX.items():
-        hits = []
-        for root in FULL_GRID_ROOTS:
-            base = PROJECT_ROOT / root
-            if not base.is_dir():
-                continue
-            for step in grid_steps:
-                if (base / f"{prefix}{step}" / "Model_1").is_dir():
-                    hits.append(step)
-        found[seed] = sorted(set(hits))
-    n_needed = len(grid_steps) * len(FULL_GRID_PREFIX)
-    n_found = sum(len(v) for v in found.values())
+    from verify_sft_grid import (EVAL_ROOTS, GRID_STEPS, MANIFEST, SEEDS,
+                                 verify_grid)
+
+    man = verify_grid()
+    # --refresh is the mode allowed to touch the working tree, so persist the
+    # verification the scan block points at; otherwise `verification_manifest`
+    # would name a file that only exists if the verifier was run by hand.
+    MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    MANIFEST.write_text(json.dumps(man, indent=2, default=str))
+    found: dict[int, list[int]] = {s: [] for s in SEEDS}
+    rows: list[dict] = []
+    for c in man["checkpoints"]:
+        if c["status"] != "VERIFIED":
+            continue
+        found[c["seed"]].append(c["step"])
+        e, a = c["evaluation"], c["adapter"]
+        rows.append({
+            "seed": c["seed"], "step": c["step"], "model_name": e["model_name"],
+            "adapter_path": a["adapter_path"],
+            "adapter_weight_sha256": a.get("adapter_weight_sha256"),
+            "eval_dir": e["eval_dir"], "nls_csv": e["nls_csv"],
+            "nls_csv_sha256": e["nls_csv_sha256"],
+            "lambda": e["lambda"], "lambda_se": e["lambda_se"],
+            "eta": e["eta"], "eta_se": e["eta_se"], "d": e["d"],
+            "consistency": e["consistency"], "keep_both": e["keep_both_rate"],
+            "trade_both": e["trade_both_rate"], "W": e.get("W"),
+            "n_cases": e["n_cases"], "parse_failures": e["parse_failures"],
+        })
     pilot_dir = PROJECT_ROOT / "baselines" / "pilot6k"
     return {
-        "scanned_roots": FULL_GRID_ROOTS,
+        "verifier": "eval/verify_sft_grid.py",
+        "verification_manifest": "results/sft_grid_verification.json",
+        "completion_test": (
+            "per-checkpoint verification (adapter hash, both perspectives, "
+            "N=9,890 paired cases, zero parse failures, T=1 Model-A CSV, finite "
+            "estimates with positive SEs) — NOT Model_1 directory existence"),
+        "scanned_roots": list(EVAL_ROOTS),
         "scan_is_recursive": False,
         "dir_prefixes": {str(k): v for k, v in FULL_GRID_PREFIX.items()},
-        "required": {"seeds": list(FULL_GRID_PREFIX), "checkpoints": grid_steps,
-                     "n_evaluations_required": n_needed},
-        "directories_found": {str(k): v for k, v in found.items()},
-        "n_attributable_to_full_runs": n_found,
+        "required": {"seeds": list(SEEDS), "checkpoints": list(GRID_STEPS),
+                     "n_evaluations_required": man["n_required"]},
+        "directories_found": {str(k): sorted(v) for k, v in found.items()},
+        "n_attributable_to_full_runs": man["n_verified"],
         "pilot_evaluations_quarantined_at": (
             str(pilot_dir.relative_to(PROJECT_ROOT)) if pilot_dir.is_dir() else None),
         "pilot_exclusion_mechanism": (
             "structural: the seed-1 pilot evaluations were moved into "
             "baselines/pilot6k/ on 2026-08-06 so they cannot occupy the flat "
             "full-run names, and this non-recursive scan cannot reach them."),
-        "complete": n_found == n_needed,
-        "identity_verified": False,
+        "problems": man["problems"],
+        "complete": man["complete"],
+        "identity_verified": man["identity_verified"],
+        "verified_rows": rows,
+        "protocol": man["protocol"],
+    }
+
+
+def load_frozen_selection() -> dict:
+    """Selected step per seed, from the frozen selector's own manifests.
+
+    Read-only: the marks come from what eval/select_checkpoint.py already wrote.
+    This function never selects, re-ranks, or breaks a tie itself.
+    """
+    out: dict[int, dict] = {}
+    for seed in FULL_GRID_PREFIX:
+        p = (PROJECT_ROOT / "results" / "checkpoint_selection" /
+             f"Qwen-7B-SFT-qd-seed{seed}.json")
+        if not p.is_file():
+            continue
+        try:
+            sel = json.loads(p.read_text())
+        except Exception:
+            continue
+        out[seed] = {
+            "selected_step": sel.get("selected_step"),
+            "protocol_frozen": sel.get("protocol_frozen"),
+            "rule": sel.get("rule"),
+            "selection_data": sel.get("selection_data"),
+            "provenance_note": sel.get("provenance_note"),
+            "manifest": str(p.relative_to(PROJECT_ROOT)),
+            "manifest_sha256": sha256_of(p),
+            "manifest_mtime_utc": datetime.fromtimestamp(
+                p.stat().st_mtime, tz=timezone.utc).isoformat(timespec="seconds"),
+            "read_only": ("selection performed earlier by "
+                          "eval/select_checkpoint.py; this script only reads it"),
+        }
+    return {str(k): v for k, v in out.items()}
+
+
+def load_base_comparator() -> dict:
+    """The matched local base under the SAME plain `baseline` prompt.
+
+    The SFT grid was evaluated with `--treatment baseline`
+    (train/submit_eval_baseline_ckpt.pbs), so the matched comparator is the
+    plain-prompt base — NOT the debias- or forced-treated base. Same weights
+    family, same 9,890 rows, same teacher-forced scorer, same Model-A NLS at
+    T=1; only the training differs.
+    """
+    d = PROJECT_ROOT / "baseline" / "Qwen-7B-Base-Local"
+    csvs = sorted(glob.glob(str(d / "Model_1" / "*NLS_estimation_T1*.csv")))
+    if not csvs:
+        return {"available": False, "reason": f"{d} has no T=1 Model-A CSV"}
+    rows = list(csv_module.DictReader(open(csvs[0])))
+    est = {r["Parameter"]: r for r in rows}
+    try:
+        xr = load_rows_helper(d / "loss_aversion_X.json")
+        yr = load_rows_helper(d / "loss_aversion_Y.json")
+    except Exception as exc:
+        return {"available": False, "reason": f"raw rows unreadable: {exc}"}
+    common = sorted(set(xr) & set(yr))
+    con = keep = trade = 0
+    for cid in common:
+        a, b = choice_helper(xr[cid]), choice_helper(yr[cid])
+        if a != b:
+            con += 1
+        elif a == "No":
+            keep += 1
+        else:
+            trade += 1
+    n = len(common) or 1
+    # W on the same shared reference table the grid rows use, so the sixth panel
+    # has a comparable base line rather than an empty one.
+    w_block: dict = {}
+    try:
+        from pseudo_utility_alignment import (DEFAULT_DATA_DIR,
+                                              DEFAULT_UTILITY_FILE, compute_W,
+                                              load_case_utilities)
+        w = compute_W(d, load_case_utilities(DEFAULT_DATA_DIR, DEFAULT_UTILITY_FILE))
+        w_block = {"W": w["W"], "rational_choice_rate": w["rational_choice_rate"]}
+    except Exception as exc:
+        w_block = {"W": None, "W_unavailable_reason": str(exc)}
+    return {
+        "available": True,
+        **w_block,
+        "model_name": "Qwen-7B-Base-Local",
+        "treatment": "baseline (plain prompt) — matched to the SFT grid",
+        "eval_dir": str(d.relative_to(PROJECT_ROOT)),
+        "nls_csv": str(Path(csvs[0]).relative_to(PROJECT_ROOT)),
+        "lambda": float(est["lambda"]["Estimate"]),
+        "lambda_se": float(est["lambda"]["Std. Err."]),
+        "eta": float(est["eta"]["Estimate"]),
+        "eta_se": float(est["eta"]["Std. Err."]),
+        "consistency": con / n, "keep_both": keep / n, "trade_both": trade / n,
+        "n_cases": len(common),
+        "note": ("Matched on weights family, rows, scorer and estimator; the SFT "
+                 "grid and this base share the plain `baseline` prompt, so the "
+                 "contrast is training alone."),
     }
 
 
@@ -833,28 +970,97 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
     scan = grid_scan or {"complete": False, "note": "no grid scan recorded"}
     grid_complete = bool(scan.get("complete"))
 
+    grid_verified = bool(scan.get("identity_verified"))
+    if grid_verified:
+        statement = ("A complete 2-seed x 15-checkpoint SFT grid was located and "
+                     "every cell passed per-checkpoint identity and completeness "
+                     "verification; it is plotted read-only from the recorded "
+                     "verification manifest.")
+    elif grid_complete:
+        statement = ("A complete-looking grid was found but identity "
+                     "verification did not pass, so no full-run trajectory is "
+                     "plotted.")
+    else:
+        statement = ("The two full SFT runs have completed training, but their "
+                     "behavioral checkpoint grid is not fully evaluated and "
+                     "verified. Therefore, no full-run lambda/eta trajectory is "
+                     "available.")
     status = {
         "full_grid_scan": scan,
         "full_grid_complete": grid_complete,
+        "full_grid_identity_verified": grid_verified,
         "frozen_selector_run_for_sft": False,
-        "statement": (
-            "The two full SFT runs have completed training, but their "
-            "behavioral checkpoint grid has not been evaluated. Therefore, no "
-            "full-run lambda/eta trajectory is available."
-            if not grid_complete else
-            "A complete 2-seed x 15-checkpoint SFT grid was located; it is "
-            "plotted read-only and no selector was run."),
+        "statement": statement,
     }
 
-    if grid_complete:
-        # Deliberately not implemented as an implicit path: a complete grid is a
-        # project-state change that must be wired in explicitly, with checkpoint
-        # identity / adapter hash / estimator verification, rather than picked up
-        # silently by a plotting script.
-        status["note"] = ("Complete grid detected — extend this function with "
-                          "explicit per-checkpoint identity verification before "
-                          "plotting it. Nothing was fabricated.")
-        return None, status
+    # The verified-grid path. A complete grid is only plotted when every cell
+    # passed eval/verify_sft_grid.py — identity, completeness and estimator
+    # checks — never on directory existence alone. `identity_verified` is set by
+    # the verifier, so a merely-complete-looking scan still falls through to the
+    # pilot branch below.
+    if grid_complete and scan.get("identity_verified"):
+        rows = scan.get("verified_rows") or []
+        n_req = scan.get("required", {}).get("n_evaluations_required")
+        if n_req is not None and len(rows) != n_req:
+            status["note"] = (f"verified-row count {len(rows)} != required {n_req}; "
+                              "refusing to plot a partial grid.")
+            return None, status
+
+        recs = []
+        for r in sorted(rows, key=lambda x: (x["seed"], x["step"])):
+            recs.append({
+                "run_id": f"sft_full_seed{r['seed']}",
+                "run_role": "full",
+                "seed": int(r["seed"]),
+                "step": int(r["step"]),
+                "lambda": r["lambda"], "lambda_se": r["lambda_se"],
+                "eta": r["eta"], "eta_se": r["eta_se"],
+                "d": r["d"], "consistency": r["consistency"],
+                "keep_both": r["keep_both"], "trade_both": r["trade_both"],
+                "W": r.get("W", np.nan),
+                "n_cases": int(r["n_cases"]),
+                "adapter_path": r["adapter_path"],
+                "adapter_weight_sha256": r.get("adapter_weight_sha256"),
+                "nls_csv_sha256": r.get("nls_csv_sha256"),
+                "dataset": "test_goods (VALIDATION)",
+                "estimator": "Model A NLS, structural link scale T=1",
+                "status": "VERIFIED",
+            })
+        df = pd.DataFrame(recs)
+        df["d_recomputed"] = np.sqrt(df["lambda"] ** 2 + df["eta"] ** 2)
+        dupes = int(len(df) - df.groupby(["seed", "step"]).ngroups)
+        if dupes:
+            status["note"] = f"{dupes} duplicate seed/step row(s); refusing to plot."
+            return None, status
+
+        status["full_trajectory"] = {
+            "available": True,
+            "seeds_covered": sorted(int(s) for s in df["seed"].unique()),
+            "checkpoints_per_seed": {
+                str(s): sorted(int(x) for x in df.loc[df["seed"] == s, "step"])
+                for s in sorted(df["seed"].unique())},
+            "n_checkpoints": int(len(df)),
+            "duplicate_checkpoint_rows": dupes,
+            "d_max_abs_discrepancy_vs_sqrt_lambda2_eta2":
+                float(np.abs(df["d"] - df["d_recomputed"]).max()),
+            "W_available": bool(df["W"].notna().all()),
+            "adapter_hash_available": bool(
+                df["adapter_weight_sha256"].notna().all()),
+            "identity_verification": scan.get("verification_manifest"),
+            "label": ("Full 2-seed x 15-checkpoint SFT grid, every cell verified; "
+                      "test_goods VALIDATION estimates used for checkpoint "
+                      "selection — not final-test performance."),
+        }
+        status["frozen_selection"] = load_frozen_selection()
+        status["base_comparator"] = load_base_comparator()
+        status["frozen_selector_run_for_sft"] = bool(status["frozen_selection"])
+        status["method_comparison"] = (
+            "No SFT-versus-GRPO winner is declared or plotted. This figure shows "
+            "SFT against its own matched plain-prompt base only; GRPO outputs are "
+            "not read by this script (see module docstring), and a cross-method "
+            "claim would additionally require the untouched method-comparison "
+            "suite under METHOD_COMPARISON_PROTOCOL.md.")
+        return df, status
 
     if not PILOT_CORE.exists():
         status["pilot_trajectory"] = {"available": False,
@@ -923,46 +1129,154 @@ def build_behavioural(grid_scan: dict | None) -> tuple[pd.DataFrame | None, dict
     return df, status
 
 
-def plot_behavioural(df: pd.DataFrame, path: Path) -> None:
+# Six panels: the two structural estimands, three DIRECT behaviour rates, and
+# the preference/alignment diagnostic W. They are deliberately different kinds
+# of quantity and are labelled as such — lambda/eta are model-fitted, the middle
+# three are raw choice rates, W scores choices against a shared utility table.
+BEHAV_PANELS = [
+    ("lambda", "λ  (loss aversion)", "structural", True),
+    ("eta", "η  (status-quo bias)", "structural", True),
+    ("consistency", "paired consistency", "direct behavior", False),
+    ("keep_both", "keep-both fraction", "direct behavior", False),
+    ("trade_both", "trade-both fraction", "direct behavior", False),
+    ("W", "W  (pseudo-utility alignment)", "preference diagnostic", False),
+]
+
+
+def _mark_base(ax, col: str, base: dict) -> None:
+    """Draw the matched plain-prompt base as a reference line.
+
+    The base sits far outside the trained range on the structural panels
+    (lambda = 7.64 against |lambda| < 0.4), so forcing a shared linear scale
+    would flatten the trajectory into a straight line. Where the value is off
+    the current view it is annotated at the panel edge instead of rescaling.
+    """
+    key = {"keep_both": "keep_both", "trade_both": "trade_both"}.get(col, col)
+    v = base.get(key)
+    if v is None or not np.isfinite(v):
+        return
+    lo, hi = ax.get_ylim()
+    if lo <= v <= hi:
+        ax.axhline(v, color="#7a2020", lw=1.2, ls=":", zorder=1)
+        ax.annotate(f"base {v:.3g}", xy=(0.99, v), xycoords=("axes fraction", "data"),
+                    ha="right", va="bottom", fontsize=7.5, color="#7a2020")
+    else:
+        edge, va = (hi, "top") if v > hi else (lo, "bottom")
+        ax.annotate(f"matched base = {v:.3g}  (off scale)",
+                    xy=(0.99, edge), xycoords=("axes fraction", "data"),
+                    ha="right", va=va, fontsize=7.5, color="#7a2020",
+                    fontweight="bold")
+
+
+def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -> None:
     # d = sqrt(lambda^2 + eta^2) is retained in the CSV but no longer plotted:
     # it is a deterministic function of the first two panels, so the panel added
     # no information the reader could not already see.
-    panels = [("lambda", "λ  (loss aversion)", True),
-              ("eta", "η  (status-quo bias)", True),
-              ("consistency", "paired consistency", False),
-              ("keep_both", "keep-both fraction", False),
-              ("trade_both", "trade-both fraction", False),
-              ("W", "W", False)]
-    fig, axes = plt.subplots(2, 3, figsize=(14.5, 8))
-    c = RUNS["sft_pilot6k_seed1"]["color"]
-    for ax, (col, title, zero) in zip(axes.ravel(), panels):
-        if col in ("lambda", "eta"):
-            se = df[f"{col}_se"]
-            ax.errorbar(df["step"], df[col], yerr=se, color=c, marker="o",
-                        lw=1.8, ms=5, capsize=3)
-        else:
-            ax.plot(df["step"], df[col], color=c, marker="o", lw=1.8, ms=5)
+    status = status or {}
+    is_full = str(df["run_role"].iloc[0]) == "full"
+    base = (status.get("base_comparator") or {}) if is_full else {}
+    selection = (status.get("frozen_selection") or {}) if is_full else {}
+
+    if is_full:
+        series = [(int(s), RUNS[f"sft_full_seed{s}"]["color"],
+                   f"full seed {int(s)}") for s in sorted(df["seed"].unique())]
+        xlabel = "SFT training step"
+    else:
+        series = [(int(df["seed"].iloc[0]), RUNS["sft_pilot6k_seed1"]["color"],
+                   "pilot seed 1")]
+        xlabel = "pilot training step"
+
+    fig, axes = plt.subplots(2, 3, figsize=(15.5, 8.6))
+    for ax, (col, title, kind, zero) in zip(axes.ravel(), BEHAV_PANELS):
+        for seed, colour, label in series:
+            sub = df[df["seed"] == seed].sort_values("step")
+            if sub[col].isna().all():
+                continue
+            if col in ("lambda", "eta"):
+                ax.errorbar(sub["step"], sub[col], yerr=sub[f"{col}_se"],
+                            color=colour, marker="o", lw=1.8, ms=4.5, capsize=3,
+                            label=label, zorder=3)
+            else:
+                ax.plot(sub["step"], sub[col], color=colour, marker="o", lw=1.8,
+                        ms=4.5, label=label, zorder=3)
+            # Frozen selected checkpoint — marked, never chosen here.
+            picked = (selection.get(str(seed)) or {}).get("selected_step")
+            if picked is not None:
+                hit = sub[sub["step"] == picked]
+                if not hit.empty and np.isfinite(hit[col].iloc[0]):
+                    ax.plot(hit["step"], hit[col], marker="*", ms=17,
+                            mfc="none", mec=colour, mew=1.9, ls="none",
+                            zorder=5,
+                            label=f"frozen selection: step {picked:,}")
         if zero:
-            ax.axhline(0.0, color="0.4", lw=0.8, ls="--")
-        ax.set_title(title, fontsize=11)
-        ax.set_xlabel("pilot training step")
-        ax.set_xticks(sorted(df["step"]))
+            ax.axhline(0.0, color="0.4", lw=0.8, ls="--", zorder=1)
+        # Margins must be applied BEFORE the base is drawn: _mark_base decides
+        # "on scale" vs "off scale" from the current y-limits, and a base value
+        # just outside the autoscaled range (trade-both = 0) becomes visible once
+        # the margin is added — annotating it "off scale" would then be wrong.
+        ax.margins(y=0.16)
+        ax.autoscale_view()
+        if base.get("available"):
+            _mark_base(ax, col, base)
+        ax.set_title(f"{title}\n[{kind}]", fontsize=10.5)
+        ax.set_xlabel(xlabel)
+        if is_full:
+            ax.set_xticks(range(0, 30001, 6000))
+            ax.xaxis.set_major_formatter(
+                mticker.FuncFormatter(lambda v, _: f"{int(v/1000)}k"))
+        else:
+            ax.set_xticks(sorted(df["step"]))
         ax.grid(alpha=0.25)
-    fig.text(0.5, 0.012,
-             "EXPLORATORY seed-1 PILOT  ·  test_goods = VALIDATION  ·  incomplete "
-             "3-point grid  ·  no frozen selector run  ·  NOT a full-run result"
-             "     |     Model A NLS, structural link scale T=1  ·  N = 9,890 "
-             "cases per point  ·  error bars = ±1 SE",
-             fontsize=9, ha="center", va="bottom", color="#7a2020")
-    fig.suptitle(
-        "SFT behavioral trajectory — EXPLORATORY seed-1 pilot (cosine -> 6,000), "
-        "test_goods VALIDATION, incomplete three-point grid, no frozen selector; "
-        "not a full-run result.\n"
-        "Structural estimands computed after inference — separate from, and not "
-        "implied by, the SFT training-metric curves.", fontsize=11, y=0.985,
-        va="top")
+
+    handles, labels = axes.ravel()[0].get_legend_handles_labels()
+    seen, h2, l2 = set(), [], []
+    for h, l in zip(handles, labels):
+        if l not in seen:
+            seen.add(l); h2.append(h); l2.append(l)
+    if base.get("available"):
+        h2.append(plt.Line2D([], [], color="#7a2020", lw=1.2, ls=":"))
+        l2.append(f"matched base, plain prompt (λ={base['lambda']:.3g}, "
+                  f"η={base['eta']:.3g})")
+    if h2:
+        fig.legend(h2, l2, loc="lower center", ncol=min(len(h2), 4),
+                   frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.055))
+
+    if is_full:
+        picks = ", ".join(
+            f"seed {k} -> step {(v or {}).get('selected_step'):,}"
+            for k, v in sorted(selection.items())
+            if (v or {}).get("selected_step") is not None) or "not yet run"
+        fig.text(0.5, 0.012,
+                 "test_goods = VALIDATION / checkpoint-selection estimates, "
+                 "N = 9,890 paired cases per point — NOT final-test performance "
+                 "and NOT the 49,450-case prospective configuration suite.\n"
+                 "Comparator: matched local base under the SAME plain `baseline` "
+                 "prompt (same rows, scorer and Model-A NLS at T=1).  "
+                 f"Frozen selection: {picks}.  "
+                 "No SFT-versus-GRPO winner is shown or implied.",
+                 fontsize=8.5, ha="center", va="bottom", color="#7a2020")
+        fig.suptitle(
+            "SFT behavioral trajectory — full runs, seeds 1 and 2, all 15 frozen "
+            "checkpoints (2k–30k), every cell identity-verified.\n"
+            "Structural estimands (λ, η) computed after inference — separate "
+            "from, and not implied by, the SFT training-metric curves.",
+            fontsize=11, y=0.985, va="top")
+    else:
+        fig.text(0.5, 0.012,
+                 "EXPLORATORY seed-1 PILOT  ·  test_goods = VALIDATION  ·  incomplete "
+                 "3-point grid  ·  no frozen selector run  ·  NOT a full-run result"
+                 "     |     Model A NLS, structural link scale T=1  ·  N = 9,890 "
+                 "cases per point  ·  error bars = ±1 SE",
+                 fontsize=9, ha="center", va="bottom", color="#7a2020")
+        fig.suptitle(
+            "SFT behavioral trajectory — EXPLORATORY seed-1 pilot (cosine -> 6,000), "
+            "test_goods VALIDATION, incomplete three-point grid, no frozen selector; "
+            "not a full-run result.\n"
+            "Structural estimands computed after inference — separate from, and not "
+            "implied by, the SFT training-metric curves.", fontsize=11, y=0.985,
+            va="top")
     fig.tight_layout()
-    fig.subplots_adjust(top=0.885, bottom=0.10)
+    fig.subplots_adjust(top=0.875, bottom=0.155 if is_full else 0.10)
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
@@ -1064,7 +1378,47 @@ def render_summary_md(summary: dict) -> str:
 
     b = summary.get("behavioral", {})
     L += ["## Behavioral / structural trajectory", "", b.get("statement", ""), ""]
-    if b.get("pilot_trajectory", {}).get("available"):
+    if b.get("full_trajectory", {}).get("available"):
+        ft = b["full_trajectory"]
+        base = b.get("base_comparator") or {}
+        L += [f"*{ft['label']}*", "",
+              f"Identity and completeness verified per checkpoint by "
+              f"`eval/verify_sft_grid.py` → `{ft['identity_verification']}`: "
+              f"adapter hash, both perspectives, N = 9,890 paired cases, zero "
+              f"parse failures, a T=1 Model-A CSV, and finite estimates with "
+              f"positive standard errors. A `Model_1/` directory alone is not a "
+              f"completion test.", ""]
+        if base.get("available"):
+            L += [f"Comparator — matched local base under the **same plain "
+                  f"`baseline` prompt** (same rows, scorer and estimator; only "
+                  f"training differs): λ = {base['lambda']:.3f} "
+                  f"(SE {base['lambda_se']:.3f}), η = {base['eta']:.3f} "
+                  f"(SE {base['eta_se']:.3f}), consistency = "
+                  f"{base['consistency']:.3f}, keep-both = "
+                  f"{base['keep_both']:.3f}, trade-both = "
+                  f"{base['trade_both']:.3f}"
+                  + (f", W = {base['W']:.3f}" if base.get("W") is not None else "")
+                  + ".", ""]
+        L += ["| seed | step | λ (SE) | η (SE) | consistency | keep-both | "
+              "trade-both | W |",
+              "|---:|---:|---|---|---:|---:|---:|---:|"]
+        for r in summary["behavioral_rows"]:
+            w = f"{r['W']:.3f}" if r.get("W") is not None else "—"
+            L.append(f"| {r['seed']} | {r['step']:,} | "
+                     f"{r['lambda']:+.3f} ({r['lambda_se']:.3f}) | "
+                     f"{r['eta']:+.3f} ({r['eta_se']:.3f}) | "
+                     f"{r['consistency']:.3f} | {r['keep_both']:.3f} | "
+                     f"{r['trade_both']:.3f} | {w} |")
+        sel = b.get("frozen_selection") or {}
+        picks = ", ".join(
+            f"seed {k} → step {(v or {}).get('selected_step'):,}"
+            for k, v in sorted(sel.items())
+            if (v or {}).get("selected_step") is not None)
+        L += ["", f"Frozen checkpoint selection: {picks or 'not yet run'}. "
+              "This table reports the trajectory only; nothing here selects a "
+              "checkpoint.", "",
+              b.get("method_comparison", ""), ""]
+    elif b.get("pilot_trajectory", {}).get("available"):
         L += [f"*{b['pilot_trajectory']['label']}*", "",
               "| pilot step | λ (SE) | η (SE) | d | consistency | keep-both | "
               "trade-both | W |", "|---:|---|---|---:|---:|---:|---:|---:|"]
@@ -1346,7 +1700,7 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
     summary["behavioral"] = behav_status
     if behav_df is not None:
         behav_df.to_csv(outs["behav_csv"], index=False)
-        plot_behavioural(behav_df, outs["behav_png"])
+        plot_behavioural(behav_df, outs["behav_png"], behav_status)
         summary["behavioral_rows"] = behav_df.drop(columns=["d_recomputed"]) \
             .to_dict(orient="records")
 

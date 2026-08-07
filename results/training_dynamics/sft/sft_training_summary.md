@@ -68,18 +68,51 @@ Each logged `loss` is the Trainer's mean over one logging interval (10 optimizer
 
 ## Behavioral / structural trajectory
 
-The two full SFT runs have completed training, but their behavioral checkpoint grid has not been evaluated. Therefore, no full-run lambda/eta trajectory is available.
+A complete 2-seed x 15-checkpoint SFT grid was located and every cell passed per-checkpoint identity and completeness verification; it is plotted read-only from the recorded verification manifest.
 
-*Exploratory seed-1 pilot; test_goods validation; incomplete three-point grid; no frozen selector; not a full-run result.*
+*Full 2-seed x 15-checkpoint SFT grid, every cell verified; test_goods VALIDATION estimates used for checkpoint selection — not final-test performance.*
 
-| pilot step | λ (SE) | η (SE) | d | consistency | keep-both | trade-both | W |
-|---:|---|---|---:|---:|---:|---:|---:|
-| 2,000 | -0.160 (0.015) | -0.466 (0.038) | 0.493 | 0.623 | 0.056 | 0.321 | 0.875 |
-| 4,000 | +0.059 (0.014) | +0.012 (0.033) | 0.060 | 0.718 | 0.156 | 0.126 | 0.900 |
-| 6,000 | +0.047 (0.014) | +0.023 (0.033) | 0.052 | 0.725 | 0.150 | 0.124 | 0.901 |
+Identity and completeness verified per checkpoint by `eval/verify_sft_grid.py` → `results/sft_grid_verification.json`: adapter hash, both perspectives, N = 9,890 paired cases, zero parse failures, a T=1 Model-A CSV, and finite estimates with positive standard errors. A `Model_1/` directory alone is not a completion test.
 
-The July-27 evaluation logs record the adapter path as checkpoints/sft_qwen_delta_seed1/checkpoint-N. The pilot trained into that path on July 26 and was renamed to *_pilot6k before the full run reused the name on July 29, so those logs refer to the PILOT adapters. Directory mtimes and the pilot's own manifest (max_steps=6000) confirm the identity. On 2026-08-06 the pilot's evaluation outputs were moved from the flat baselines/ names into baselines/pilot6k/ so a full-run evaluation cannot resume from them and silently return pilot numbers; see that directory's PROVENANCE.md.
+Comparator — matched local base under the **same plain `baseline` prompt** (same rows, scorer and estimator; only training differs): λ = 7.637 (SE 0.627), η = 1.007 (SE 0.120), consistency = 0.009, keep-both = 0.991, trade-both = 0.000, W = 0.744.
+
+| seed | step | λ (SE) | η (SE) | consistency | keep-both | trade-both | W |
+|---:|---:|---|---|---:|---:|---:|---:|
+| 1 | 2,000 | -0.237 (0.015) | -0.701 (0.040) | 0.538 | 0.032 | 0.431 | 0.860 |
+| 1 | 4,000 | -0.034 (0.012) | +0.027 (0.031) | 0.730 | 0.122 | 0.148 | 0.904 |
+| 1 | 6,000 | +0.274 (0.015) | -0.043 (0.031) | 0.749 | 0.182 | 0.069 | 0.921 |
+| 1 | 8,000 | +0.361 (0.014) | -0.137 (0.030) | 0.774 | 0.176 | 0.051 | 0.934 |
+| 1 | 10,000 | +0.102 (0.009) | -0.546 (0.027) | 0.820 | 0.055 | 0.125 | 0.948 |
+| 1 | 12,000 | +0.042 (0.009) | -0.719 (0.028) | 0.813 | 0.032 | 0.156 | 0.955 |
+| 1 | 14,000 | +0.172 (0.009) | -0.455 (0.027) | 0.848 | 0.070 | 0.083 | 0.962 |
+| 1 | 16,000 | +0.232 (0.010) | -0.489 (0.027) | 0.853 | 0.078 | 0.069 | 0.966 |
+| 1 | 18,000 | +0.093 (0.008) | -0.674 (0.028) | 0.848 | 0.038 | 0.114 | 0.968 |
+| 1 | 20,000 | +0.026 (0.007) | -0.574 (0.028) | 0.849 | 0.033 | 0.118 | 0.970 |
+| 1 | 22,000 | +0.142 (0.008) | -0.628 (0.029) | 0.862 | 0.048 | 0.090 | 0.972 |
+| 1 | 24,000 | +0.314 (0.009) | -0.592 (0.028) | 0.864 | 0.082 | 0.054 | 0.973 |
+| 1 | 26,000 | +0.233 (0.009) | -0.582 (0.028) | 0.866 | 0.067 | 0.067 | 0.973 |
+| 1 | 28,000 | +0.219 (0.009) | -0.597 (0.028) | 0.866 | 0.063 | 0.072 | 0.973 |
+| 1 | 30,000 | +0.206 (0.008) | -0.596 (0.028) | 0.867 | 0.061 | 0.072 | 0.973 |
+| 2 | 2,000 | +0.098 (0.017) | +0.280 (0.035) | 0.654 | 0.241 | 0.106 | 0.883 |
+| 2 | 4,000 | +0.054 (0.014) | +0.312 (0.032) | 0.717 | 0.196 | 0.087 | 0.901 |
+| 2 | 6,000 | -0.089 (0.011) | -0.143 (0.030) | 0.767 | 0.068 | 0.166 | 0.917 |
+| 2 | 8,000 | -0.061 (0.010) | -0.355 (0.028) | 0.791 | 0.045 | 0.165 | 0.933 |
+| 2 | 10,000 | +0.251 (0.011) | -0.319 (0.027) | 0.823 | 0.108 | 0.069 | 0.947 |
+| 2 | 12,000 | +0.244 (0.010) | -0.471 (0.027) | 0.842 | 0.083 | 0.075 | 0.956 |
+| 2 | 14,000 | +0.279 (0.011) | -0.310 (0.027) | 0.842 | 0.105 | 0.052 | 0.961 |
+| 2 | 16,000 | +0.215 (0.009) | -0.377 (0.027) | 0.856 | 0.084 | 0.061 | 0.967 |
+| 2 | 18,000 | +0.288 (0.010) | -0.373 (0.027) | 0.860 | 0.094 | 0.046 | 0.969 |
+| 2 | 20,000 | +0.109 (0.007) | -0.436 (0.026) | 0.868 | 0.054 | 0.078 | 0.972 |
+| 2 | 22,000 | +0.151 (0.008) | -0.443 (0.026) | 0.872 | 0.061 | 0.067 | 0.973 |
+| 2 | 24,000 | +0.089 (0.007) | -0.519 (0.026) | 0.868 | 0.045 | 0.087 | 0.973 |
+| 2 | 26,000 | +0.176 (0.008) | -0.391 (0.026) | 0.872 | 0.070 | 0.057 | 0.974 |
+| 2 | 28,000 | +0.167 (0.008) | -0.385 (0.026) | 0.875 | 0.068 | 0.058 | 0.974 |
+| 2 | 30,000 | +0.139 (0.007) | -0.406 (0.026) | 0.874 | 0.061 | 0.064 | 0.974 |
+
+Frozen checkpoint selection: seed 1 → step 4,000, seed 2 → step 6,000. This table reports the trajectory only; nothing here selects a checkpoint.
+
+No SFT-versus-GRPO winner is declared or plotted. This figure shows SFT against its own matched plain-prompt base only; GRPO outputs are not read by this script (see module docstring), and a cross-method claim would additionally require the untouched method-comparison suite under METHOD_COMPARISON_PROTOCOL.md.
 
 The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.
 
-CPU-only. No GPU/PBS job, no inference, no checkpoint evaluation, no frozen selector run, and no frozen/untouched suite was opened to produce these artifacts.
+CPU-only rendering. This script ran no GPU/PBS job, no inference and no checkpoint evaluation, and opened no frozen or untouched suite. It also selects nothing: where a frozen checkpoint selection is shown it is READ from manifests written earlier by eval/select_checkpoint.py, and this script neither re-ranks nor breaks a tie. The underlying checkpoint evaluations were produced by separate GPU jobs (train/submit_eval_baseline_ckpt.pbs).
