@@ -2,8 +2,8 @@
   "title": "SFT training metrics \u2014 provenance manifest",
   "generated_by": "eval/plot_sft_training_dynamics.py",
   "parser_version": "1.1.0",
-  "script_sha256": "43f624bfbff3feb62693ab11177d8107b6e8948e8f36835720f31a96f0f76ad8",
-  "git_commit_at_render": "8e00e124ed5d1b8ce7d500acc4c5dbf968b3e444",
+  "script_sha256": "e9fd5188de1c243ebf8a6f2de4be444c251c100aa18b79fb1deedecb877c749d",
+  "git_commit_at_render": "0ee53c3a9f92dc8309b14cdf0f8670d923587c8c",
   "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
   "no_gpu_statement": "CPU-only rendering. This script ran no GPU/PBS job, no inference and no checkpoint evaluation, and opened no frozen or untouched suite. It also selects nothing: where a frozen checkpoint selection is shown it is READ from manifests written earlier by eval/select_checkpoint.py, and this script neither re-ranks nor breaks a tie. The underlying checkpoint evaluations were produced by separate GPU jobs (train/submit_eval_baseline_ckpt.pbs).",
   "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
@@ -101,7 +101,7 @@
   "refresh": {
     "parser_version": "1.1.0",
     "extraction_date": "2026-08-07",
-    "git_commit_at_extraction": "8e00e124ed5d1b8ce7d500acc4c5dbf968b3e444",
+    "git_commit_at_extraction": "0ee53c3a9f92dc8309b14cdf0f8670d923587c8c",
     "runs": {
       "sft_full_seed1": {
         "run_id": "sft_full_seed1",
@@ -2018,8 +2018,8 @@
         "provenance": "derived from tracked results/causal_baseline_pilot/"
       },
       "sft_behavioral_trajectory.png": {
-        "sha256": "e879dc816ca9c87e555a2ae149743ef38e51709b1afbd5f43f440b4a9a5f1687",
-        "size_bytes": 342353,
+        "sha256": "20550897c0ccbbbfd9929e4e579ed823dea745b7a0f7a821edfa628675f16e6d",
+        "size_bytes": 271144,
         "provenance": "derived from tracked results/causal_baseline_pilot/"
       }
     }

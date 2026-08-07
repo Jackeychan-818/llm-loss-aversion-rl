@@ -1224,15 +1224,10 @@ def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -
             else:
                 ax.plot(sub["step"], sub[col], color=colour, marker="o", lw=1.8,
                         ms=4.5, label=label, zorder=3)
-            # Frozen selected checkpoint — marked, never chosen here.
-            picked = (selection.get(str(seed)) or {}).get("selected_step")
-            if picked is not None:
-                hit = sub[sub["step"] == picked]
-                if not hit.empty and np.isfinite(hit[col].iloc[0]):
-                    ax.plot(hit["step"], hit[col], marker="*", ms=17,
-                            mfc="none", mec=colour, mew=1.9, ls="none",
-                            zorder=5,
-                            label=f"frozen selection: step {picked:,}")
+            # The frozen selection is deliberately NOT drawn: this figure shows
+            # the trajectory only. The selection remains recorded in
+            # sft_training_summary.json / .md and in the selector's own
+            # manifests under results/checkpoint_selection/.
         if zero:
             ax.axhline(0.0, color="0.4", lw=0.8, ls="--", zorder=1)
         # Margins must be applied BEFORE the base is drawn: _mark_base decides
@@ -1264,28 +1259,17 @@ def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -
                   f"η={base['eta']:.3g})")
     if h2:
         fig.legend(h2, l2, loc="lower center", ncol=min(len(h2), 4),
-                   frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.055))
+                   frameon=False, fontsize=8.5,
+                   bbox_to_anchor=(0.5, 0.005 if is_full else 0.055))
 
     if is_full:
-        picks = ", ".join(
-            f"seed {k} -> step {(v or {}).get('selected_step'):,}"
-            for k, v in sorted(selection.items())
-            if (v or {}).get("selected_step") is not None) or "not yet run"
-        fig.text(0.5, 0.012,
-                 "test_goods = VALIDATION / checkpoint-selection estimates, "
-                 "N = 9,890 paired cases per point — NOT final-test performance "
-                 "and NOT the 49,450-case prospective configuration suite.\n"
-                 "Comparator: matched local base under the SAME plain `baseline` "
-                 "prompt (same rows, scorer and Model-A NLS at T=1).  "
-                 f"Frozen selection: {picks}.  "
-                 "No SFT-versus-GRPO winner is shown or implied.",
-                 fontsize=8.5, ha="center", va="bottom", color="#7a2020")
-        fig.suptitle(
-            "SFT behavioral trajectory — full runs, seeds 1 and 2, all 15 frozen "
-            "checkpoints (2k–30k), every cell identity-verified.\n"
-            "Structural estimands (λ, η) computed after inference — separate "
-            "from, and not implied by, the SFT training-metric curves.",
-            fontsize=11, y=0.985, va="top")
+        # No suptitle and no footer: this figure is meant to be dropped into a
+        # document whose CAPTION carries the context. The caveats it would
+        # otherwise print — test_goods is VALIDATION / checkpoint-selection data
+        # rather than final-test performance, the comparator is the matched base
+        # under the same plain prompt, and no SFT-vs-GRPO winner is implied —
+        # remain in README.md, sft_training_summary.{json,md} and the manifest.
+        pass
     else:
         fig.text(0.5, 0.012,
                  "EXPLORATORY seed-1 PILOT  ·  test_goods = VALIDATION  ·  incomplete "
@@ -1301,7 +1285,10 @@ def plot_behavioural(df: pd.DataFrame, path: Path, status: dict | None = None) -
             "implied by, the SFT training-metric curves.", fontsize=11, y=0.985,
             va="top")
     fig.tight_layout()
-    fig.subplots_adjust(top=0.875, bottom=0.155 if is_full else 0.10)
+    if is_full:
+        fig.subplots_adjust(bottom=0.125)   # room for the series key only
+    else:
+        fig.subplots_adjust(top=0.875, bottom=0.10)
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
