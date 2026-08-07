@@ -65,6 +65,7 @@
     }
 
     .kpis { grid-template-columns: repeat(3, 1fr); margin-top: 28px; }
+    header .kpis { grid-template-columns: repeat(4, 1fr); }
     .two-col { grid-template-columns: repeat(2, 1fr); }
     .three-col { grid-template-columns: repeat(3, 1fr); }
 
@@ -197,6 +198,7 @@
       main { width: min(100% - 20px, 1180px); padding-top: 10px; }
       header, section { padding: 22px 18px; border-radius: 14px; }
       .kpis, .two-col, .three-col { grid-template-columns: 1fr; }
+      header .kpis { grid-template-columns: 1fr; }
       table { font-size: .82rem; }
       th, td { padding: 9px 7px; }
     }
@@ -214,7 +216,8 @@
       <h1>How we use SFT</h1>
       <p class="lede">We supervise Qwen2.5-7B to choose the same preferred physical good under both ownership perspectives.</p>
       <div class="kpis">
-        <div class="kpi"><strong>98,900</strong><span>balanced Yes/No training prompts</span></div>
+        <div class="kpi"><strong>30,000</strong><span>prompts used per seed · 0.303 epoch</span></div>
+        <div class="kpi"><strong>Batch 1</strong><span>micro = effective · no accumulation</span></div>
         <div class="kpi"><strong>30 / 30</strong><span>full checkpoints evaluated</span></div>
         <div class="kpi"><strong>4k &amp; 6k</strong><span>selected checkpoints for seeds 1 and 2</span></div>
       </div>
@@ -243,9 +246,11 @@
           <table>
             <tbody>
               <tr><td>Base</td><td>Qwen2.5-7B-Instruct</td></tr>
-              <tr><td>Adaptation</td><td>LoRA, r=16, α=32</td></tr>
+              <tr><td>Adaptation</td><td>LoRA: r=16, α=32, dropout=0.05</td></tr>
+              <tr><td>LoRA targets</td><td>q/k/v/o + gate/up/down projections</td></tr>
               <tr><td>Training pool</td><td><code>remaining_goods.json</code></td></tr>
               <tr><td>Labels</td><td>49,450 Yes + 49,450 No</td></tr>
+              <tr><td>Exposure / seed</td><td><strong>30,000 prompts</strong> of 98,900 (0.303 epoch)</td></tr>
               <tr><td>Seeds</td><td>1 and 2</td></tr>
             </tbody>
           </table>
@@ -256,10 +261,16 @@
             <tbody>
               <tr><td>Loss</td><td>completion-only cross-entropy</td></tr>
               <tr><td>Prompt tokens</td><td>masked with −100</td></tr>
+              <tr><td>Micro-batch</td><td><strong>1 prompt per GPU</strong></td></tr>
+              <tr><td>Gradient accumulation</td><td><strong>1</strong> (none)</td></tr>
+              <tr><td>Effective batch</td><td><strong>1 prompt per optimizer update</strong> (1 GPU)</td></tr>
+              <tr><td>Optimizer</td><td>Trainer default; not explicitly pinned</td></tr>
               <tr><td>Learning rate</td><td>1×10<sup>−6</sup></td></tr>
               <tr><td>Schedule</td><td>5% warmup + cosine</td></tr>
+              <tr><td>Precision / clipping</td><td>BF16 / max gradient norm 0.1</td></tr>
               <tr><td>Endpoint</td><td>30,000 steps</td></tr>
               <tr><td>Checkpoints</td><td>2k…30k, every 2k</td></tr>
+              <tr><td>Logging</td><td>every 10 steps</td></tr>
             </tbody>
           </table>
         </div>
@@ -269,11 +280,14 @@
         <thead><tr><th>Exposure</th><th class="num">SFT</th><th class="num">Magnitude GRPO</th></tr></thead>
         <tbody>
           <tr><td>Unique prompts</td><td class="num">30,000</td><td class="num">30,000</td></tr>
+          <tr><td>Optimizer updates</td><td class="num">30,000</td><td class="num">30,000</td></tr>
           <tr><td>Generated completions</td><td class="num"><strong>0</strong></td><td class="num">480,000</td></tr>
           <tr><td>Measured time / seed</td><td class="num"><strong>1.40 h mean</strong></td><td class="num">≈51 h</td></tr>
           <tr><td>Signal</td><td class="num">direct target</td><td class="num">relative reward + KL</td></tr>
         </tbody>
       </table>
+      <p class="small muted" style="margin-top:14px"><strong>Batch size matters here:</strong> with batch 1 and no accumulation, one step means one prompt and one optimizer update. The run is deliberately matched to GRPO on 30,000 unique prompts, not on epochs or generated tokens.</p>
+      <p class="small muted"><strong>Recorded provenance gap:</strong> the historical manifests report the training Git commit as <code>unknown</code>; the exact Trainer/PEFT versions, GPU model, and default optimizer implementation are not preserved in the tracked snapshot. Future runs should hard-fail unless these fields are captured.</p>
     </section>
 
     <section>
