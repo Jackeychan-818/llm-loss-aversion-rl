@@ -2,8 +2,8 @@
   "title": "SFT training metrics \u2014 provenance manifest",
   "generated_by": "eval/plot_sft_training_dynamics.py",
   "parser_version": "1.1.0",
-  "script_sha256": "2195420ad34ffe79b376caea1d7b9aea07ccd1f0c5104b253329bc01a819755a",
-  "git_commit_at_render": "b749761fe0a5801f53263ede40937d972b616e42",
+  "script_sha256": "43f624bfbff3feb62693ab11177d8107b6e8948e8f36835720f31a96f0f76ad8",
+  "git_commit_at_render": "8e00e124ed5d1b8ce7d500acc4c5dbf968b3e444",
   "reproducibility_statement": "Rendering and checking the SFT curves is repository-reproducible; regenerating the underlying logged rows requires the raw NSCC trainer_state.json sources.",
   "no_gpu_statement": "CPU-only rendering. This script ran no GPU/PBS job, no inference and no checkpoint evaluation, and opened no frozen or untouched suite. It also selects nothing: where a frozen checkpoint selection is shown it is READ from manifests written earlier by eval/select_checkpoint.py, and this script neither re-ranks nor breaks a tie. The underlying checkpoint evaluations were produced by separate GPU jobs (train/submit_eval_baseline_ckpt.pbs).",
   "pilot_vs_full": "The pilot used a cosine schedule ending at 6,000. The full run used a cosine schedule ending at 30,000. Their step-6,000 weights are not interchangeable.",
@@ -23,6 +23,68 @@
     "uses_future_observations": false,
     "identical_window_for_all_runs": true
   },
+  "axis_cropping": {
+    "applies_to": "the LINEAR training-metric figures only",
+    "limits": {
+      "loss": [
+        0.0,
+        1.5
+      ],
+      "grad_norm": [
+        0.0,
+        100.0
+      ]
+    },
+    "rationale": "Loss and gradient norm have long thin tails (loss to ~2.76, gradient norm to ~543) that compress the bulk of the data into a sliver under autoscale. Cropping is a display choice only: no value is altered or removed, the CSVs retain every observation, the log-scale companion figures show the full range, and each cropped panel states how many logged points fall outside.",
+    "points_outside": {
+      "loss": {
+        "ylim": [
+          0.0,
+          1.5
+        ],
+        "by_run": {
+          "sft_full_seed1": {
+            "n_outside": 8,
+            "n_total": 3000,
+            "max_observed": 2.757553482055664
+          },
+          "sft_full_seed2": {
+            "n_outside": 9,
+            "n_total": 3000,
+            "max_observed": 1.7064243316650392
+          },
+          "sft_pilot6k_seed1": {
+            "n_outside": 6,
+            "n_total": 600,
+            "max_observed": 2.654164695739746
+          }
+        }
+      },
+      "grad_norm": {
+        "ylim": [
+          0.0,
+          100.0
+        ],
+        "by_run": {
+          "sft_full_seed1": {
+            "n_outside": 377,
+            "n_total": 3000,
+            "max_observed": 512.50830078125
+          },
+          "sft_full_seed2": {
+            "n_outside": 336,
+            "n_total": 3000,
+            "max_observed": 543.0353393554688
+          },
+          "sft_pilot6k_seed1": {
+            "n_outside": 40,
+            "n_total": 600,
+            "max_observed": 182.21072387695312
+          }
+        }
+      }
+    }
+  },
   "reproducibility_tolerances": {
     "summary_json_rtol": 1e-09,
     "summary_json_atol": 1e-12,
@@ -39,7 +101,7 @@
   "refresh": {
     "parser_version": "1.1.0",
     "extraction_date": "2026-08-07",
-    "git_commit_at_extraction": "b749761fe0a5801f53263ede40937d972b616e42",
+    "git_commit_at_extraction": "8e00e124ed5d1b8ce7d500acc4c5dbf968b3e444",
     "runs": {
       "sft_full_seed1": {
         "run_id": "sft_full_seed1",
@@ -1916,28 +1978,28 @@
         "provenance": "raw-log-derived"
       },
       "sft_full_training_curves.png": {
-        "sha256": "8b1dd1e812abe1871b8fc61c4e7741805c0413b9d2d05822af77a9bde75d7101",
-        "size_bytes": 261384,
+        "sha256": "83bb0343b1781a7a85f64892f7728fb600637e72616dd0bb86d381aafcf45fee",
+        "size_bytes": 340702,
         "provenance": "snapshot-rendered"
       },
       "sft_full_training_curves_logscale.png": {
-        "sha256": "17367b7263d2628fb2ed850ab2fc959ba5e58aa97c2647c725a7d999c53b1717",
-        "size_bytes": 322624,
+        "sha256": "f8084958e91fa41d3c67650402247322bb9ee35ba1129f1215c3912b67ceda2c",
+        "size_bytes": 321716,
         "provenance": "snapshot-rendered"
       },
       "sft_pilot_training_curves.png": {
-        "sha256": "c860616fa0872074d7cd41f0d56192fd0a3de7ba523628e20d998c0495260988",
-        "size_bytes": 222942,
+        "sha256": "671768942a3d1388dade2a6b3b9b7ebc30a356b38625b1650b40a164188da9a6",
+        "size_bytes": 266738,
         "provenance": "snapshot-rendered"
       },
       "sft_pilot_training_curves_logscale.png": {
-        "sha256": "25da579ecd9a83a420dfb7216380b4b60872a5dc70d66b768133c91ba23d1977",
-        "size_bytes": 242825,
+        "sha256": "5d4a696f3a038cbb8b6677660f14d15eb8bffc3338c1a247ab42e7fe28e4e7c1",
+        "size_bytes": 242363,
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.json": {
-        "sha256": "c221ea86827e35c3a34090cd8ec0bd9e6c0027b75b8fd4e7a834ec93eeef45e8",
-        "size_bytes": 76791,
+        "sha256": "6f04d81122e67a2ef30d49bcf8a49e1f9a81bf8c77c72fd8b9b573ba16719fd9",
+        "size_bytes": 77851,
         "provenance": "snapshot-rendered"
       },
       "sft_training_summary.md": {

@@ -251,6 +251,54 @@
     "`sft_pilot6k_seed1`: the recorded learning rate reproduces the configured linear-warmup + cosine schedule to a maximum relative deviation below the 1e-12 machine-precision floor; peak at step 310, consistent with the 300-step warmup boundary.",
     "`sft_pilot6k_seed1`: 1,051 s wall clock (0.29 h) at 5.71 steps/s."
   ],
+  "axis_crop_points_outside": {
+    "loss": {
+      "ylim": [
+        0.0,
+        1.5
+      ],
+      "by_run": {
+        "sft_full_seed1": {
+          "n_outside": 8,
+          "n_total": 3000,
+          "max_observed": 2.757553482055664
+        },
+        "sft_full_seed2": {
+          "n_outside": 9,
+          "n_total": 3000,
+          "max_observed": 1.7064243316650392
+        },
+        "sft_pilot6k_seed1": {
+          "n_outside": 6,
+          "n_total": 600,
+          "max_observed": 2.654164695739746
+        }
+      }
+    },
+    "grad_norm": {
+      "ylim": [
+        0.0,
+        100.0
+      ],
+      "by_run": {
+        "sft_full_seed1": {
+          "n_outside": 377,
+          "n_total": 3000,
+          "max_observed": 512.50830078125
+        },
+        "sft_full_seed2": {
+          "n_outside": 336,
+          "n_total": 3000,
+          "max_observed": 543.0353393554688
+        },
+        "sft_pilot6k_seed1": {
+          "n_outside": 40,
+          "n_total": 600,
+          "max_observed": 182.21072387695312
+        }
+      }
+    }
+  },
   "behavioral": {
     "full_grid_scan": {
       "verifier": "eval/verify_sft_grid.py",

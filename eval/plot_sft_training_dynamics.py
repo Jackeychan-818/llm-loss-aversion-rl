@@ -685,6 +685,14 @@ PANELS = [("loss", "completion-only cross-entropy loss"),
           ("grad_norm", "gradient norm (pre-clipping)"),
           ("learning_rate", "learning rate")]
 
+# Fixed viewing windows for the LINEAR figure only. Both quantities have long
+# thin tails (loss to 2.76, gradient norm to 543) that compress the bulk of the
+# data into a sliver under autoscale. Cropping is a display choice, not a data
+# change: every value stays in the CSV, the log-scale companion shows the full
+# range, and each cropped panel prints how many observations fall outside the
+# window so the crop can never be mistaken for the data ending there.
+PANEL_YLIM = {"loss": (0.0, 1.5), "grad_norm": (0.0, 100.0)}
+
 
 def _panel(ax, col, title, runs, window, logscale, mark_ckpts, warmups):
     for run_id, df in runs.items():
@@ -724,6 +732,23 @@ def _panel(ax, col, title, runs, window, logscale, mark_ckpts, warmups):
                         xytext=(5, 0), textcoords="offset points",
                         fontsize=7.5, color="#444444", rotation=90,
                         va="bottom", ha="left")
+    if not logscale and col in PANEL_YLIM:
+        lo, hi = PANEL_YLIM[col]
+        ax.set_ylim(lo, hi)
+        # Disclose the crop: count raw observations outside the window, per run.
+        total_out = total_n = 0
+        for df in runs.values():
+            v = df[col].to_numpy(dtype=float)
+            v = v[np.isfinite(v)]
+            total_out += int(((v < lo) | (v > hi)).sum())
+            total_n += v.size
+        if total_out:
+            ax.annotate(
+                f"y-axis cropped to [{lo:g}, {hi:g}]\n"
+                f"{total_out:,}/{total_n:,} points ({total_out / total_n:.1%}) "
+                f"above it — full range in the log companion",
+                xy=(0.5, -0.16), xycoords="axes fraction", ha="center",
+                va="top", fontsize=7.5, color="#7a2020", linespacing=1.35)
     ax.set_title(title, fontsize=11)
     ax.set_xlabel("training step")
     ax.grid(alpha=0.25)
@@ -739,7 +764,7 @@ def plot_runs(runs: dict[str, pd.DataFrame], path: Path, window: int,
         _panel(ax, col, title, runs, window, logscale, ckpt_marks, warmups)
     fig.suptitle(suptitle, fontsize=11.5, y=0.985, va="top")
     fig.tight_layout()
-    fig.subplots_adjust(top=0.815)
+    fig.subplots_adjust(top=0.815, bottom=0.175 if not logscale else 0.115)
     fig.savefig(path, dpi=130)
     plt.close(fig)
 
@@ -1695,6 +1720,19 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
                 f"{d['train_steps_per_second']:.3g} steps/s.")
     summary["observations"] = obs
 
+    # Machine-readable record of what the linear figures crop, per run.
+    crop: dict = {}
+    for col, (lo, hi) in PANEL_YLIM.items():
+        per_run = {}
+        for r in run_order:
+            v = dfs[r][col].to_numpy(dtype=float)
+            v = v[np.isfinite(v)]
+            per_run[r] = {"n_outside": int(((v < lo) | (v > hi)).sum()),
+                          "n_total": int(v.size),
+                          "max_observed": float(v.max()) if v.size else None}
+        crop[col] = {"ylim": [lo, hi], "by_run": per_run}
+    summary["axis_crop_points_outside"] = crop
+
     behav_df, behav_status = build_behavioural(
         refresh_block.get("full_behavioral_grid_scan"))
     summary["behavioral"] = behav_status
@@ -1737,6 +1775,18 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
             "block rather than recomputing these fields.",
         ],
         "smoothing": summary["smoothing"],
+        "axis_cropping": {
+            "applies_to": "the LINEAR training-metric figures only",
+            "limits": {k: list(v) for k, v in PANEL_YLIM.items()},
+            "rationale": (
+                "Loss and gradient norm have long thin tails (loss to ~2.76, "
+                "gradient norm to ~543) that compress the bulk of the data into "
+                "a sliver under autoscale. Cropping is a display choice only: no "
+                "value is altered or removed, the CSVs retain every observation, "
+                "the log-scale companion figures show the full range, and each "
+                "cropped panel states how many logged points fall outside."),
+            "points_outside": summary.get("axis_crop_points_outside", {}),
+        },
         "reproducibility_tolerances": {
             "summary_json_rtol": CHECK_RTOL,
             "summary_json_atol": CHECK_ATOL,
