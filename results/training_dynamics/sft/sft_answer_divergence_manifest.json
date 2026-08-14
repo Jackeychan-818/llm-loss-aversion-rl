@@ -1,0 +1,364 @@
+{
+  "analysis": "Post-hoc SFT answer-space divergence from the exact matched local base.",
+  "kl_direction": "KL(SFT || base)  (P=SFT, Q=base)",
+  "units": "nats (natural logarithm)",
+  "epsilon": 1e-12,
+  "epsilon_use": "protect exact zero endpoints only; renormalize after clipping; clipped_rows recorded",
+  "bootstrap": {
+    "method": "pair-clustered on unordered goods pair (min,max)(X_num,Y_num)",
+    "seed": 20260814,
+    "resamples": 2000,
+    "interval": "percentile 95%"
+  },
+  "required_grid": {
+    "seeds": [
+      1,
+      2
+    ],
+    "steps": [
+      2000,
+      4000,
+      6000,
+      8000,
+      10000,
+      12000,
+      14000,
+      16000,
+      18000,
+      20000,
+      22000,
+      24000,
+      26000,
+      28000,
+      30000
+    ],
+    "checkpoints_total": 30
+  },
+  "dataset_role": "test_goods VALIDATION / post-hoc (informed reward + selection)",
+  "matched_base_path": "baseline/Qwen-7B-Base-Local",
+  "raw_inputs": {
+    "base": {
+      "X": {
+        "path": "baseline/Qwen-7B-Base-Local/loss_aversion_X.json",
+        "sha256": "9976421951b37685b04bc0b17bf0793d5bf45b6ec33a1e94e40a22d95e599299"
+      },
+      "Y": {
+        "path": "baseline/Qwen-7B-Base-Local/loss_aversion_Y.json",
+        "sha256": "5229b1c182b3d6b017bbfb2ed5ec7ceaff28d2af4e9d96b271b7aa358561275d"
+      }
+    },
+    "seed1_ckpt2000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt2000/loss_aversion_X.json",
+        "sha256": "6f20f738210f35f92cbf283d8a477753d2a64c9750ea2b66db8453df75cdddae"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt2000/loss_aversion_Y.json",
+        "sha256": "53b21080f579bfc8b10a981c457febb36a6619e0062c430c844ab177ab3083d7"
+      }
+    },
+    "seed1_ckpt4000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt4000/loss_aversion_X.json",
+        "sha256": "76fdfe0bf5e3b5463f51a9befc206b33d983be3f777f2546f5bed0cc630fdb7c"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt4000/loss_aversion_Y.json",
+        "sha256": "73c02eaf8286ea776f98cde5d85b68e90abf5358f5ac62e58b611362f526188c"
+      }
+    },
+    "seed1_ckpt6000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt6000/loss_aversion_X.json",
+        "sha256": "80f279ae1210872ec8f16b34e4dd0b4e30a63be35f7fd0fe712f793cb7ad1f73"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt6000/loss_aversion_Y.json",
+        "sha256": "4efdf7d0bc3abcd3bda6448b22ac57ce7b93c51d75ea87138aceb3b4822b7df5"
+      }
+    },
+    "seed1_ckpt8000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt8000/loss_aversion_X.json",
+        "sha256": "88fb4d0b288521a667d47c91d6223302d9f2331f9a5652a8cebe44e8de5e14df"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt8000/loss_aversion_Y.json",
+        "sha256": "2f1addae1ab449b6fd3ebca50fe00f877df0744a92c9681b581dd340c3011ce5"
+      }
+    },
+    "seed1_ckpt10000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt10000/loss_aversion_X.json",
+        "sha256": "382cc9416362fce204d5d75cc0600bc85cf95dc98445eff95b55e9b236b4a5b8"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt10000/loss_aversion_Y.json",
+        "sha256": "74438da21265c0fc0929c24d1a44406ae69d1ae22e96dfb44cd092dc9f26f66d"
+      }
+    },
+    "seed1_ckpt12000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt12000/loss_aversion_X.json",
+        "sha256": "d58cbb0ea935af32f2f12a2981a14e09ea80792d83686081e74cabdcd1863060"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt12000/loss_aversion_Y.json",
+        "sha256": "da14acbc4966e502c03b2c96f732369db51c0f0d0e3e108db583fb42c7d10180"
+      }
+    },
+    "seed1_ckpt14000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt14000/loss_aversion_X.json",
+        "sha256": "b27e18bd3c05e2ec80314d265b199213704299658a0326c6547b8181313b2d60"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt14000/loss_aversion_Y.json",
+        "sha256": "dbc88fd7755fb8ddafceba08b0bb219993681aaf3a043d86af5e8dec113f5063"
+      }
+    },
+    "seed1_ckpt16000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt16000/loss_aversion_X.json",
+        "sha256": "5603e8d3cf1f9c5bf4ec538d2122eed46d4acd39ac85d8b00dea9e21fff5bd81"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt16000/loss_aversion_Y.json",
+        "sha256": "e1288a0b8c09c792bebc92d0c0ce2fa55997d5bc60aab5fd577ff63b7558c02c"
+      }
+    },
+    "seed1_ckpt18000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt18000/loss_aversion_X.json",
+        "sha256": "eb9f3e7593310e1a41bdd3d03676a58a18049a9bedbac53da2613c0241a90eeb"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt18000/loss_aversion_Y.json",
+        "sha256": "f203344ab1c68eda62102a22eaf39ce21835782dd8c7a2a605a25a4a946a469e"
+      }
+    },
+    "seed1_ckpt20000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt20000/loss_aversion_X.json",
+        "sha256": "de537774e09dfc0ef3388c8ce2f265a0563dc5430bc977966fb690e8400e2075"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt20000/loss_aversion_Y.json",
+        "sha256": "56eef41201fba7f495c767b199c7b27c67f6c3922c18fb8bf7f5f86303836ca4"
+      }
+    },
+    "seed1_ckpt22000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt22000/loss_aversion_X.json",
+        "sha256": "0cb2a448278cd958cf26cb795a46c515cbc0a632d97008c77e8d9cb4bd96a92c"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt22000/loss_aversion_Y.json",
+        "sha256": "b4a591003905b5dc157b423ba5d7445adcb03f963ef7659119dc313ab2f06c6d"
+      }
+    },
+    "seed1_ckpt24000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt24000/loss_aversion_X.json",
+        "sha256": "c924294188f4749c8eaea427d6a7f32844edafb14a42bb873749eeddcec99dc7"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt24000/loss_aversion_Y.json",
+        "sha256": "17896cb50648b5c330b473bce8b606205d1d3bb62ff1467e3eed25d0c338ac4e"
+      }
+    },
+    "seed1_ckpt26000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt26000/loss_aversion_X.json",
+        "sha256": "00a46925624fda3ea3a459520480aee01e688e35ba85fbace2d3fae9fc488f24"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt26000/loss_aversion_Y.json",
+        "sha256": "ed4f586e9f262e3047042ba8bd5a201425cf02cfaf021cc7c9adfa0129102bcc"
+      }
+    },
+    "seed1_ckpt28000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt28000/loss_aversion_X.json",
+        "sha256": "09ff80cf9a918b7c5995de6a0ed11bf71674bd5396df205afc039b0aeb2882ec"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt28000/loss_aversion_Y.json",
+        "sha256": "fcac513771dd441bf187d7ca5889709849e3689ad5a26983f89dd330735c32cb"
+      }
+    },
+    "seed1_ckpt30000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt30000/loss_aversion_X.json",
+        "sha256": "b88b01432d32c1346c06da1a8fba5a10574e6805c3eb0cb8d15905609ea3572a"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed1-ckpt30000/loss_aversion_Y.json",
+        "sha256": "bd584ac16054812d4a1a7b2ff5ca69e5bc5d910250aa2e8228e27b1d279ecc7b"
+      }
+    },
+    "seed2_ckpt2000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt2000/loss_aversion_X.json",
+        "sha256": "27aa8d64b90bf30720f0011cfab28b67094e110993df99c3a5b92d10a8eff095"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt2000/loss_aversion_Y.json",
+        "sha256": "a289069cb634d9b6cd61cec005b516d8416f29ec5ed51ae605b9a9a1cf44bc13"
+      }
+    },
+    "seed2_ckpt4000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt4000/loss_aversion_X.json",
+        "sha256": "f04a43c3571e818728950b4fef52c477cadc3e9c4fa5924be22753039559abad"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt4000/loss_aversion_Y.json",
+        "sha256": "939ae47f61930b950b2cc69216b669b74a099d56a7dd1b1b491a13d6cdb3c8c8"
+      }
+    },
+    "seed2_ckpt6000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt6000/loss_aversion_X.json",
+        "sha256": "58cb29d3bcca5a4ad32e41635316daefe2d8164e733b484ae126233a50036a7c"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt6000/loss_aversion_Y.json",
+        "sha256": "9f98dd8a7ec4705a7dac4206742c13a01badd3dca32421c7255d5f5e78988992"
+      }
+    },
+    "seed2_ckpt8000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt8000/loss_aversion_X.json",
+        "sha256": "40a4514b068ba6855da4ae9447aa3640f8b3c9b2bcb3a4353b9d109044bf45a4"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt8000/loss_aversion_Y.json",
+        "sha256": "d5d671cd01541ea88d7ce1a3289dc257642a3417d315a715cb23d9743b8d12a8"
+      }
+    },
+    "seed2_ckpt10000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt10000/loss_aversion_X.json",
+        "sha256": "7191cba5628cc0b4e0147707bc7ee6183d2f691201377269c5514f9a3d789819"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt10000/loss_aversion_Y.json",
+        "sha256": "33ed70c8bf7046bc51bd39b7fd44652ab1625965e96ec254609efc8d4d469668"
+      }
+    },
+    "seed2_ckpt12000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt12000/loss_aversion_X.json",
+        "sha256": "acf4c657e1ff3a4af2f6a14510592504c073741b840373a061fdc65006fe1bfa"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt12000/loss_aversion_Y.json",
+        "sha256": "7838a5cefc398bf5a536a9794fa64bca7156deca29b7e9737787b9f00958ded0"
+      }
+    },
+    "seed2_ckpt14000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt14000/loss_aversion_X.json",
+        "sha256": "3df8b94e253dcb987a0bcd84faa92218905051d41c3b7cd345fef65ee5af3b24"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt14000/loss_aversion_Y.json",
+        "sha256": "cb4040bf5b1fb81f65d03089a3c82fef574608b31701dd0ec56b1dcc4fa4c307"
+      }
+    },
+    "seed2_ckpt16000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt16000/loss_aversion_X.json",
+        "sha256": "6369c3f2cdaa10eb75a3315032a0b25dfdd325981da9db37821ee2ecc28d52b3"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt16000/loss_aversion_Y.json",
+        "sha256": "eac475079bf652cd4e0060bca78b05075be04e31f8cb9a84bd5ae373023ca707"
+      }
+    },
+    "seed2_ckpt18000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt18000/loss_aversion_X.json",
+        "sha256": "aa4bbd1793f2320d71af0f8fbcb0cb8b8a59a99fc577bb122f966cd18fe29522"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt18000/loss_aversion_Y.json",
+        "sha256": "74495175077a43a4a61ffd7f4cf5ffb865071a0f99382196f64c14a76647793b"
+      }
+    },
+    "seed2_ckpt20000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt20000/loss_aversion_X.json",
+        "sha256": "0045fdaad66e7f09e513d07434a1f6877013540a5763093628eff0f1140dc601"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt20000/loss_aversion_Y.json",
+        "sha256": "a84b91d7a658b80b9b5061124e785337cb269c07f3386bbe895ff53a716ff4cb"
+      }
+    },
+    "seed2_ckpt22000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt22000/loss_aversion_X.json",
+        "sha256": "1ef935f5f65b9199202f2bd64c9c4357e4b65f54ad60cba4034da7ce359bbd0e"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt22000/loss_aversion_Y.json",
+        "sha256": "c8456b7927101168e3eb820058340db03bc0dd10a089148ebe2d72e28de115b3"
+      }
+    },
+    "seed2_ckpt24000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt24000/loss_aversion_X.json",
+        "sha256": "4d1769de5b7d7f4aa46114a7f6368b89810017524976669a33ed08b0d84e764e"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt24000/loss_aversion_Y.json",
+        "sha256": "03840bd0a5c2727ea1e07e7b20f3cca85d7adc006dfbde42ddd9cc336ef3dfd0"
+      }
+    },
+    "seed2_ckpt26000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt26000/loss_aversion_X.json",
+        "sha256": "918a5b3a000b77f92ae6906bcdf828c271496ec59f4faaa4a8beaabaadeedb95"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt26000/loss_aversion_Y.json",
+        "sha256": "ce84271511dbd074033a5af14307d59c5c260f97fc32d30f4806a354e3d3bc2d"
+      }
+    },
+    "seed2_ckpt28000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt28000/loss_aversion_X.json",
+        "sha256": "6090eadc3b01c2006567c2468c36fe4307f9571c6c8bcddbbcc7f718e8050fbf"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt28000/loss_aversion_Y.json",
+        "sha256": "e4c1a1e04400841065f32645bac68cb0010493b33000edd6ed5ef5e6f43a76e5"
+      }
+    },
+    "seed2_ckpt30000": {
+      "X": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt30000/loss_aversion_X.json",
+        "sha256": "c87619f2fffebebf2cfd53922ccee6422bf54bf6d9a6a70d6147133527d5c990"
+      },
+      "Y": {
+        "path": "baselines/Qwen-7B-SFT-qd-seed2-ckpt30000/loss_aversion_Y.json",
+        "sha256": "1061c5170aa2faef4f5752b05f27177825c60bc2b9a81d4abf5bea92bf4a4dc1"
+      }
+    }
+  },
+  "git_commit_at_refresh": "c74a4d55cd1c290f96c0a386dcfe3c9c2fffdb38",
+  "versions": {
+    "python": "3.13.3",
+    "numpy": "2.2.4",
+    "matplotlib": "3.10.1"
+  },
+  "limitations": [
+    "binary Yes/No answer-space divergence only",
+    "not full-vocabulary KL",
+    "not part of the SFT training objective (no explicit KL penalty was used or logged)",
+    "not a confirmatory or untouched-suite result",
+    "historical raw predictions lack cryptographic adapter-to-prediction binding"
+  ]
+}
