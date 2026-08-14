@@ -432,13 +432,16 @@ def render_png(snap: dict, path: Path) -> None:
     ax.set_xlim(0, 30000)
     ax.set_xlabel("training step")
     ax.set_ylabel("mean binary KL(SFT || base)  [nats]")
-    ax.set_title("Post-hoc SFT answer-space divergence from matched base")
-    ax.text(0.5, 1.005, "Binary KL(SFT || base) on test_goods; not a training loss and "
-            "not full-vocabulary policy KL",
-            transform=ax.transAxes, ha="center", va="bottom", fontsize=7.5, color="#444")
+    fig.suptitle("Post-hoc SFT answer-space divergence from matched base",
+                 y=0.985, fontsize=12)
+    fig.text(0.5, 0.94,
+             "Binary KL(SFT || base) on test_goods; post-hoc task diagnostic, not "
+             "training loss/full-vocabulary KL\n"
+             "solid = mean, dashed = median, shaded = pair-clustered 95% CI",
+             ha="center", va="top", fontsize=7.5, color="#444")
     ax.grid(True, alpha=0.25)
     ax.legend(loc="best", fontsize=8)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.90))
     fig.savefig(path, dpi=150)
     plt.close(fig)
 

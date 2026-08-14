@@ -335,7 +335,7 @@
           <p>Warmup ends at step 1,500, followed by cosine decay to almost zero at 30k. The recorded schedule matches the configuration.</p>
         </div>
       </div>
-      <p class="note"><strong>Training result:</strong> both seeds completed 30,000 updates without numerical failure. Median target-token loss fell by about 59% in both runs. SFT has no reward, advantage, generation, or KL curve; those are GRPO quantities.</p>
+      <p class="note"><strong>Training result:</strong> both seeds completed 30,000 updates without numerical failure. Median target-token loss fell by about 59% in both runs. SFT has no training-time reward, advantage, generation, or KL term/curve; the next figure is a post-hoc diagnostic.</p>
     </section>
 
     <section>
@@ -343,7 +343,7 @@
       <figure>
         <img
           src="../results/training_dynamics/sft/sft_answer_divergence.png"
-          data-fallbacks="https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/main/results/training_dynamics/sft/sft_answer_divergence.png"
+          data-fallbacks="https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/6ce2a5f/results/training_dynamics/sft/sft_answer_divergence.png"
           loading="lazy"
           alt="Post-hoc binary KL divergence of each SFT checkpoint from the matched base, seeds 1 and 2"
           onerror="loadNextGraph(this)">
@@ -354,7 +354,7 @@
         <span class="graph-error" hidden>Graph could not be loaded from the repository, local disk, or merged commit.</span>
       </div>
       <p class="small muted"><strong>What this is:</strong> for every prompt we compute the binary Kullback–Leibler divergence <em>KL(SFT ∥ base)</em> in nats from the two existing teacher-forced Yes/No probabilities on <code>test_goods</code> validation, then average per checkpoint with a pair-clustered 95% bootstrap band. It is a post-hoc, task-specific measurement, <strong>not a training loss</strong> and <strong>not full-vocabulary policy divergence</strong>.</p>
-      <p class="note"><strong>What the curve shows:</strong> answer-space divergence is large (≈1.7–3.4 nats) and non-monotonic, and it is <em>not</em> minimized at the behaviorally selected checkpoints. Seed&nbsp;1 starts highest at 2k (≈3.44), dips to ≈1.92 around 6–8k, then rises to a ≈2.58 plateau by 30k — above its selected-4k value (≈2.27). Seed&nbsp;2 rises to ≈2.73 around 8k, then stays near ≈2.5, roughly flat past its selected 6k (≈2.60) through 30k (≈2.55). With no KL penalty, divergence accumulates and settles at a high level rather than returning toward the base, even after continued training yields little further behavioral change. Means are right-tail-driven; per-prompt medians are lower (≈1.1–1.9 nats).</p>
+      <p class="note"><strong>What the curve shows:</strong> answer-space divergence is large (≈1.7–3.4 nats), non-monotonic, and <em>not</em> minimized at the behaviorally selected checkpoints. Seed&nbsp;1 starts highest at 2k (≈3.44), dips to ≈1.92 around 6–8k, then reaches ≈2.58 at 30k — above its selected-4k value (≈2.27). Seed&nbsp;2 rises to ≈2.73 around 8k, then stays near ≈2.5 through 30k (≈2.55). Thus task-specific divergence remains elevated after selection. SFT did not directly constrain this quantity, but this post-hoc analysis does not establish that omitting a KL penalty caused the trajectory. The mean is right-tail-sensitive; checkpoint medians range more widely than the mean (≈0.16–3.95 nats).</p>
     </section>
 
     <section>
