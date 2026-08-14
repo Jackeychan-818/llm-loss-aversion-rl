@@ -114,6 +114,8 @@
 
     tr:last-child td { border-bottom: 0; }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .table-scroll { overflow-x: auto; }
+    .table-scroll table { min-width: 1080px; }
 
     .equation {
       margin: 18px 0;
@@ -227,15 +229,17 @@
       <h2>1. What SFT learns</h2>
       <p>We reuse the frozen Qwen pseudo-utility difference:</p>
       <div class="equation">δ̃ = U<sub>X</sub> − U<sub>Y</sub></div>
-      <p>If δ̃ &gt; 0, X is preferred. The target always selects X, regardless of ownership:</p>
+      <p>The target selects the higher-pseudo-utility good, regardless of ownership:</p>
       <table>
-        <thead><tr><th>Prompt perspective</th><th>Supervised target</th><th>Physical outcome</th></tr></thead>
+        <thead><tr><th>Pseudo-utility</th><th>Prompt perspective</th><th>Target</th><th>Physical outcome</th></tr></thead>
         <tbody>
-          <tr><td>Own X, offered Y</td><td><strong>No</strong></td><td>Keep X</td></tr>
+          <tr><td rowspan="2">δ̃ &gt; 0 · X preferred</td><td>Own X, offered Y</td><td><strong>No</strong></td><td>Keep X</td></tr>
           <tr><td>Own Y, offered X</td><td><strong>Yes</strong></td><td>Trade to X</td></tr>
+          <tr><td rowspan="2">δ̃ &lt; 0 · Y preferred</td><td>Own X, offered Y</td><td><strong>Yes</strong></td><td>Trade to Y</td></tr>
+          <tr><td>Own Y, offered X</td><td><strong>No</strong></td><td>Keep Y</td></tr>
         </tbody>
       </table>
-      <div class="note"><strong>Important:</strong> SFT does not train λ or η. It trains the Yes/No answer; λ and η are estimated later from model choices.</div>
+      <div class="note"><strong>Important:</strong> δ̃ is the frozen Qwen-base pseudo-utility—not human preference or objective ground truth. SFT trains the Yes/No answer, not λ or η; those are estimated later.</div>
     </section>
 
     <section>
@@ -249,9 +253,10 @@
               <tr><td>Adaptation</td><td>LoRA: r=16, α=32, dropout=0.05</td></tr>
               <tr><td>LoRA targets</td><td>q/k/v/o + gate/up/down projections</td></tr>
               <tr><td>Training pool</td><td><code>remaining_goods.json</code></td></tr>
-              <tr><td>Labels</td><td>49,450 Yes + 49,450 No</td></tr>
+              <tr><td>Full-pool labels</td><td>49,450 Yes + 49,450 No</td></tr>
               <tr><td>Exposure / seed</td><td><strong>30,000 prompts</strong> of 98,900 (0.303 epoch)</td></tr>
               <tr><td>Seeds</td><td>1 and 2</td></tr>
+              <tr><td>Seed overlap</td><td>Not reported</td></tr>
             </tbody>
           </table>
         </div>
@@ -276,6 +281,9 @@
         </div>
       </div>
       <div class="equation">L<sub>SFT</sub> = − Σ log p<sub>θ</sub>(target answer token | prompt)</div>
+      <h3>One optimizer step</h3>
+      <div class="equation">1 ownership-perspective prompt → known Yes/No target → completion loss → backward + clip → LoRA update</div>
+      <p class="small muted">One training row is one ownership perspective. The X/Y versions of a case are not placed in the same batch or guaranteed to be consecutive.</p>
       <table>
         <thead><tr><th>Exposure</th><th class="num">SFT</th><th class="num">Magnitude GRPO</th></tr></thead>
         <tbody>
@@ -286,7 +294,9 @@
           <tr><td>Signal</td><td class="num">direct target</td><td class="num">relative reward + KL</td></tr>
         </tbody>
       </table>
-      <p class="small muted" style="margin-top:14px"><strong>Batch size matters here:</strong> with batch 1 and no accumulation, one step means one prompt and one optimizer update. The run is deliberately matched to GRPO on 30,000 unique prompts, not on epochs or generated tokens.</p>
+      <p class="small muted" style="margin-top:14px"><strong>Why generated completions = 0:</strong> SFT scores a supplied target with teacher forcing; it does not sample answers during training. GRPO samples 16 completions per prompt to construct relative rewards.</p>
+      <p class="small muted"><strong>Why batch 1:</strong> it matches GRPO on 30,000 prompt exposures and 30,000 optimizer updates. It is a comparison choice, not an optimized SFT recipe. Updates are noisier and more order-sensitive; effective batch 16 has not been tested. The full pool is balanced, but exact balance and overlap of each sampled 30,000-prompt subset are not reported.</p>
+      <p class="small muted"><strong>Runtime scope:</strong> 1.40 h versus ≈51 h is the measured project-run comparison, not a hardware-normalized benchmark; the exact historical GPU and software versions were not archived.</p>
       <p class="small muted"><strong>Recorded provenance gap:</strong> the historical manifests report the training Git commit as <code>unknown</code>; the exact Trainer/PEFT versions, GPU model, and default optimizer implementation are not preserved in the tracked snapshot. Future runs should hard-fail unless these fields are captured.</p>
     </section>
 
@@ -295,14 +305,14 @@
       <figure>
         <img
           src="../results/training_dynamics/sft/sft_full_training_curves.png"
-          data-fallbacks="file:///Users/jackey/Desktop/GRPO/results/training_dynamics/sft/sft_full_training_curves.png|https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/5434d67/results/training_dynamics/sft/sft_full_training_curves.png"
+          data-fallbacks="https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/f65f00a/results/training_dynamics/sft/sft_full_training_curves.png"
           loading="eager"
           alt="Full SFT training curves for seeds 1 and 2"
           onerror="loadNextGraph(this)">
-        <figcaption>Full seeds 1 and 2. Faint lines are raw logs; bold lines are causal trailing means over ~500 steps.</figcaption>
+        <figcaption>Full seeds 1 and 2. Faint lines are observations logged every 10 steps; bold lines are past-only rolling means over ~500 steps. The figure's “CAUSAL” label means past-only, not causal inference.</figcaption>
       </figure>
       <div class="graph-actions">
-        <a href="file:///Users/jackey/Desktop/GRPO/results/training_dynamics/sft/sft_full_training_curves.png" target="_blank">Open the full-training graph directly</a>
+        <a href="../results/training_dynamics/sft/sft_full_training_curves.png" target="_blank">Open the full-training graph directly</a>
         <span class="graph-error" hidden>Graph could not be loaded from the repository, local disk, or merged commit.</span>
       </div>
       <div class="kpis">
@@ -313,11 +323,11 @@
       <div class="three-col" style="margin-top:18px">
         <div class="box">
           <h3>Loss</h3>
-          <p>It falls sharply near the start, rebounds around 2k–4k, then declines gradually. Both seeds finish with similar late medians.</p>
+          <p>It falls sharply near the start, rebounds around 2k–4k, then declines gradually. The reported changes compare medians from the first and last 10%, not literal endpoints.</p>
         </div>
         <div class="box">
           <h3>Gradient norm</h3>
-          <p>Easy examples give near-zero gradients; hard examples produce large spikes. About 38% of logged norms exceed the 0.1 clipping threshold.</p>
+          <p>Pre-clipping norms are logged every 10 steps and cropped at 100 in the plot; maxima are ≈513 and ≈543. About 38% exceed 0.1, but every update is clipped to 0.1.</p>
         </div>
         <div class="box">
           <h3>Learning rate</h3>
@@ -332,41 +342,46 @@
       <figure>
         <img
           src="../results/training_dynamics/sft/sft_behavioral_trajectory.png"
-          data-fallbacks="file:///Users/jackey/Desktop/GRPO/results/training_dynamics/sft/sft_behavioral_trajectory.png|https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/5434d67/results/training_dynamics/sft/sft_behavioral_trajectory.png"
+          data-fallbacks="https://raw.githubusercontent.com/Jackeychan-818/llm-loss-aversion-rl/f65f00a/results/training_dynamics/sft/sft_behavioral_trajectory.png"
           loading="eager"
           alt="Full SFT behavioral trajectories for seeds 1 and 2"
           onerror="loadNextGraph(this)">
-        <figcaption>Full seeds 1 and 2 · 15 checkpoints each · <code>test_goods</code> validation · estimates use Model A at T=1.</figcaption>
+        <figcaption>Full seeds 1 and 2 · 15 checkpoints each · <code>test_goods</code> validation · Model A at T=1 structural-link scale (not decoding temperature).</figcaption>
       </figure>
       <div class="graph-actions">
-        <a href="file:///Users/jackey/Desktop/GRPO/results/training_dynamics/sft/sft_behavioral_trajectory.png" target="_blank">Open the behavioral graph directly</a>
+        <a href="../results/training_dynamics/sft/sft_behavioral_trajectory.png" target="_blank">Open the behavioral graph directly</a>
         <span class="graph-error" hidden>Graph could not be loaded from the repository, local disk, or merged commit.</span>
       </div>
-      <table style="margin-top:18px">
-        <thead><tr><th>Model</th><th class="num">Step</th><th class="num">λ (SE)</th><th class="num">η (SE)</th><th class="num">d</th><th class="num">Consistency</th><th class="num">W</th></tr></thead>
-        <tbody>
-          <tr><td>Matched base</td><td class="num">0</td><td class="num">7.637 (0.627)</td><td class="num">1.007 (0.120)</td><td class="num">7.703</td><td class="num">0.009</td><td class="num">0.744</td></tr>
-          <tr><td><strong>SFT seed 1 · selected</strong></td><td class="num"><strong>4k</strong></td><td class="num"><strong>−0.034 (0.012)</strong></td><td class="num"><strong>0.027 (0.031)</strong></td><td class="num"><strong>0.043</strong></td><td class="num"><strong>0.730</strong></td><td class="num"><strong>0.904</strong></td></tr>
-          <tr><td><strong>SFT seed 2 · selected</strong></td><td class="num"><strong>6k</strong></td><td class="num"><strong>−0.089 (0.011)</strong></td><td class="num"><strong>−0.143 (0.030)</strong></td><td class="num"><strong>0.168</strong></td><td class="num"><strong>0.767</strong></td><td class="num"><strong>0.917</strong></td></tr>
-          <tr><td>SFT seed 1 · endpoint</td><td class="num">30k</td><td class="num">0.206 (0.008)</td><td class="num">−0.596 (0.028)</td><td class="num">0.631</td><td class="num">0.867</td><td class="num">0.973</td></tr>
-          <tr><td>SFT seed 2 · endpoint</td><td class="num">30k</td><td class="num">0.139 (0.007)</td><td class="num">−0.406 (0.026)</td><td class="num">0.429</td><td class="num">0.874</td><td class="num">0.974</td></tr>
-        </tbody>
-      </table>
+      <div class="table-scroll" style="margin-top:18px">
+        <table>
+          <thead><tr><th>Model</th><th class="num">Step</th><th class="num">λ (SE)</th><th class="num">η (SE)</th><th class="num">d</th><th class="num">Consistency</th><th class="num">Keep both</th><th class="num">Trade both</th><th class="num">W</th></tr></thead>
+          <tbody>
+            <tr><td>Matched base</td><td class="num">0</td><td class="num">7.637 (0.627)</td><td class="num">1.007 (0.120)</td><td class="num">7.703</td><td class="num">0.009</td><td class="num">0.991</td><td class="num">0.000</td><td class="num">0.744</td></tr>
+            <tr><td><strong>SFT seed 1 · selected</strong></td><td class="num"><strong>4k</strong></td><td class="num"><strong>−0.034 (0.012)</strong></td><td class="num"><strong>0.027 (0.031)</strong></td><td class="num"><strong>0.043</strong></td><td class="num"><strong>0.730</strong></td><td class="num">0.122</td><td class="num">0.148</td><td class="num"><strong>0.904</strong></td></tr>
+            <tr><td><strong>SFT seed 2 · selected</strong></td><td class="num"><strong>6k</strong></td><td class="num"><strong>−0.089 (0.011)</strong></td><td class="num"><strong>−0.143 (0.030)</strong></td><td class="num"><strong>0.168</strong></td><td class="num"><strong>0.767</strong></td><td class="num">0.068</td><td class="num">0.166</td><td class="num"><strong>0.917</strong></td></tr>
+            <tr><td>SFT seed 1 · endpoint</td><td class="num">30k</td><td class="num">0.206 (0.008)</td><td class="num">−0.596 (0.028)</td><td class="num">0.631</td><td class="num">0.867</td><td class="num">0.061</td><td class="num">0.072</td><td class="num">0.973</td></tr>
+            <tr><td>SFT seed 2 · endpoint</td><td class="num">30k</td><td class="num">0.139 (0.007)</td><td class="num">−0.406 (0.026)</td><td class="num">0.429</td><td class="num">0.874</td><td class="num">0.061</td><td class="num">0.064</td><td class="num">0.974</td></tr>
+          </tbody>
+        </table>
+      </div>
       <div class="three-col" style="margin-top:18px">
         <div class="box">
-          <h3>Fast change</h3>
-          <p>Both seeds move far from the matched base by the first saved checkpoint at 2k.</p>
+          <h3>d</h3>
+          <p>√(λ² + η²): distance from behavioral neutrality and the frozen selection objective.</p>
         </div>
         <div class="box">
-          <h3>Early selection</h3>
-          <p>The frozen rule minimizes d = √(λ² + η²), subject to consistency ≥ 0.5. It selects 4k and 6k.</p>
+          <h3>Consistency</h3>
+          <p>Rate of choosing the same physical good after ownership reverses, which requires opposite Yes/No answers.</p>
         </div>
         <div class="box">
-          <h3>Later drift</h3>
-          <p>Consistency and W keep rising, but η becomes negative. Lower training loss does not identify the best behavior.</p>
+          <h3>W</h3>
+          <p>Magnitude-weighted alignment with frozen Qwen pseudo-utility. It is descriptive, not a selection gate.</p>
         </div>
       </div>
-      <p class="small muted" style="margin-top:14px">All 30 cells contain 9,890 paired cases with zero parse failures. Each cell passed the recorded adapter/artifact and estimator checks. The historical evaluations have no eval-time manifest, so the prediction-to-adapter binding is verified from the available artifacts, not cryptographically proved.</p>
+      <p class="small muted" style="margin-top:14px"><strong>Selection:</strong> the frozen rule minimizes d subject to consistency ≥ 0.5, selecting 4k and 6k. Later consistency and W rise while η becomes negative, so lower training loss does not identify the selected behavior.</p>
+      <p class="small muted"><strong>Measurement:</strong> λ and η use teacher-forced Yes/No probabilities; consistency, keep-both, and trade-both use hard choices. Every checkpoint has 9,890 paired cases (19,780 prompts) and zero parse failures.</p>
+      <p class="small muted"><strong>Scope:</strong> <code>test_goods</code> holds out exact attribute configurations, but shares goods and goods-pair identities with training; it is not unseen-goods evaluation. The selected values are post-selection validation. Their NLS SEs are conditional on one checkpoint and do not include the uncertainty from choosing among 15 checkpoints; pair-clustered uncertainty for these headline SFT results is not yet reported.</p>
+      <p class="small muted"><strong>Provenance:</strong> each cell passed recorded artifact and estimator checks, but the historical evaluations lack an eval-time manifest. Prediction-to-adapter binding is supported by available artifacts, not cryptographically proved.</p>
     </section>
 
     <section>
@@ -374,7 +389,7 @@
       <div class="three-col">
         <div class="box good">
           <h3>What we achieved</h3>
-          <p>Two complete runs and two complete behavioral trajectories show that the supervised target is learned quickly and reproducibly.</p>
+          <p>Two complete runs show similar broad within-benchmark trajectories and early checkpoints near behavioral neutrality.</p>
         </div>
         <div class="box limit">
           <h3>What the curves reveal</h3>
@@ -382,13 +397,13 @@
         </div>
         <div class="box next">
           <h3>What is still required</h3>
-          <p>Evaluate the two selected SFT models on the untouched method-comparison suite, together with the selected GRPO families.</p>
+          <p>Run the untouched method comparison, full capability retention, and prompt/framing robustness for the selected SFT models.</p>
         </div>
       </div>
-      <div class="note"><strong>Current conclusion:</strong> SFT produces very small λ and η on the validation set at its selected checkpoints. This shows that the task is directly learnable, but it does not establish SFT as the method winner; the untouched cross-method comparison remains unopened.</div>
+      <div class="note"><strong>Current conclusion:</strong> SFT produces very small λ and η at selected validation checkpoints. The within-benchmark target is directly learnable, but SFT is not yet the method winner; untouched cross-method evidence remains unopened.</div>
     </section>
 
-    <footer>Lambda Zero · matched SFT overview · status 7 August 2026</footer>
+    <footer>Lambda Zero · matched SFT overview · status 14 August 2026</footer>
   </main>
   <script>
     function loadNextGraph(image) {
