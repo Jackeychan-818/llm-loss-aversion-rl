@@ -353,6 +353,20 @@
         <a href="../results/training_dynamics/sft/sft_answer_divergence.png" target="_blank">Open the divergence graph directly</a>
         <span class="graph-error" hidden>Graph could not be loaded from the repository, local disk, or merged commit.</span>
       </div>
+      <h3>How KL is calculated</h3>
+      <div class="equation">KL<sub>i</sub>(SFT ∥ base) = p<sup>SFT</sup><sub>i,Yes</sub> ln(p<sup>SFT</sup><sub>i,Yes</sub> / p<sup>base</sup><sub>i,Yes</sub>) + p<sup>SFT</sup><sub>i,No</sub> ln(p<sup>SFT</sup><sub>i,No</sub> / p<sup>base</sup><sub>i,No</sub>)</div>
+      <div class="equation">checkpoint mean KL = (1 / 19,780) Σ<sub>i=1</sub><sup>19,780</sup> KL<sub>i</sub></div>
+      <p class="small muted">For the same prompt <em>i</em>, <strong>p<sup>SFT</sup></strong> is the checkpoint's normalized Yes/No probability pair and <strong>p<sup>base</sup></strong> is the matched base model's pair. Natural logarithms give KL in nats. KL=0 means the two pairs are identical; larger values mean a larger task-specific probability shift.</p>
+      <h3>What are the test cases?</h3>
+      <table>
+        <tbody>
+          <tr><td>One case</td><td>One familiar goods pair under one held-out attribute configuration</td></tr>
+          <tr><td>Per goods pair</td><td>2 held-out configurations × 2 separate ownership perspectives = 4 prompts</td></tr>
+          <tr><td>Full validation set</td><td>4,945 goods pairs × 2 configurations = 9,890 cases = <strong>19,780 prompts</strong></td></tr>
+          <tr><td>Training relationship</td><td>The 100 goods and 4,945 pair identities are familiar, but these exact configurations and prompt strings were not used for training</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted" style="margin-top:14px"><strong>Example:</strong> compare a multigrain, same-day-baked loaf of bread with a semi-dark, mass-market chocolate bar. One prompt gives the bread; the other reverses ownership and gives the chocolate. KL is computed separately for both prompts by comparing SFT and base Yes/No probabilities.</p>
       <p class="small muted"><strong>What this is:</strong> for every prompt we compute the binary Kullback–Leibler divergence <em>KL(SFT ∥ base)</em> in nats from the two existing teacher-forced Yes/No probabilities on <code>test_goods</code> validation, then average per checkpoint with a pair-clustered 95% bootstrap band. It is a post-hoc, task-specific measurement, <strong>not a training loss</strong> and <strong>not full-vocabulary policy divergence</strong>.</p>
       <p class="note"><strong>What the curve shows:</strong> answer-space divergence is large (≈1.7–3.4 nats), non-monotonic, and <em>not</em> minimized at the behaviorally selected checkpoints. Seed&nbsp;1 starts highest at 2k (≈3.44), dips to ≈1.92 around 6–8k, then reaches ≈2.58 at 30k — above its selected-4k value (≈2.27). Seed&nbsp;2 rises to ≈2.73 around 8k, then stays near ≈2.5 through 30k (≈2.55). Thus task-specific divergence remains elevated after selection. SFT did not directly constrain this quantity, but this post-hoc analysis does not establish that omitting a KL penalty caused the trajectory. The mean is right-tail-sensitive; checkpoint medians range more widely than the mean (≈0.16–3.95 nats).</p>
     </section>
