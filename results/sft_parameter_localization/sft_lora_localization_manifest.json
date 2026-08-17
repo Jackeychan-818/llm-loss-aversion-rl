@@ -1,0 +1,227 @@
+{
+  "analysis": "CPU-only LoRA parameter localization atlas for full-run SFT adapters",
+  "phase": "Phase 1 \u2014 weight-space screening",
+  "git_commit_at_refresh": "80f5efa2639867881ace4b9184dad36daa09b29b",
+  "versions": {
+    "python": "3.13.3",
+    "numpy": "2.2.4",
+    "safetensors": "0.7.0",
+    "matplotlib": "3.10.1"
+  },
+  "lora": {
+    "formula": "dW = (alpha / rank) * B @ A",
+    "rank": 16,
+    "alpha": 32,
+    "scale": 2.0,
+    "scale_application": "folded into B exactly once; never applied to A as well",
+    "bias": "none",
+    "target_modules": [
+      "down_proj",
+      "gate_proj",
+      "k_proj",
+      "o_proj",
+      "q_proj",
+      "up_proj",
+      "v_proj"
+    ],
+    "gauge_note": "A->RA, B->BR^-1 leaves dW invariant; raw ||A||/||B|| are therefore never used as importance statistics",
+    "dense_dW_materialized": false
+  },
+  "definitions": {
+    "delta_fro": "||dW||_F via trace[(B_s^T B_s)(A A^T)] with B_s = (alpha/r) B; dense dW never formed",
+    "delta_spec": "||dW||_2 = largest singular value of R_B R_A^T (exact, <=16x16)",
+    "delta_rms": "||dW||_F / sqrt(out*in)  \u2014 dimension-normalized update size",
+    "rel_fro": "||dW||_F / ||W_base||_F",
+    "rel_spec": "||dW||_2 / ||W_base||_2 (base sigma_max by deterministic subspace iteration)",
+    "energy": "||dW||_F^2",
+    "energy_share": "module energy / total adapter energy (196 modules)",
+    "norm_energy_share": "delta_rms^2 share \u2014 dimension-normalized analogue of energy_share",
+    "stable_rank": "||dW||_F^2 / ||dW||_2^2",
+    "eff_rank_entropy": "exp(-sum p_j log p_j), p_j = sv_j^2 / sum sv^2",
+    "rank90/95/99": "smallest k with top-k singular energy fraction >= 0.90/0.95/0.99",
+    "gini": "sum_i sum_j |x_i-x_j| / (2 n^2 mean x) over the 196 module energies",
+    "cosine": "<dW_a, dW_b>_F / (||dW_a||_F ||dW_b||_F) on COMPOSITE updates",
+    "diff_fro": "||dW_a - dW_b||_F = sqrt(||a||^2 + ||b||^2 - 2<a,b>)",
+    "mean_cosine_energy_weighted": "sum_m w_m cos_m / sum_m w_m, w_m = ||dW_a,m||_F ||dW_b,m||_F",
+    "dtype": "float64 for all Gram / QR / SVD / norm arithmetic; float32 tensor storage"
+  },
+  "numerical_dtype": "float64 for Gram/QR/SVD/norm arithmetic; tensors stored float32 (adapters) and BF16 widened losslessly to float32 (base)",
+  "base_spectral_estimator": {
+    "method": "randomized subspace iteration (block power method)",
+    "block": 8,
+    "max_iter": 60,
+    "rel_tol": 1e-07,
+    "seed": 20260817,
+    "note": "used ONLY for frozen base ||W||_2; all dW singular values are exact"
+  },
+  "adapters": [
+    {
+      "seed": 1,
+      "step": 2000,
+      "role": "first_saved",
+      "path": "checkpoints/sft_qwen_delta_seed1/checkpoint-2000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "b5e4adc28f00396de05cf79cc9fa56b083a22f9cce01279ecaf05ffe2b814394",
+      "adapter_config_sha256": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_sha256_from_verification": "b5e4adc28f00396de05cf79cc9fa56b083a22f9cce01279ecaf05ffe2b814394",
+      "expected_config_sha256_from_verification": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    },
+    {
+      "seed": 1,
+      "step": 4000,
+      "role": "selected",
+      "path": "checkpoints/sft_qwen_delta_seed1/checkpoint-4000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "004e731794537c2b51e7e0c3fd5fbcbeaf67f1c77d6141789059488878ab4670",
+      "adapter_config_sha256": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_sha256_from_verification": "004e731794537c2b51e7e0c3fd5fbcbeaf67f1c77d6141789059488878ab4670",
+      "expected_config_sha256_from_verification": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    },
+    {
+      "seed": 1,
+      "step": 30000,
+      "role": "endpoint",
+      "path": "checkpoints/sft_qwen_delta_seed1/checkpoint-30000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "9e30ab8bccb0dabd731465ba236a08704bc58710e90ec80bf4fb5d67469de7dc",
+      "adapter_config_sha256": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_sha256_from_verification": "9e30ab8bccb0dabd731465ba236a08704bc58710e90ec80bf4fb5d67469de7dc",
+      "expected_config_sha256_from_verification": "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    },
+    {
+      "seed": 2,
+      "step": 2000,
+      "role": "first_saved",
+      "path": "checkpoints/sft_qwen_delta_seed2/checkpoint-2000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "14bf6d88e1fa4bd266f5d3e45f3ef06c767c21ef256c19b50b00f94184a7529a",
+      "adapter_config_sha256": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_sha256_from_verification": "14bf6d88e1fa4bd266f5d3e45f3ef06c767c21ef256c19b50b00f94184a7529a",
+      "expected_config_sha256_from_verification": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    },
+    {
+      "seed": 2,
+      "step": 6000,
+      "role": "selected",
+      "path": "checkpoints/sft_qwen_delta_seed2/checkpoint-6000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "7f35750ed51da9236863d3ad72650709045bd49f3fb169acc768c672c6c3d9ce",
+      "adapter_config_sha256": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_sha256_from_verification": "7f35750ed51da9236863d3ad72650709045bd49f3fb169acc768c672c6c3d9ce",
+      "expected_config_sha256_from_verification": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    },
+    {
+      "seed": 2,
+      "step": 30000,
+      "role": "endpoint",
+      "path": "checkpoints/sft_qwen_delta_seed2/checkpoint-30000",
+      "adapter_weight_bytes": 161533192,
+      "adapter_weight_sha256": "1751388c55bac9cef91d69c3f76026c8c809377ef274da4acba27971879f79c3",
+      "adapter_config_sha256": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_sha256_from_verification": "1751388c55bac9cef91d69c3f76026c8c809377ef274da4acba27971879f79c3",
+      "expected_config_sha256_from_verification": "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850",
+      "expected_weight_bytes_from_verification": 161533192,
+      "hash_verified": true,
+      "verification_source": "results/sft_grid_verification.json",
+      "peft_version": "0.19.1",
+      "base_model_name_or_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct"
+    }
+  ],
+  "verification_file": {
+    "path": "results/sft_grid_verification.json",
+    "sha256": "fbe6b0e8a69193278441d334d2e0559ba0e7090b8ac4006cb420752a469819e7",
+    "code_commit_recorded": "b749761fe0a5801f53263ede40937d972b616e42",
+    "generated_utc": "2026-08-07T06:12:08+00:00",
+    "all_six_adapter_hashes_matched": true
+  },
+  "distinct_adapter_config_sha256": [
+    "65f444b52472c9e955a9945a92ba0118e2c32558a3c20ba4a24eeaa4b3efd6f9",
+    "b0c2331048f94dc18d4a769f080a2d8e1e077ecf0655d7b6e6449303f10e7850"
+  ],
+  "adapter_config_note": "seed 1 and seed 2 configs differ ONLY in the serialization ORDER of target_modules (PEFT writes a Python set); the sorted inventory is identical and is what is compared",
+  "base_model": {
+    "dir": "models/Qwen2.5-7B-Instruct",
+    "shard": "models/Qwen2.5-7B-Instruct/model.safetensors",
+    "shard_sha256": "c8f5aa1b3293e01920382648b804df1d84e0655b3fce71619071fcd7fbecc918",
+    "shard_bytes": 15231272152,
+    "header_sha256": "a79b9d692fced0b1ffd4b128ef861610028cf8f486e7a67c97707de600c0fad4",
+    "config_sha256": "619fcb509e6900453e6ff5498733e43b4c6c46eb5013978b81f327be8717de39",
+    "dtype": "BF16 (widened losslessly to float32 for norms)"
+  },
+  "base_shards_used": [
+    "models/Qwen2.5-7B-Instruct/model.safetensors"
+  ],
+  "selected_checkpoints": {
+    "seed1": 4000,
+    "seed2": 6000
+  },
+  "checkpoint_roles": {
+    "seed1_step2000": "first_saved",
+    "seed1_step4000": "selected",
+    "seed1_step30000": "endpoint",
+    "seed2_step2000": "first_saved",
+    "seed2_step6000": "selected",
+    "seed2_step30000": "endpoint"
+  },
+  "excluded_paths": {
+    "forbidden_tokens": [
+      "pilot",
+      "final"
+    ],
+    "note": "pilot (checkpoints/sft_qwen_delta_seed1_pilot6k) and any 'final' adapter are hard-rejected; only the six full-run checkpoints above were read"
+  },
+  "suites_not_opened": [
+    "data/method_comparison/",
+    "data/frozen_unused_test_goods.json",
+    "data/ood_new_goods*",
+    "semantic-counterbalancing suite",
+    "checkpoints/sft_qwen_delta_seed1_pilot6k"
+  ],
+  "compute": {
+    "device": "CPU only",
+    "gpu": false,
+    "pbs_jobs_submitted": 0,
+    "inference": false,
+    "generation": false,
+    "training": false,
+    "activations_collected": false,
+    "ablation_run": false,
+    "model_instantiated_via_transformers": false
+  },
+  "limitations": [
+    "WEIGHT-SPACE SCREENING ONLY \u2014 parameter-space magnitude is not causal importance",
+    "no activation weighting: a module's update is not scaled by how strongly it is driven by the actual task inputs",
+    "no causal necessity or sufficiency result \u2014 nothing here was ablated or restored",
+    "no behavioral evaluation in this phase; no lambda/eta, no accuracy, no suite opened",
+    "no sub-2k localization is possible \u2014 the full runs saved no adapter before step 2000",
+    "no method comparison (SFT vs GRPO vs sign-only) is made or implied",
+    "adapter-to-historical-prediction binding remains NON-cryptographic: the historical evaluator emitted no run manifest, so these adapters are matched to the behavioral results by path/step convention, not by hash",
+    "base ||W||_2 is a deterministic iterative estimate (tol 1e-7), not an exact SVD; dW singular values are exact",
+    "identical LoRA rank 16 caps every observed effective rank at 16 by construction \u2014 a low effective rank is relative to that cap, not to the full weight-matrix rank"
+  ]
+}
