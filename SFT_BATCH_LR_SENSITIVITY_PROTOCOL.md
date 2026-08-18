@@ -239,3 +239,69 @@ python train/sft_sensitivity_cost.py          # measured GPU-hour / SU estimate
 python train/sft_sensitivity_train.py --cell-list          # every planned cell
 python train/sft_sensitivity_train.py --cell <name> --validate   # CPU dry run, no GPU
 ```
+
+---
+
+## Amendment 1 — Phase-A endpoint-only evaluation (2026-08-18)
+
+**Recorded before any GPU job of this experiment was submitted. No experimental
+outcome of any kind has been observed: no training cell has run, no checkpoint
+exists, and no validation or behavioural number has been computed. This
+amendment is therefore driven purely by cost, and cannot have been influenced by
+results.**
+
+### Status of the original text
+
+Endpoint-only evaluation is arguably already permitted:
+
+- **§4** requires checkpoints to be **saved** at 2,048 / 4,096 / 6,016 prompts.
+  It does not require them to be evaluated. Saving is unchanged.
+- **§6** defines the selection rule on **endpoint** validation cross-entropy per
+  cell. Endpoint-only satisfies it exactly as written.
+- **§8** names the unit as "per pilot **cell** and per full-run **checkpoint**".
+  For pilots the unit is the cell, so endpoint diagnostics satisfy it literally.
+
+However `results/sft_sensitivity/README.md` priced a "Phase A, all 3 exposure
+checkpoints" scenario, which implies a broader intent than the text requires.
+Rather than rely on the narrower reading, the scope is fixed here explicitly.
+
+### Amendment
+
+For **Phase A only**, the required behavioural diagnostics of §8 (λ, η, d,
+consistency, keep-both, trade-both, W) are computed at the **endpoint exposure
+(6,016 prompts) only**.
+
+1. **Endpoint validation cross-entropy is sufficient for the frozen
+   batch-selection rule.** §6 already selects on the endpoint mean across seeds
+   1–3. Evaluating the 2,048- and 4,096-prompt checkpoints would add trajectory
+   detail but could not change the selection, because the rule does not read
+   them.
+2. **The intermediate checkpoints are retained, not discarded.** Both the
+   2,048- and 4,096-exposure checkpoints of every cell are saved and preserved
+   exactly as §4 requires. They remain available for a later trajectory
+   evaluation, which would be a separate, separately costed submission.
+3. **Training-side diagnostics are unaffected.** Loss distribution, pre-clipping
+   gradient-norm median/P90/P99/max, clipping fraction, non-finite counts,
+   learning-rate schedule verification, runtime and loss roughness all come from
+   the training logs and are reported in full for every cell. The central
+   question — whether a larger effective batch reduces gradient noise — is
+   answered from these, at no evaluation cost.
+
+### Authorized scope
+
+| | |
+|---|---|
+| cells | effective batch {1, 16, 32, 64} × seeds {1, 2, 3} = 12 |
+| learning rate | 1e-6 |
+| exposure | exactly 6,016 unique prompts per cell |
+| evaluation | endpoint (6,016) only, `test_goods` validation, 12 evaluations |
+| **ceiling** | **8.2 GPU-hours / 525 SU** |
+
+**Not authorized under this amendment:** Phase B, intermediate-checkpoint
+evaluations, and the full 30,016-prompt runs. Each requires a separate decision.
+
+Work stops after Phase A and reports before any further submission.
+
+All other provisions of this protocol — the ordering guarantee, the exposure
+arithmetic, the selection rule and its tie-break, the vocabulary discipline of
+§8, and the closed-suite list of §0 — are unchanged.

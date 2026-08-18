@@ -74,7 +74,7 @@ fi
 python train/sft_sensitivity_train.py --cell "$CELL" --validate \
     2>&1 | tee "${LOG%.log}.validate.log"
 
-python train/sft_sensitivity_train.py --cell "$CELL" --allow-existing \
+python train/sft_sensitivity_train.py --cell "$CELL" \
     2>&1 | tee "$LOG"
 
 echo "=== Done: $CELL ==="

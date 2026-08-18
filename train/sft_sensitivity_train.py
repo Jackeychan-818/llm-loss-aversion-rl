@@ -113,9 +113,14 @@ def guard_output_dir(cell: P.Cell, allow_existing: bool) -> None:
             raise SystemExit(f"REFUSED: output dir {d} collides with frozen run {frozen}")
     if "sft_sensitivity" not in s:
         raise SystemExit(f"REFUSED: output dir {d} is outside checkpoints/sft_sensitivity")
-    if d.exists() and any(d.iterdir()) and not allow_existing:
+    # A directory holding only manifests/logs (e.g. from a --validate dry run)
+    # is not a run and may be written into. Actual trained artefacts may not.
+    artefacts = [p for p in (d.glob("checkpoint-*") if d.exists() else [])] + \
+                [p for p in (d.glob("exposure-*") if d.exists() else [])]
+    if artefacts and not allow_existing:
         raise SystemExit(
-            f"REFUSED: {d} already exists and is non-empty. Existing runs are "
+            f"REFUSED: {d} already holds trained artefacts "
+            f"({', '.join(p.name for p in artefacts[:4])}). Existing runs are "
             "never overwritten; pass --allow-existing only to resume a run you "
             "intend to continue unchanged.")
 
