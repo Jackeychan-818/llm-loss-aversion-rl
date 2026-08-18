@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Base config — SFT batch/learning-rate sensitivity experiment.
+# Governed by SFT_BATCH_LR_SENSITIVITY_PROTOCOL.md.
+#
+# EXPLORATORY / POST-HOC optimization ablation. This file does NOT replace
+# train/configs/qwen25_7b_sft_qwen_delta.yaml, which stays frozen as the
+# matched-SFT baseline and is not edited by this experiment.
+#
+# Per-cell quantities — effective batch, learning rate, seed, prompt exposure,
+# optimizer steps, checkpoint steps — are NOT set here. They are derived from
+# the cell identity in train/sft_sensitivity_plan.py so that the protocol, the
+# configs, the driver and the tests cannot drift apart. The driver verifies the
+# values below against that module and hard-fails on any mismatch.
+# ─────────────────────────────────────────────────────────────────────────────
+
+model_name_or_path: models/Qwen2.5-7B-Instruct
+
+# ── LoRA (identical to the frozen matched-SFT baseline) ─────────────────────
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# ── Held fixed across every cell of this experiment ─────────────────────────
+# The effective batch is realised ONLY through gradient_accumulation_steps,
+# which the driver sets per cell. per_device_train_batch_size stays 1 so the
+# per-prompt forward/backward arithmetic is identical in every cell.
+per_device_train_batch_size: 1
+max_grad_norm: 0.1                # unchanged for this whole experiment
+lr_scheduler_type: cosine
+warmup_ratio: 0.05
+bf16: true
+logging_steps: 1                  # every optimizer update
+dataloader_num_workers: 0
+report_to: none
+remove_unused_columns: false
+
+# ── Data (training only; test_goods is validation and is never trained on) ──
+data_file: data/remaining_goods.json
+delta_file: data/deltas/delta_qwen_base.json
+goods_file: everyday_goods_full.json
+treatment: baseline
+
+# ── Ordering ────────────────────────────────────────────────────────────────
+# One deterministic permutation per seed; every cell consumes a prefix of it.
+# Frozen hashes: results/sft_sensitivity/order_hashes.json
+data_order: deterministic_prefix_per_seed

@@ -1,0 +1,80 @@
+#!/bin/bash
+# ============================================================
+# PBS — one cell of the SFT batch/learning-rate sensitivity experiment.
+# Governed by SFT_BATCH_LR_SENSITIVITY_PROTOCOL.md.
+#
+# EXPLORATORY / POST-HOC optimization ablation. It does not modify or reselect
+# the frozen matched-SFT baseline and licenses no SFT-vs-GRPO claim.
+#
+# Submit one cell:
+#   qsub -v CELL=sft_sens_phA_eb32_lr1e-6_seed1_h6016 train/submit_sft_sensitivity.pbs
+#
+# Phase A (12 cells) — pilots are ~18 min, so the 2 h request routes them to
+# gdev, which allows 10 concurrent jobs per user:
+#   for EB in 1 16 32 64; do for S in 1 2 3; do
+#     qsub -v CELL=sft_sens_phA_eb${EB}_lr1e-6_seed${S}_h6016 \
+#          train/submit_sft_sensitivity.pbs
+#   done; done
+#
+# Full runs need >2 h and therefore land in g1, which allows only ONE concurrent
+# job per user — three seeds run strictly serially:
+#   qsub -v CELL=sft_sens_phfull_eb32_lr3e-6_seed1_h30016,WALLTIME=04:00:00 \
+#        train/submit_sft_sensitivity.pbs
+#
+# NOTE on scheduler logs: ${PBS_JOBID} is deliberately NOT used in a #PBS -o/-e
+# path. PBS does not expand it in a directive, so every concurrent job would
+# write to one literal filename and clobber the others. Scheduler output stays
+# at its default job-specific path; the run additionally tees a per-cell log
+# whose name is unique by construction (the cell name encodes phase, batch, LR,
+# seed and schedule horizon).
+# ============================================================
+#PBS -N lz-sft-sens
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+
+: "${CELL:?Must pass -v CELL=<cell name>; see: python train/sft_sensitivity_train.py --cell-list}"
+
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
+
+mkdir -p logs/sft_sensitivity
+LOG="logs/sft_sensitivity/${CELL}.log"
+if [[ -e "$LOG" ]]; then
+    LOG="logs/sft_sensitivity/${CELL}.$(date -u +%Y%m%dT%H%M%SZ).log"
+fi
+
+echo "=== SFT sensitivity cell: $CELL ==="
+echo "PBS job id : ${PBS_JOBID:-not-under-pbs}"
+echo "git commit : $(git rev-parse HEAD 2>/dev/null || echo unknown)"
+echo "log        : $LOG"
+nvidia-smi
+
+# Refuse to run against a dirty tree: the manifest records a commit hash, and an
+# uncommitted change would make that hash a lie about what actually ran.
+if ! git diff --quiet HEAD -- train/ eval/ 2>/dev/null; then
+    echo "REFUSED: uncommitted changes under train/ or eval/. Commit first so the"
+    echo "         manifest's git_commit describes the code that actually ran."
+    exit 2
+fi
+
+# CPU pre-flight: ordering, frozen order-hash match, exposure arithmetic and
+# manifest are all validated before a single GPU second is spent.
+python train/sft_sensitivity_train.py --cell "$CELL" --validate \
+    2>&1 | tee "${LOG%.log}.validate.log"
+
+python train/sft_sensitivity_train.py --cell "$CELL" --allow-existing \
+    2>&1 | tee "$LOG"
+
+echo "=== Done: $CELL ==="
