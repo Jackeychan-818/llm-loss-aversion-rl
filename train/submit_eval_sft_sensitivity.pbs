@@ -1,0 +1,84 @@
+#!/bin/bash
+# ============================================================
+# PBS — ENDPOINT evaluation of one SFT-sensitivity cell on test_goods.
+# Governed by SFT_BATCH_LR_SENSITIVITY_PROTOCOL.md + Amendment 1.
+#
+# Amendment 1 authorises the ENDPOINT exposure (6,016 prompts) ONLY. The 2,048-
+# and 4,096-exposure checkpoints are retained and deliberately NOT evaluated
+# here; doing so is a separate, separately costed decision.
+#
+#   qsub -v CELL=sft_sens_phA_eb32_lr1e-6_seed1_h6016 \
+#        train/submit_eval_sft_sensitivity.pbs
+#
+# Scope guards:
+#   * test_goods ONLY — the already-open validation set. This script hard-refuses
+#     OOD-50, frozen-unused, method-comparison and semantic data.
+#   * Output root is `sft_sensitivity_eval/`, a directory of its own. It is
+#     neither `baseline/` nor `baselines/`, so no confirmatory or causal-baseline
+#     selector glob can ever reach these results.
+#   * Evaluates a cell's endpoint adapter only. Selects nothing.
+# ============================================================
+#PBS -N lz-sftsens-eval
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=02:00:00
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+: "${CELL:?Must pass -v CELL=<cell name>}"
+
+set +u
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+set -u
+export LD_LIBRARY_PATH="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null || true):${LD_LIBRARY_PATH:-}"
+
+EXPOSURE="${EXPOSURE:-6016}"
+ADAPTER="checkpoints/sft_sensitivity/${CELL}/exposure-${EXPOSURE}"
+FEATURE="sft_sensitivity_eval"
+DATA="data/test_goods.json"          # already-open VALIDATION set; not overridable
+MODEL_NAME="$CELL"
+
+case "$DATA" in
+  *ood_new_goods*|*frozen_unused*|*method_comparison*|*semantic*)
+     echo "REFUSED: sensitivity eval must use test_goods only."; exit 2 ;;
+esac
+if [[ "$EXPOSURE" != "6016" ]]; then
+  echo "REFUSED: Amendment 1 authorises the 6,016 endpoint only (got $EXPOSURE)."
+  echo "         Evaluating 2,048/4,096 is a separate, separately costed decision."
+  exit 2
+fi
+if [[ ! -f "$ADAPTER/adapter_model.safetensors" ]]; then
+  echo "ERROR: endpoint adapter missing: $ADAPTER"; exit 1
+fi
+
+mkdir -p logs/sft_sensitivity
+echo "=== Endpoint eval: $CELL (exposure $EXPOSURE) ==="
+echo "PBS job id : ${PBS_JOBID:-not-under-pbs}"
+echo "git commit : $(git rev-parse HEAD 2>/dev/null || echo unknown)"
+echo "adapter    : $ADAPTER  ->  $FEATURE/$MODEL_NAME   (data=$DATA, VALIDATION)"
+nvidia-smi
+
+python eval/run_qwen_local.py \
+    --model_path models/Qwen2.5-7B-Instruct \
+    --adapter_path "$ADAPTER" \
+    --model_name "$MODEL_NAME" \
+    --data_file "$DATA" \
+    --treatment baseline \
+    --output_root "$FEATURE" \
+    --batch_size 8 \
+    --yes \
+    2>&1 | tee "logs/sft_sensitivity/eval_${CELL}.log"
+
+python eval/estimate_qwen_checkpoint.py \
+    --feature "$FEATURE" \
+    --model_name "$MODEL_NAME" \
+    --link-scale 1 \
+    2>&1 | tee "logs/sft_sensitivity/estimate_${CELL}.log"
+
+echo "=== Done: $FEATURE/$MODEL_NAME ==="
