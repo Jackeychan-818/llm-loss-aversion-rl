@@ -179,7 +179,16 @@ def write_manifest(cell: P.Cell, args, stats: dict, order_prov: dict,
         "scientific_status": ("EXPLORATORY / POST-HOC optimization ablation. Does "
                               "not modify or reselect the frozen matched-SFT "
                               "baseline; licenses no SFT-vs-GRPO claim."),
-        "git_commit": git_commit(),
+        # git is unavailable on the compute nodes, so the submitting side
+        # captures the hash on the login node and passes it through the
+        # environment. Falling back to a bare "unknown" here is what produced
+        # SFTPROV-001 in the earlier SFT manifests; this run records the real
+        # commit and says which side established it.
+        "git_commit": os.environ.get("LZ_GIT_COMMIT") or git_commit(),
+        "git_commit_source": ("LZ_GIT_COMMIT (captured on the login node at "
+                              "submission, where git is available)"
+                              if os.environ.get("LZ_GIT_COMMIT")
+                              else "git rev-parse on this host"),
         "command": " ".join(sys.argv),
         "cell": d,
         "exposure_accounting": {

@@ -55,19 +55,37 @@ if [[ -e "$LOG" ]]; then
     LOG="logs/sft_sensitivity/${CELL}.$(date -u +%Y%m%dT%H%M%SZ).log"
 fi
 
-echo "=== SFT sensitivity cell: $CELL ==="
-echo "PBS job id : ${PBS_JOBID:-not-under-pbs}"
-echo "git commit : $(git rev-parse HEAD 2>/dev/null || echo unknown)"
-echo "log        : $LOG"
-nvidia-smi
-
-# Refuse to run against a dirty tree: the manifest records a commit hash, and an
-# uncommitted change would make that hash a lie about what actually ran.
-if ! git diff --quiet HEAD -- train/ eval/ 2>/dev/null; then
-    echo "REFUSED: uncommitted changes under train/ or eval/. Commit first so the"
-    echo "         manifest's git_commit describes the code that actually ran."
+# Provenance: git is NOT available on the compute nodes, so `git rev-parse`
+# there yields nothing. The commit is therefore captured on the LOGIN node at
+# submission time and passed in as GIT_COMMIT; the clean-tree check happens
+# there too (train/submit_phase_a.sh). Conflating "git missing" with "tree
+# dirty" is what made the first submission refuse itself, so the two cases are
+# now distinguished explicitly.
+if command -v git >/dev/null 2>&1 && git rev-parse HEAD >/dev/null 2>&1; then
+    NODE_COMMIT="$(git rev-parse HEAD)"
+    if ! git diff --quiet HEAD -- train/ eval/; then
+        echo "REFUSED: uncommitted changes under train/ or eval/. Commit first so"
+        echo "         the manifest's git_commit describes the code that ran."
+        exit 2
+    fi
+else
+    NODE_COMMIT=""
+fi
+RESOLVED_COMMIT="${GIT_COMMIT:-$NODE_COMMIT}"
+if [[ -z "$RESOLVED_COMMIT" ]]; then
+    echo "REFUSED: no git commit available. git is absent on this node, so the"
+    echo "         submitting side must pass it:  -v CELL=...,GIT_COMMIT=\$(git rev-parse HEAD)"
+    echo "         Use train/submit_phase_a.sh, which verifies a clean tree and"
+    echo "         supplies the hash automatically."
     exit 2
 fi
+export LZ_GIT_COMMIT="$RESOLVED_COMMIT"
+
+echo "=== SFT sensitivity cell: $CELL ==="
+echo "PBS job id : ${PBS_JOBID:-not-under-pbs}"
+echo "git commit : $RESOLVED_COMMIT ${NODE_COMMIT:+(verified on node)}"
+echo "log        : $LOG"
+nvidia-smi
 
 # CPU pre-flight: ordering, frozen order-hash match, exposure arithmetic and
 # manifest are all validated before a single GPU second is spent.
