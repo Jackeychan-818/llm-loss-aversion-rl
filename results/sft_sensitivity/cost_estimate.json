@@ -1,0 +1,75 @@
+{
+  "title": "SFT batch/LR sensitivity \u2014 measured GPU-hour and SU estimate",
+  "su_rate_su_per_gpu_hour": 64,
+  "su_balance_at_estimate": 1933.353,
+  "gpu_hours_affordable": 30.21,
+  "rate_sources": {
+    "training": "results/training_dynamics/sft/sft_training_manifest.json \u2014 0.1556\u20130.1807 s/prompt at per_device_batch=1; accumulation does not change the per-prompt forward/backward cost",
+    "evaluation": "1237 batches at 1.15\u20131.4 it/s plus 300s load/NLS overhead, from logs/eval_*.log",
+    "su_rate_and_balance": "`myprojects` on aspire2a, 2026-08-18"
+  },
+  "cost_driver": "Evaluation, not training. Training the entire program costs 10.9 GPU-h; the 108 test_goods checkpoint evaluations cost roughly three times that.",
+  "validation_cross_entropy_note": "The frozen selection rule needs completion-only validation cross-entropy, which is recoverable on CPU from the teacher-forced Yes/No probabilities the standard evaluation already writes into loss_aversion_X/Y.json. It therefore needs NO extra GPU pass and is not costed separately.",
+  "scenarios": [
+    {
+      "scenario": "Phase A, endpoint evaluation only",
+      "note": "12 cells; enough to APPLY the frozen batch-selection rule, which needs only endpoint validation cross-entropy",
+      "training_prompt_exposures": 72192,
+      "checkpoint_evaluations": 12,
+      "gpu_hours_low": 7.07,
+      "gpu_hours_high": 8.21,
+      "su_low": 452,
+      "su_high": 525,
+      "fits_in_balance": true,
+      "pct_of_balance_high": 27.2
+    },
+    {
+      "scenario": "Phase A, all 3 exposure checkpoints",
+      "note": "adds the within-run behavioural trajectory for each cell",
+      "training_prompt_exposures": 72192,
+      "checkpoint_evaluations": 36,
+      "gpu_hours_low": 14.96,
+      "gpu_hours_high": 17.38,
+      "su_low": 957,
+      "su_high": 1112,
+      "fits_in_balance": true,
+      "pct_of_balance_high": 57.5
+    },
+    {
+      "scenario": "Phase A + Phase B, endpoint only",
+      "note": "both selection rules applied; no per-checkpoint trajectories",
+      "training_prompt_exposures": 126336,
+      "checkpoint_evaluations": 21,
+      "gpu_hours_low": 12.36,
+      "gpu_hours_high": 14.37,
+      "su_low": 791,
+      "su_high": 919,
+      "fits_in_balance": true,
+      "pct_of_balance_high": 47.6
+    },
+    {
+      "scenario": "Phase A + Phase B, all checkpoints",
+      "note": "full pilot diagnostics, no 30,016-prompt runs",
+      "training_prompt_exposures": 126336,
+      "checkpoint_evaluations": 63,
+      "gpu_hours_low": 26.17,
+      "gpu_hours_high": 30.42,
+      "su_low": 1675,
+      "su_high": 1947,
+      "fits_in_balance": false,
+      "pct_of_balance_high": 100.7
+    },
+    {
+      "scenario": "Everything incl. full 30,016-prompt runs",
+      "note": "the complete program as specified",
+      "training_prompt_exposures": 216384,
+      "checkpoint_evaluations": 108,
+      "gpu_hours_low": 44.86,
+      "gpu_hours_high": 52.13,
+      "su_low": 2871,
+      "su_high": 3337,
+      "fits_in_balance": false,
+      "pct_of_balance_high": 172.6
+    }
+  ]
+}
