@@ -1,13 +1,16 @@
 # Full-Paper Readiness and Current Methodological Risks
 
-*Last updated: July 30, 2026*
+*Last updated: August 18, 2026*
 
 This document is the authoritative summary of the current paper direction,
 which results are final versus validation-only, and which methodological
 problems must be addressed before making full-paper claims.
 
-The project is currently venue-agnostic. `draft/aaai27/` is a historical
-submission workspace, not the active target or schedule.
+The primary submission target is **ICLR 2027**. The official deadlines are
+**September 18, 2026 (abstract)** and **September 25, 2026 (full paper)**,
+Anywhere on Earth. This target does not relax any evidence, provenance, or
+untouched-evaluation gate below. `draft/aaai27/` remains a historical workspace,
+not the active target or schedule.
 
 ## Current Paper Decision
 
@@ -536,5 +539,6 @@ reproducibility work above.
 9. Add direct frozen preference-preservation and prompt-semantic robustness
    tests.
 10. DONE for GSM8K; run IFEval or an equivalent complementary capability test.
-11. Rewrite a venue-agnostic paper with Qwen-own delta as primary and consensus
-    delta as the reward-source ablation.
+11. Rewrite the ICLR 2027 paper with Qwen-own delta as primary and consensus
+    delta as the reward-source ablation, while preserving the claim restrictions
+    above.

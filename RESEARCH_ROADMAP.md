@@ -1,12 +1,22 @@
 # Research Roadmap
 
-*Decision recorded: July 25, 2026; status reconciled August 7, 2026*
+*Decision recorded: July 25, 2026; ICLR 2027 target recorded August 18, 2026*
 
 This document records the next experimental priorities after the confirmatory
-seed replication and the prospective unused-configuration evaluation. It is a
-venue-independent research plan, not an AAAI-27 schedule. A full manuscript
-rewrite is deliberately deferred until the next experiments clarify the final
-scope.
+seed replication and the prospective unused-configuration evaluation. The
+primary submission target is **ICLR 2027**: abstract deadline September 18,
+2026, and full-paper deadline September 25, 2026 (AoE). The deadlines determine
+the working schedule but do not override the frozen protocols or paper gates.
+`draft/aaai27/` remains historical.
+
+## Submission target
+
+- **Venue:** ICLR 2027.
+- **Abstract deadline:** September 18, 2026, Anywhere on Earth.
+- **Full-paper deadline:** September 25, 2026, Anywhere on Earth.
+- **Readiness rule:** submit only claims supported by completed, auditable
+  evidence; do not open an untouched suite early or weaken a frozen protocol to
+  meet the deadline.
 
 ## Current evidence
 

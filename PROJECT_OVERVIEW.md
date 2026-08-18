@@ -314,8 +314,9 @@ Key main-run hyperparameters:
    bootstrap.
 10. Retain frontier or human comparisons only if their protocols and estimands
    are made comparable.
-11. Keep the manuscript venue-agnostic and defer the full rewrite until these
-    experiments clarify the final scope. `draft/aaai27/` is historical.
+11. Target **ICLR 2027** (abstract September 18, 2026; full paper September 25,
+    2026; AoE) while preserving every frozen protocol and readiness gate.
+    `draft/aaai27/` is historical.
 
 The design requirements, priority ordering, and safeguards against reusing
 opened test sets are recorded in `RESEARCH_ROADMAP.md`.

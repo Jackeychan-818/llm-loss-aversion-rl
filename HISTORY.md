@@ -29,6 +29,7 @@ This file combines the recent git commits into a project-level history, so the r
 | Jul 30, 2026 | NSCC full SFT runs; manifests pending repository sync | Completed matched SFT seeds 1 and 2 through 30k with all 15 checkpoints per seed; preserved the seed-1 pilot separately. Measured runtime was 5,422 seconds for seed 1 and 4,668 seconds for seed 2 (mean approximately 5,045 seconds, 1.40 hours per seed, 0.168 seconds per step); total charged cost approximately 317 SU. An earlier entry applied seed 1's 5,422 seconds to both seeds and therefore understated SFT throughput; corrected Aug 5, 2026 from the per-run Trainer summaries recorded in `results/training_dynamics/sft/sft_training_manifest.json`. | SFT training is complete, but full-grid evaluation and selection have not run. The reported balance is approximately 3,312 SU; no full-SFT behavioral or method-superiority claim is yet supported. |
 | Jul 30, 2026 | `adc729b`–`5554c9a` (branch `codex/cpu-paper-gates`) | CPU-only paper-gate package: froze a new untouched method-comparison suite + semantic-counterbalancing (`data/method_comparison/`); froze `METHOD_COMPARISON_PROTOCOL.md`; specified+tested the scale-matched reward control and added an ENV-001 hard-fail; added a robustness inference layer (pair-clustered bootstrap + estimator recovery) with CPU-only PBS jobs; produced deterministic full-behavior (`results/full_behavior/`) and GRPO-efficiency (`results/grpo_efficiency/`) analyses. No GPU jobs, no inference, no frozen suite opened. | Experiment and analysis are frozen and auditable ahead of the GPU phase. ABLATION-001 is spec-complete/run-pending; PAIR-001/INFER-001/ENV-001 are partially addressed; a provenance gap (`git_commit:"unknown"` in the SFT manifests, `SFTPROV-001`) is recorded. No new behavioral or method-winner claim. |
 | Aug 6–7, 2026 | `581b075`–`16574b9` plus governance correction | Quarantined the pilot outputs, evaluated and verified the complete 2-seed × 15-checkpoint SFT validation grid, ran the unchanged selector, and added the full training/behavioral trajectories. | Seed 1 selected step 4k (lambda=-0.034, eta=0.027); seed 2 selected step 6k (lambda=-0.089, eta=-0.143). These are validation-selected results, not a method winner. Historical outputs lack eval-time adapter-to-prediction binding and tracked raw predictions. |
+| Aug 18, 2026 | ICLR 2027 selected as the primary submission target. | Planning now works backward from the September 18 abstract and September 25 full-paper deadlines (AoE), without weakening frozen protocols, untouched-suite governance, or evidence requirements. |
 
 ## Current Research Snapshot
 
@@ -75,7 +76,8 @@ This file combines the recent git commits into a project-level history, so the r
   the in-sample pseudo-utility alignment score `W`.
 - Run prompt-semantic counterbalancing and at least one broader capability
   benchmark such as IFEval; retain the adverse framing result.
-- Build a venue-agnostic manuscript around the causal mechanism and its
-  boundary conditions. Do not describe `draft/aaai27/` as the active target.
-  Full ordering and claim restrictions are in `PAPER_READINESS.md` and
-  `RESEARCH_ROADMAP.md`.
+- Build the **ICLR 2027** manuscript around the causal mechanism and its
+  boundary conditions. The abstract deadline is September 18, 2026 and the
+  full-paper deadline is September 25, 2026 (AoE). Do not describe
+  `draft/aaai27/` as the active target. Full ordering and claim restrictions
+  are in `PAPER_READINESS.md` and `RESEARCH_ROADMAP.md`.

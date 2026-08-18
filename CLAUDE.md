@@ -12,7 +12,8 @@ This file gives Claude Code context about this project so it can help effectivel
 >
 > **Canonical paper source:** `draft/training_overview.tex` (see `PAPER_SOURCES.md`).
 > PDFs/slides are derived — regenerate, never hand-edit.
-> The project is venue-agnostic; `draft/aaai27/` is historical. Use
+> The primary submission target is **ICLR 2027** (abstract September 18, 2026;
+> full paper September 25, 2026; AoE). `draft/aaai27/` is historical. Use
 > `KNOWN_ISSUES.md` for the live problem ledger and `RESEARCH_ROADMAP.md` for
 > execution order.
 
@@ -485,11 +486,13 @@ before/after or human/frontier claims.
 
 ## Publication Direction
 
-The project is venue-agnostic. Choose a target only after the causal baselines,
-robust inference, prompt-semantic tests, capability extension, and reproducible
-artifact package determine the actual contribution. Do not infer deadlines
-from the historical `draft/aaai27/` workspace.
+The primary submission target is **ICLR 2027**. The official abstract deadline
+is September 18, 2026, and the full-paper deadline is September 25, 2026 (AoE).
+Plan backward from those dates, but do not weaken the causal-baseline, robust-
+inference, prompt-semantic, capability, or reproducibility requirements merely
+to meet the deadline. Do not infer any schedule from the historical
+`draft/aaai27/` workspace.
 
 ---
 
-*Last updated: July 30, 2026*
+*Last updated: August 18, 2026*

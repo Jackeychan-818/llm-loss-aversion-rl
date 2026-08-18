@@ -48,8 +48,10 @@ preserving its own estimated preference ordering.
 > analyses exist — all with no GPU jobs, inference, or frozen-suite opening.
 > Still required for a full paper: sign-only/scale-matched training and one-shot
 > untouched method comparison under the frozen protocol, prompt robustness, and
-> complete raw-artifact archival. The project is venue-agnostic; `draft/aaai27/`
-> is historical.
+> complete raw-artifact archival. The primary submission target is **ICLR
+> 2027** (abstract September 18, 2026; full paper September 25, 2026; AoE).
+> This target does not weaken the readiness gates. `draft/aaai27/` is
+> historical.
 
 ---
 

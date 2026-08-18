@@ -102,5 +102,7 @@ See `PAPER_READINESS.md` for the authoritative blocker list,
 `PROJECT_OVERVIEW.md` for the research narrative, and `HISTORY.md` for the
 commit-by-commit project history.
 
-The project is currently venue-agnostic. `draft/aaai27/` is retained only as a
-historical submission workspace and is not the active paper target.
+The primary submission target is **ICLR 2027** (abstract September 18, 2026;
+full paper September 25, 2026; AoE). The target does not override the readiness
+gates in `PAPER_READINESS.md`. `draft/aaai27/` is retained only as a historical
+submission workspace.
