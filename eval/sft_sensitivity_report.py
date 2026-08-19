@@ -98,14 +98,23 @@ def validation_ce(model_name: str, deltas: dict) -> dict:
 
 
 def training_diagnostics(cell: P.Cell) -> dict:
-    st_path = None
-    for c in sorted(glob.glob(str(cell.output_dir / "checkpoint-*"))) + \
-             [str(cell.output_dir / f"exposure-{cell.exposure}")]:
-        p = Path(c) / "trainer_state.json"
-        if p.is_file():
-            st_path = p
-    if st_path is None:
+    # Sort by the NUMERIC step, not lexicographically: "checkpoint-64" sorts
+    # after "checkpoint-188" as a string, which would silently read a truncated
+    # history for every large-batch cell. The endpoint adapter written by
+    # save_model() carries no trainer_state.json, so the highest-numbered
+    # checkpoint is the authoritative full history.
+    cands = []
+    for c in glob.glob(str(cell.output_dir / "checkpoint-*")):
+        tail = Path(c).name.rsplit("-", 1)[-1]
+        if tail.isdigit() and (Path(c) / "trainer_state.json").is_file():
+            cands.append((int(tail), Path(c) / "trainer_state.json"))
+    if not cands:
         return {"available": False, "reason": "no trainer_state.json"}
+    last_step, st_path = max(cands)
+    if last_step != cell.optimizer_steps:
+        return {"available": False,
+                "reason": (f"highest trainer_state is step {last_step}, expected "
+                           f"{cell.optimizer_steps} — incomplete run")}
     hist = json.loads(st_path.read_text()).get("log_history", [])
     loss = [float(e["loss"]) for e in hist if "loss" in e and e["loss"] is not None]
     gn = [float(e["grad_norm"]) for e in hist
@@ -119,6 +128,9 @@ def training_diagnostics(cell: P.Cell) -> dict:
         "available": True,
         "source": str(st_path.relative_to(ROOT)),
         "n_logged_updates": len(hist),
+        "final_global_step": last_step,
+        "expected_optimizer_steps": cell.optimizer_steps,
+        "history_complete": last_step == cell.optimizer_steps,
         "loss_first": loss[0] if loss else None,
         "loss_last": loss[-1] if loss else None,
         "loss_median": st.median(loss) if loss else None,

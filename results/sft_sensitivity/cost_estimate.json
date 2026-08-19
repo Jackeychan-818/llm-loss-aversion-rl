@@ -71,5 +71,28 @@
       "fits_in_balance": false,
       "pct_of_balance_high": 172.6
     }
-  ]
+  ],
+  "phase_a_actuals": {
+    "training_gpu_hours": 3.631,
+    "training_su": 232.4,
+    "evaluation_gpu_hours": 3.882,
+    "evaluation_su": 248.4,
+    "total_gpu_hours": 7.513,
+    "total_su": 480.8,
+    "authorized_ceiling_su": 525,
+    "within_authorization": true,
+    "su_balance_before": 1933.353,
+    "su_balance_after": 1452.123,
+    "balance_delta": 481.23,
+    "note": "Balance delta 481.23 SU matches the summed per-job walltime charge; the first, self-refusing submission cost 0 (00:00 elapsed)."
+  },
+  "deferred_intermediate_checkpoint_estimate": {
+    "scope": "batch 1 and the selected large batch (16), seeds 1-3, at the 2,048 and 4,096 prompt-exposure checkpoints",
+    "n_evaluations": 12,
+    "basis": "measured 3.882 GPU-h for 12 endpoint evaluations = 0.3235 GPU-h each",
+    "gpu_hours": 3.88,
+    "su": 248,
+    "pct_of_remaining_balance": 17.1,
+    "status": "NOT SUBMITTED \u2014 requires separate authorization"
+  }
 }
