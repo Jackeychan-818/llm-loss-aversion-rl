@@ -1,0 +1,247 @@
+{
+  "title": "Phase-A SFT batch-sensitivity training dynamics",
+  "generated_by": "eval/plot_sft_sensitivity_dynamics.py",
+  "version": "1.0.0",
+  "script_sha256": "fe3798fe25cddcf4683c31fba15f42a1da254df38381013b36e4f8619cf45132",
+  "git_commit_at_render": "f23ec6525971a1705d65d42e616150cdc7c3c4bd",
+  "status": "OPTIMIZATION DIAGNOSTICS ONLY \u2014 not behavioural results. CPU-only: no GPU job, no inference, no checkpoint evaluation.",
+  "x_axis": "prompts seen (optimizer step x effective batch), never optimizer steps",
+  "smoothing": {
+    "method": "causal trailing mean (min_periods=1)",
+    "window_prompts": 512,
+    "window_observations_by_batch": {
+      "1": 512,
+      "16": 32,
+      "32": 16,
+      "64": 8
+    },
+    "statistic": {
+      "loss": "mean",
+      "learning_rate": "mean",
+      "grad_norm": "median (heavy-tailed; a rolling mean would track the tail, not the typical update)"
+    },
+    "uses_future_observations": false,
+    "identical_data_window_for_all_batches": true
+  },
+  "aggregate_band": "full min-max across seeds 1-3 (not a sd: n=3)",
+  "clipping_threshold": 0.1,
+  "loss_panel_crop": {
+    "ylim": [
+      0.0,
+      1.5
+    ],
+    "applies_to": "dynamics_by_seed.png only",
+    "disclosed_on_panel": true,
+    "note": "display only; the CSV keeps every value and the by-batch figure is uncropped"
+  },
+  "gradient_and_clipping_by_batch": {
+    "1": {
+      "clip_fraction_pooled": 0.6098182624113475,
+      "clip_fraction_by_seed": {
+        "1": 0.6008976063829787,
+        "2": 0.608876329787234,
+        "3": 0.6196808510638298
+      },
+      "median": 0.900430291891098,
+      "p90": 90.06750717163087,
+      "p99": 131.58769897460928,
+      "max": 381.5478210449219,
+      "n_updates_per_seed": 6016
+    },
+    "16": {
+      "clip_fraction_pooled": 1.0,
+      "clip_fraction_by_seed": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "median": 2.6177245378494263,
+      "p90": 9.899772834777831,
+      "p99": 13.330146408081056,
+      "max": 15.944344520568848,
+      "n_updates_per_seed": 376
+    },
+    "32": {
+      "clip_fraction_pooled": 1.0,
+      "clip_fraction_by_seed": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "median": 6.43334698677063,
+      "p90": 10.51024808883667,
+      "p99": 12.2101752948761,
+      "max": 14.281082153320312,
+      "n_updates_per_seed": 188
+    },
+    "64": {
+      "clip_fraction_pooled": 1.0,
+      "clip_fraction_by_seed": {
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0
+      },
+      "median": 9.101003646850586,
+      "p90": 10.570061588287352,
+      "p99": 11.797567825317383,
+      "max": 12.89594268798828,
+      "n_updates_per_seed": 94
+    }
+  },
+  "n_rows": 20022,
+  "environment": {
+    "python": "3.13.3",
+    "numpy": "2.2.4",
+    "pandas": "2.2.3",
+    "matplotlib": "3.10.1"
+  },
+  "refresh": {
+    "version": "1.0.0",
+    "extraction_date": "2026-08-19",
+    "git_commit_at_extraction": "f23ec6525971a1705d65d42e616150cdc7c3c4bd",
+    "sources": {
+      "sft_sens_phA_eb1_lr1e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed1_h6016/checkpoint-6016/trainer_state.json",
+        "sha256": "4d732c1a6e91b55d9c5d6eeb5a156cbb80cf014e17fa5bf0001f21b4fd2e618d",
+        "final_global_step": 6016,
+        "expected_steps": 6016,
+        "n_logged_updates": 6016,
+        "effective_batch": 1,
+        "seed": 1,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb1_lr1e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed2_h6016/checkpoint-6016/trainer_state.json",
+        "sha256": "54e1e0d43c4fad1bf67bf40e674bd05b8f1e83932cbdf2cdcf01e13b57725f87",
+        "final_global_step": 6016,
+        "expected_steps": 6016,
+        "n_logged_updates": 6016,
+        "effective_batch": 1,
+        "seed": 2,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb1_lr1e-6_seed3_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed3_h6016/checkpoint-6016/trainer_state.json",
+        "sha256": "3539f00bc7282ae33694723e2ca3c891b3966c08080995b1b97e183b4578d471",
+        "final_global_step": 6016,
+        "expected_steps": 6016,
+        "n_logged_updates": 6016,
+        "effective_batch": 1,
+        "seed": 3,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb16_lr1e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed1_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "d46b477ed2e25d22d657d1f7da4f2ee22a1f3459fb5fe44cac42c3ae459bfb3f",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 1,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb16_lr1e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed2_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "a5cd841f849547d17b83764807ab41851b25a8274f66b9e353382551b735935f",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 2,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb16_lr1e-6_seed3_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed3_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "f1c12537104eb91a739932ec3318318d5fac47c0012feb37450a5a6c453aa400",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 3,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb32_lr1e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed1_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "da63e8ef4e4e41233466d02e00dfea99c0e7f575c7e02ea42e86b65d77f3bcba",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 1,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb32_lr1e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed2_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "fcf61a02f316e299a406ce7e0c555e773703c5e62ee2fa6993a8186560475f32",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 2,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb32_lr1e-6_seed3_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed3_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "99d931324bf02046734a6e16f69673a442bbd2226f4c69132c3eef08ea785935",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 3,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb64_lr1e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed1_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "1c32ccc287bd978e8429267aa47bd91ea03c34095e5bbee0bfdad67f8df71963",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 1,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb64_lr1e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed2_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "a689aca9f4a309bcd244911edbef0aa55afbe5e9ef8a57ee0c27d1145505ad98",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 2,
+        "prompt_exposure": 6016
+      },
+      "sft_sens_phA_eb64_lr1e-6_seed3_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed3_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "c502b44b0cd887f3678071c2605a79b8d132357d3dafd62818243a8051fc31d2",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 3,
+        "prompt_exposure": 6016
+      }
+    }
+  },
+  "outputs": {
+    "dynamics_by_seed.png": {
+      "sha256": "7d128a8edaf4f41a12af2bc0031a786f7a7e9bf5d3cf5fda5881d9ee84ce9551",
+      "size_bytes": 499474
+    },
+    "dynamics_by_batch.png": {
+      "sha256": "c06dcb370cf76aab30026b3bbbd9c3da604d848707aa3e5bd529a8f0b983ca0c",
+      "size_bytes": 293458
+    },
+    "dynamics_grad_norm_logscale.png": {
+      "sha256": "ac1c882be6723f047e9db5f9ab2a54a6a4912306a2078d66694fc5aa134546da",
+      "size_bytes": 409168
+    },
+    "dynamics_interpretation.md": {
+      "sha256": "326ea053640ab63ade31985309458aeacd3779c9a58a9cbb560a69e360e3d447",
+      "size_bytes": 4157
+    },
+    "dynamics_metrics.csv": {
+      "sha256": "07de715b6f6c20f83aa4d8e8bfe91ad8042f8271fcf8ad25f682f4aea01bd67d",
+      "size_bytes": 2243230
+    }
+  }
+}

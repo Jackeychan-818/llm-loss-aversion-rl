@@ -68,7 +68,35 @@ already writes, so it adds no GPU cost.
 Every batch checkpoints at the **same prompt exposures**, so trajectories are
 comparable point-for-point rather than only at the endpoint.
 
+## Training-dynamics figures (CPU-only)
+
+| file | contents |
+|---|---|
+| `dynamics_by_seed.png` | 3 panels, all 12 cells, seed by linestyle |
+| `dynamics_by_batch.png` | 3 panels, across-seed mean + min–max band |
+| `dynamics_grad_norm_logscale.png` | uncropped log-scale gradient tails |
+| `dynamics_metrics.csv` | tidy per-update rows, unsmoothed (20,022) |
+| `dynamics_manifest.json` | sources, hashes, versions, clipping stats |
+| `dynamics_interpretation.md` | short read of the figures |
+
+x-axis is **prompts seen**, never optimizer steps; smoothing is a causal
+512-**prompt** window (the same amount of data at every batch), using a median
+for the heavy-tailed gradient norm and a mean for loss and learning rate.
+Optimization diagnostics only — not behavioural results.
+
 ## Reproduce
+
+```bash
+python eval/plot_sft_sensitivity_dynamics.py --refresh   # trainer states -> CSV
+python eval/plot_sft_sensitivity_dynamics.py             # CSV -> figures
+python eval/plot_sft_sensitivity_dynamics.py --check     # verify agreement
+```
+
+The default render and `--check` work from the tracked CSV alone, with no
+checkpoint directories present; only `--refresh` reads the gitignored
+`checkpoints/sft_sensitivity/` trainer states.
+
+## Reproduce (Phase-A protocol artifacts)
 
 ```bash
 python train/test_sft_sensitivity.py                     # 224 CPU checks
