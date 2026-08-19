@@ -343,6 +343,28 @@ def main() -> int:
 
     trainer = OrderedTrainer(model=model, args=targs, train_dataset=tok_ds,
                              data_collator=CompletionOnlyCollator(tokenizer.pad_token_id))
+
+    # ── Phase-B instrumentation (Amendment 2) ───────────────────────────────
+    from sft_sensitivity_callbacks import (EarlyAdapterSnapshotCallback,
+                                           UpdateNormCallback)
+    update_cb = UpdateNormCallback(model)
+    trainer.add_callback(update_cb)
+    snap_cb = None
+    if cell.phase == "B":
+        # Dense adapter-only snapshots over the early window. Preserved, not
+        # evaluated. Adapter-only because these exist to be evaluated later, not
+        # resumed from; the resumable state is the endpoint checkpoint.
+        step_to_exposure = {v: k for k, v in
+                            P.early_snapshot_steps(cell.effective_batch).items()}
+        snap_cb = EarlyAdapterSnapshotCallback(
+            model, cell.output_dir, step_to_exposure,
+            {"cell": cell.name, "effective_batch": cell.effective_batch,
+             "seed": cell.seed, "learning_rate": cell.learning_rate,
+             "base_model": "models/Qwen2.5-7B-Instruct",
+             "git_commit": os.environ.get("LZ_GIT_COMMIT") or git_commit()})
+        trainer.add_callback(snap_cb)
+        logger.info(f"Early adapter-only snapshots at prompt exposures "
+                    f"{sorted(step_to_exposure.values())}")
     append_execution_manifest(cell, "STARTED",
                               f"exposure {cell.exposure:,}, {cell.optimizer_steps:,} updates")
     t0 = time.time()
@@ -350,7 +372,19 @@ def main() -> int:
     trainer.save_model(str(cell.output_dir / f"exposure-{cell.exposure}"))
     runtime = time.time() - t0
     finished = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    write_manifest(cell, args, stats, order_prov, started, finished, runtime)
+    man = write_manifest(cell, args, stats, order_prov, started, finished, runtime)
+    # Diagnostics recorded but explicitly barred from the frozen CE selection.
+    extra = {
+        "parameter_update_norm": update_cb.summary(),
+        "parameter_update_norm_per_step": update_cb.records,
+        "early_adapter_snapshots": (snap_cb.saved if snap_cb else []),
+        "selection_note": ("Diagnostics only. The frozen selection rule uses "
+                           "endpoint validation cross-entropy and nothing here "
+                           "may change it."),
+    }
+    man.update(extra)
+    (cell.output_dir / "sft_sensitivity_manifest.json").write_text(
+        json.dumps(man, indent=2, default=str) + "\n")
     append_execution_manifest(cell, "COMPLETED", f"{runtime/3600:.2f} GPU-h")
     logger.info(f"Done: {cell.name} in {runtime/3600:.2f} h")
     return 0

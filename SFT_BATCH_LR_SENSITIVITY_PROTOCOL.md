@@ -305,3 +305,140 @@ Work stops after Phase A and reports before any further submission.
 All other provisions of this protocol — the ordering guarantee, the exposure
 arithmetic, the selection rule and its tie-break, the vocabulary discipline of
 §8, and the closed-suite list of §0 — are unchanged.
+
+---
+
+## Amendment 2 — Phase-B learning-rate search (2026-08-19)
+
+**Committed before any Phase-B GPU job. Phase-A outcomes ARE known and are cited
+below; this amendment is therefore not outcome-blind, and its purpose is to fix
+the Phase-B decision tree mechanically so that no Phase-B result can influence
+how Phase B is decided.**
+
+Supersedes §5 of the original protocol for Phase B.
+
+### Scope
+
+Effective batches **16, 32, 64**. **Effective batch 1 is abandoned** as a
+candidate — a decision taken on Phase-A evidence and recorded here. The
+consequence is stated plainly: Phase B can conclude which of 16/32/64 is best at
+6,016 prompts, and **cannot** conclude that batching beats batch 1, since batch 1
+is not tuned.
+
+Fixed for every cell: 6,016 prompts, the same deterministic per-seed ordering,
+`per_device_train_batch_size = 1` with accumulation, `max_grad_norm = 0.1`,
+cosine with 5% warmup over each cell's own horizon, endpoint evaluation at
+6,016 only.
+
+### Existing results are reused
+
+Phase A already ran **lr 1e-6 at all three seeds for every batch**. Those cells
+are reused as-is and are **not rerun**, including not rerun merely to obtain the
+early snapshots introduced below. A batch whose winner turns out to be 1e-6 will
+therefore have no 128-prompt snapshots; that is accepted.
+
+### Stage 1 — two-seed screening (12 new cells)
+
+lr **3e-6** and **1e-5**, seeds 1 and 2, for each of the three batches. Compare
+1e-6 / 3e-6 / 1e-5 by mean endpoint validation CE across seeds 1–2.
+
+Incumbent two-seed means from Phase A: eb16 0.59465, eb32 0.66220, eb64 2.06115.
+
+### Boundary rules
+
+- **3e-6 wins** → provisionally select it.
+- **1e-6 wins** → run **3e-7** for that batch, seeds 1–2, then select again.
+- **1e-5 wins** → **stop** for a cost and safety review before considering 3e-5.
+- No setting is promoted on one seed alone.
+
+### Seed-disagreement rule (frozen)
+
+Add seed 3 **for both competing LRs** before deciding when either holds:
+
+1. seeds 1 and 2 rank the top two LRs differently; or
+2. the difference between their two-seed mean CEs is below the Phase-A noise
+   floor for that batch — **eb16 0.0019, eb32 0.0050, eb64 0.0097** (the
+   across-seed sd measured in Phase A, frozen here so the threshold cannot be
+   chosen after seeing Phase-B data).
+
+Seed 3 is run for **both** top candidates, never only the provisional winner:
+adding a third seed to one side alone would compare a three-seed mean against a
+two-seed mean. Where a candidate is 1e-6, its seed-3 cell already exists and is
+reused.
+
+### Stage 2 — confirmation
+
+Seed 3 for each batch's provisional winner (reused if that winner is 1e-6, or if
+the seed-disagreement rule already produced it). The global winner is then the
+lowest mean validation CE across **all three seeds** among the three batch
+winners — every candidate compared on equal seed counts.
+
+### Checkpoints
+
+Per new run: **adapter-only** snapshots at prompt exposures 128, 256, … 2,048
+(16 of them; 8/4/2 optimizer steps at batch 16/32/64, exact), plus **one full
+resumable checkpoint at 6,016**. Snapshots are taken by a dedicated callback,
+not by enabling `save_only_model` globally, so the endpoint stays resumable.
+
+Every snapshot records exposure, optimizer step, LR, batch, seed, base-model
+identity, git commit, and `resume_supported: false`. They are preserved and
+**not evaluated** unless separately authorized. Phase-A intermediate checkpoints
+are likewise not evaluated.
+
+### Diagnostics (reported, never used for selection)
+
+λ, η, `d`, consistency, keep-both, trade-both, W; pre-clipping gradient
+quantiles and clipping fraction; the **clipping coefficient** `min(1, 0.1/‖g‖)`;
+the **LoRA parameter-update norm**
+
+    ‖Δθ_t‖₂ = sqrt( Σ_j ‖θ_{j,t+1} − θ_{j,t}‖₂² )
+
+over all trainable LoRA parameters, together with the **relative** update norm
+`‖Δθ‖ / ‖θ‖`; loss dynamics and seed variation.
+
+The update norm is measured between `on_pre_optimizer_step` and
+`on_optimizer_step`, so accumulation microsteps cannot be counted as updates.
+It is worth the instrumentation because universal clipping means the
+pre-clipping gradient norm no longer reveals actual parameter movement — and
+because `adamw_torch_fused` applies `lr·m̂/(√v̂+ε)`, which is already scale-free,
+so a constant rescaling of the gradient largely cancels. Only the realised
+movement settles what clipping is doing.
+
+### Budget — staged, not a single ceiling
+
+| gate | limit |
+|---|---:|
+| Stage-1 screening authorization | **500 SU** (projected 481) |
+| stop and report after screening | mandatory |
+| conditional refinements + confirmation | require a second decision |
+| **absolute cumulative ceiling** | **850 SU** |
+
+Cost is recalculated before each stage. If applying the seed-disagreement rule
+would exceed 850 SU, the program **stops** rather than evaluating only one side
+of a comparison.
+
+Worst case fits: screening 481 + at most 120 SU per batch afterwards (3e-7 pair
+at 80, plus a single new seed-3 cell at 40) = 841 SU.
+
+### Non-binding prediction (pre-registered, no effect on selection)
+
+Heuristic only. At fixed exposure the total optimization path length is
+≈ ½·peak_lr·N with N = 6016/batch, so matching path length predicts optimal LR
+scaling **linearly** with batch. Anchoring eb16 at 1e-6, that predicts eb32 near
+**2e-6** and eb64 near **4e-6**; on the available grid it maps approximately to
+**eb16 → 1e-6, eb32 → 3e-6, eb64 → 3e-6**.
+
+If path length is the whole story, the three tuned winners should be **within
+noise** of each other, defined in advance as **maximum pairwise difference in
+three-seed mean validation CE ≤ 0.010** (the largest Phase-A across-seed sd,
+eb64's 0.0097, rounded up).
+
+This hypothesis is recorded so the sweep is a test rather than a fit. It has
+**no bearing on the frozen selection rule** and may not be used to override it.
+
+### Standing constraints
+
+Post-hoc and exploratory. No frozen or untouched suite is opened. The result is
+optimal **only** for the 6,016-prompt cosine schedule at clipping threshold 0.1
+— not universally. Transferring the winner to the 30,016-prompt schedule
+requires separate confirmation.

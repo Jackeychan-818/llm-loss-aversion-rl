@@ -36,6 +36,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PILOT_EXPOSURE = 6_016          # unique prompts per Phase-A / Phase-B run
 FULL_EXPOSURE = 30_016          # unique prompts per full sensitivity run
 PILOT_CKPT_EXPOSURES = (2_048, 4_096, 6_016)
+# Phase B: dense ADAPTER-ONLY snapshots over the early window, preserved but not
+# evaluated. 128 divides 16/32/64 exactly (8/4/2 optimizer steps), so the
+# snapshot grid is exposure-aligned across batches just like the checkpoint grid.
+EARLY_SNAPSHOT_STRIDE = 128
+EARLY_SNAPSHOT_MAX = 2_048
+EARLY_SNAPSHOT_PROMPTS = tuple(range(EARLY_SNAPSHOT_STRIDE,
+                                     EARLY_SNAPSHOT_MAX + 1, EARLY_SNAPSHOT_STRIDE))
+# Phase-A across-seed sd of endpoint validation CE, per batch. Frozen here as the
+# NOISE FLOOR of the seed-disagreement rule so the threshold cannot be chosen
+# after seeing Phase-B data.
+PHASE_A_CE_NOISE_FLOOR = {16: 0.0019, 32: 0.0050, 64: 0.0097}
+# "Within noise" for the non-binding path-length prediction: the largest floor
+# above, rounded up. Applies to three-seed mean validation CE. Non-binding.
+PREDICTION_WITHIN_NOISE_TOL = 0.010
 FULL_CKPT_STRIDE = 2_048
 BATCHES = (1, 16, 32, 64)
 LARGE_BATCHES = (16, 32, 64)
@@ -100,6 +114,32 @@ def checkpoint_steps(total_exposure: int, effective_batch: int) -> dict[int, int
     """Map each checkpoint exposure to its optimizer step for this batch."""
     return {e: optimizer_steps(e, effective_batch)
             for e in checkpoint_exposures(total_exposure)}
+
+
+def early_snapshot_steps(effective_batch: int) -> dict[int, int]:
+    """Adapter-only snapshot exposures -> optimizer step, for Phase-B runs."""
+    return {e: optimizer_steps(e, effective_batch) for e in EARLY_SNAPSHOT_PROMPTS}
+
+
+def seed3_required(batch: int, mean_ce_by_lr: dict[float, float]) -> dict:
+    """The FROZEN seed-disagreement rule (Phase-B Amendment 2).
+
+    Seed 3 is required for BOTH top candidates — not only the provisional
+    winner — because adding a third seed to one side alone would compare a
+    three-seed mean against a two-seed mean.
+    """
+    ranked = sorted(mean_ce_by_lr.items(), key=lambda kv: kv[1])
+    if len(ranked) < 2:
+        return {"required": False, "reason": "fewer than two candidates"}
+    (lr1, ce1), (lr2, ce2) = ranked[0], ranked[1]
+    gap = ce2 - ce1
+    floor = PHASE_A_CE_NOISE_FLOOR[batch]
+    close = gap < floor
+    return {"required": bool(close), "top_two": [lr1, lr2], "gap": gap,
+            "noise_floor": floor, "reason":
+            (f"gap {gap:.6f} < Phase-A noise floor {floor} for eb{batch}" if close
+             else f"gap {gap:.6f} >= noise floor {floor}"),
+            "both_candidates_required": True}
 
 
 def save_steps_for(total_exposure: int, effective_batch: int) -> int:

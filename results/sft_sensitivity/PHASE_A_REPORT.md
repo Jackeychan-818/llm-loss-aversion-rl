@@ -114,11 +114,24 @@ learning-rate sweep is for, and Phase B is **not authorized**.
 
 **5. Clipping becomes universal at every large batch — a second confound.**
 With `max_grad_norm = 0.1` unchanged, batch 1 clips 61% of updates while
-batches 16/32/64 clip **100%**. Since the accumulated norm concentrates at
-2.6–9.1, every large-batch update is rescaled to the same fixed length. Those
-cells are therefore not "the same optimizer with a bigger batch" — they are
-effectively taking **normalized-gradient steps of constant size**. Any read of
-the batch effect at these settings is entangled with that.
+batches 16/32/64 clip **100%**: the accumulated norm concentrates at 2.6–9.1, so
+every large-batch gradient is rescaled to the same fixed length before the
+optimizer sees it.
+
+*Corrected 2026-08-19.* An earlier version of this section concluded that those
+cells therefore "take normalized-gradient steps of constant size — not the same
+optimizer with a bigger batch." That overstates the effect. The optimizer is
+`adamw_torch_fused`, whose update is `lr·m̂/(√v̂+ε)` — already scale-free, so a
+*constant* rescaling of the gradient largely cancels in that ratio. Universal
+clipping bites only through the **time-varying** clip coefficient
+`min(1, 0.1/‖g‖)`, not as a fixed renormalization, and is closer to a no-op
+under Adam than under SGD.
+
+What remains true is that the pre-clipping gradient norm no longer tells you how
+far the parameters actually moved. Settling this requires measuring the realised
+LoRA parameter-update norm directly, which Phase B instruments (Amendment 2).
+Until then, treat the batch effect at these settings as entangled with clipping
+to an extent that has not yet been quantified.
 
 ### Vocabulary
 
