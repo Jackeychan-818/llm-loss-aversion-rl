@@ -442,3 +442,61 @@ Post-hoc and exploratory. No frozen or untouched suite is opened. The result is
 optimal **only** for the 6,016-prompt cosine schedule at clipping threshold 0.1
 — not universally. Transferring the winner to the 30,016-prompt schedule
 requires separate confirmation.
+
+---
+
+## Amendment 3 — off-grid 1e-4 bracketing probe (2026-08-19)
+
+**Recorded before the GPU job. Stage-1 outcomes ARE known (1e-5 won every
+batch), so this is not outcome-blind; it is the cost-and-safety review that
+Amendment 2 requires when 1e-5 wins.**
+
+### Why a deviation is needed
+
+Amendment 2 froze the LR grid at {3e-7, 1e-6, 3e-6, 1e-5} and directed that a
+1e-5 win triggers a stop "before considering **3e-5**". This probe goes to
+**1e-4**, skipping 3e-5. That is a deviation from the frozen tree and is
+recorded as one.
+
+Rationale: Stage 1 found validation CE **monotone in LR at every batch**, so the
+optimum lies at or beyond the boundary and its distance is unknown. Stepping to
+3e-5 risks landing on the boundary again and spending ~240 SU without bracketing
+anything. A full decade brackets the turnover instead — if 1e-4 is worse than
+1e-5 the optimum is trapped between them and can be bisected; if it is still
+better, the grid was off by more than an order of magnitude. 1e-4 is also a
+conventional LoRA learning rate; the original 1e-6 was inherited from the GRPO
+config rather than chosen for SFT.
+
+### Scope
+
+| | |
+|---|---|
+| cells | eb16 and eb32, **seed 1 only**, lr 1e-4 |
+| exposure | 6,016 prompts, same deterministic ordering, clipping 0.1 |
+| evaluation | endpoint only |
+| cost | **79 SU** (measured: 18.1 min train + 19.1 min eval per cell) |
+| Phase-B cumulative after this | 554 of the 850 ceiling |
+
+eb64 is omitted: two cells are enough to locate a turnover, and eb64 was the
+weakest batch at every LR tested.
+
+### This probe CANNOT promote anything
+
+Amendment 2 states that no setting is promoted on one seed alone, and that
+constraint is unchanged. This run may only **bracket** — establish whether the
+CE curve turns over between 1e-5 and 1e-4. It may **not** select 1e-4, change
+the batch winner, or feed the global selection. Promoting any LR found here
+requires seeds 2 and 3 for the competing candidates under the Amendment-2 rules
+(+40 SU per cell per seed).
+
+### Predeclared failure handling
+
+A non-finite loss, gradient or parameter at 1e-4 is a **technical failure** under
+§6 of the original protocol: the cell is excluded and is **not** retried with
+altered hyper-parameters. Divergence is a plausible outcome at this learning rate
+and is itself an informative bracket — it would place the usable ceiling below
+1e-4.
+
+All other standing constraints are unchanged: post-hoc, no frozen or untouched
+suite opened, Phase-A and early snapshots not evaluated, and the result remains
+conditional on the 6,016-prompt schedule and clipping threshold 0.1.
