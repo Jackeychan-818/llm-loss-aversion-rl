@@ -128,7 +128,7 @@ def all_cells() -> list:
     cells = list(P.phase_a_cells())
     seen = {c.name for c in cells}
     for b in P.LARGE_BATCHES:
-        for c in P.phase_b_cells(b):
+        for c in P.phase_b_cells(b, include_probe=True):
             if c.name in seen:
                 continue
             if (c.output_dir).is_dir() and final_trainer_state(c):
@@ -370,7 +370,7 @@ def plot_grad_log(df, cs, path):
 
 
 LR_COLOR = {1e-6: "#1f77b4", 3e-6: "#ff7f0e", 1e-5: "#d62728",
-            3e-7: "#7f7f7f", 3e-5: "#8c564b"}
+            3e-7: "#7f7f7f", 3e-5: "#8c564b", 1e-4: "#9467bd"}
 
 
 def _lr_lab(lr: float) -> str:
@@ -411,9 +411,12 @@ def plot_lr_grid(df: pd.DataFrame, path: Path) -> None:
                 if M.shape[1] > 1:
                     ax.fill_between(M.index, M.min(axis=1), M.max(axis=1),
                                     color=colr, alpha=0.18, lw=0, zorder=2)
-                ax.plot(M.index, M.mean(axis=1), color=colr, lw=1.9, zorder=3,
+                probe = float(lr) in P.PROBE_LRS
+                ax.plot(M.index, M.mean(axis=1), color=colr, lw=1.9,
+                        ls="--" if probe else "-", zorder=3,
                         label=f"lr {_lr_lab(float(lr))}  ({len(sm)} seed"
-                              f"{'s' if len(sm) > 1 else ''})")
+                              f"{'s' if len(sm) > 1 else ''})"
+                              + ("  PROBE" if probe else ""))
             _finish_panel(ax, col, f"eb{int(b)} — {title}", marks)
             if col == "grad_norm":
                 ax.set_yscale("log")
@@ -431,6 +434,7 @@ def plot_lr_grid(df: pd.DataFrame, path: Path) -> None:
         "band = across-seed min–max; lr 1e-6 is the REUSED Phase-A column (3 seeds), "
         "3e-6 and 1e-5 are Phase B (2 seeds) · "
         "loss cropped to [0, 1.5]\n"
+        "dashed = off-grid PROBE (Amendment 3): may bracket the optimum, may NOT promote a setting\n"
         "NOT behavioural results — these describe the optimizer, not λ, η or consistency",
         fontsize=11.5, y=0.997, va="top")
     fig.tight_layout(); fig.subplots_adjust(top=0.915)

@@ -81,3 +81,10 @@
 | 2026-08-19T08:39:49+00:00 | sft_sens_phB_eb64_lr3e-6_seed2_h6016 | 15196886.pbs101 | COMPLETED | 0.28 GPU-h |
 | 2026-08-19T08:46:34+00:00 | sft_sens_phB_eb64_lr1e-5_seed2_h6016 | 15196890.pbs101 | COMPLETED | 0.24 GPU-h |
 | 2026-08-19T08:49:30+00:00 | sft_sens_phB_eb64_lr1e-5_seed1_h6016 | 15196888.pbs101 | COMPLETED | 0.29 GPU-h |
+| 2026-08-20T07:21:23+00:00 | sft_sens_phB_eb16_lr1e-4_seed1_h6016 | - | VALIDATED (CPU, no training) |  |
+| 2026-08-20T07:51:53+00:00 | sft_sens_phB_eb32_lr1e-4_seed1_h6016 | 15213867.pbs101 | VALIDATED (CPU, no training) |  |
+| 2026-08-20T07:51:53+00:00 | sft_sens_phB_eb16_lr1e-4_seed1_h6016 | 15213866.pbs101 | VALIDATED (CPU, no training) |  |
+| 2026-08-20T07:52:37+00:00 | sft_sens_phB_eb32_lr1e-4_seed1_h6016 | 15213867.pbs101 | STARTED | exposure 6,016, 188 updates |
+| 2026-08-20T07:52:38+00:00 | sft_sens_phB_eb16_lr1e-4_seed1_h6016 | 15213866.pbs101 | STARTED | exposure 6,016, 376 updates |
+| 2026-08-20T08:09:53+00:00 | sft_sens_phB_eb16_lr1e-4_seed1_h6016 | 15213866.pbs101 | COMPLETED | 0.29 GPU-h |
+| 2026-08-20T08:09:56+00:00 | sft_sens_phB_eb32_lr1e-4_seed1_h6016 | 15213867.pbs101 | COMPLETED | 0.29 GPU-h |
