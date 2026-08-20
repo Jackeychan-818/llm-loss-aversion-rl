@@ -210,6 +210,61 @@ def t_phase_b_rejects_batch_one():
 
 
 # ── manifest correctness ────────────────────────────────────────────────────
+def t_h32k_exposure_arithmetic():
+    """Amendment 4: 32,000 prompts at effective batch 32."""
+    check(P.optimizer_steps(P.HORIZON_32K, 32) == 1000,
+          "32,000 prompts @ batch 32 -> exactly 1,000 optimizer updates")
+    check(P.HORIZON_32K == 1000 * 32,
+          "exposure reconstructs from updates x effective batch")
+    # 32,000 divides 16/32/64 exactly (2,000/1,000/500), so pick a batch that
+    # does NOT: 32,000 = 48*666 + 32.
+    raises(lambda: P.optimizer_steps(P.HORIZON_32K, 48),
+           "a batch that does not divide the exposure hard-fails")
+    check(P.optimizer_steps(P.HORIZON_32K, 64) == 500,
+          "32,000 also divides batch 64 exactly (500 updates)")
+    check(P.HORIZON_32K < 98_900,
+          "the horizon fits inside the pool, so no prompt is repeated")
+
+
+def t_h32k_checkpoint_grid():
+    m = P.h32k_checkpoint_steps(32)
+    early, coarse = P.h32k_early_and_coarse(32)
+    check(len(m) == 18, f"18 save points, got {len(m)}")
+    check(len(early) == 10, f"10 dense early snapshots, got {len(early)}")
+    check(sorted(early) == list(range(128, 1281, 128)),
+          "early window is 128..1,280 in 128-prompt steps")
+    check(sorted(early.values()) == list(range(4, 41, 4)),
+          "early window is updates 4, 8, ... 40")
+    check(sorted(coarse)[:2] == [4096, 8192], "coarse block starts at 4,096")
+    check(P.HORIZON_32K in m and m[P.HORIZON_32K] == 1000,
+          "endpoint 32,000 present at update 1,000")
+    check(all(e % 32 == 0 for e in m),
+          "every checkpoint exposure divides the effective batch exactly")
+    check(all(e == s * 32 for e, s in m.items()),
+          "every checkpoint step reconstructs its exposure")
+    check(not (set(early) & set(coarse)), "early and coarse blocks are disjoint")
+    check(max(early) < min(coarse), "the two blocks do not interleave")
+    check(tuple(P.checkpoint_exposures(P.HORIZON_32K)) != tuple(m),
+          "the 2,048-stride fallback is NOT what this horizon uses")
+
+
+def t_h32k_cell_identity():
+    c = P.Cell("full", 32, 1.0e-4, 1, P.HORIZON_32K)
+    probe = P.Cell("B", 32, 1.0e-4, 1, P.PILOT_EXPOSURE)
+    check(c.optimizer_steps == 1000, "cell reports 1,000 updates")
+    check("h32000" in c.name, "name encodes the 32,000 horizon")
+    check(c.output_dir != probe.output_dir,
+          "the 32,000 run cannot collide with the h6016 probe sharing its "
+          "batch, LR and seed")
+    check(c.horizon_tag != probe.horizon_tag, "horizon tags differ")
+    P.assert_unique_output_dirs([c, probe])
+    check(True, "no collision across the two horizons")
+    d = c.describe()
+    check(d["prompt_exposure"] == d["optimizer_steps"] *
+          d["gradient_accumulation_steps"] * d["per_device_train_batch_size"],
+          "manifest exposure identity holds at the 32,000 horizon")
+
+
 def t_manifest_describes_effective_batch():
     c = P.Cell("A", 32, 1e-6, 2, P.PILOT_EXPOSURE)
     d = c.describe()

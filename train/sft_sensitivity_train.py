@@ -63,6 +63,10 @@ def all_planned_cells() -> dict[str, P.Cell]:
         cells += P.phase_b_cells(b, include_probe=True)
         for lr in P.PHASE_B_LRS:
             cells += P.full_cells(b, lr)
+    # Extended-horizon exploratory run (Amendment 4). Its horizon tag h32000
+    # keeps it in its own directory, so it can never be confused with the
+    # h6016 probe that shares its batch, LR and seed.
+    cells += [P.Cell("full", 32, 1.0e-4, 1, P.HORIZON_32K)]
     uniq: dict[str, P.Cell] = {}
     for c in cells:
         uniq.setdefault(c.name, c)
@@ -154,9 +158,19 @@ def build_ordered_records(cell: P.Cell) -> tuple[list[dict], dict]:
     # Fail before a GPU is touched if the ordering is not the frozen one.
     if FROZEN_ORDER_HASHES.is_file():
         frozen = json.loads(FROZEN_ORDER_HASHES.read_text()).get(str(cell.seed), {})
-        key = ("order_hash_pilot_6016" if cell.exposure == P.PILOT_EXPOSURE
-               else "order_hash_full_30016" if cell.exposure == P.FULL_EXPOSURE else None)
-        expected = frozen.get(key) if key else None
+        # An unmapped exposure would leave `expected` None and skip verification
+        # silently, which is exactly the provenance hole this check exists to
+        # close. Every horizon the driver can run must appear here.
+        key = {P.PILOT_EXPOSURE: "order_hash_pilot_6016",
+               P.FULL_EXPOSURE: "order_hash_full_30016",
+               P.HORIZON_32K: "order_hash_h32000"}.get(cell.exposure)
+        if key is None:
+            raise SystemExit(
+                f"REFUSED: no frozen order hash is registered for exposure "
+                f"{cell.exposure:,}. Freeze it in {FROZEN_ORDER_HASHES.name} "
+                "before running, so the ordering is pinned rather than merely "
+                "recomputed.")
+        expected = frozen.get(key)
         prov["frozen_hash_expected"] = expected
         if expected and expected != oh:
             raise SystemExit(
@@ -214,15 +228,31 @@ def write_manifest(cell: P.Cell, args, stats: dict, order_prov: dict,
             "horizon_optimizer_steps": steps,
             "horizon_prompt_exposure": cell.exposure,
             "learning_rate": cell.learning_rate,
+            "peak_learning_rate": cell.learning_rate,
+            "warmup_optimizer_steps": int(round(P.FIXED["warmup_ratio"] * steps)),
+            "warmup_prompt_exposure": int(round(P.FIXED["warmup_ratio"] * steps)
+                                          * cell.effective_batch),
             "max_grad_norm": P.FIXED["max_grad_norm"],
-            "not_interchangeable": ("Pilot (h6016) and full (h30016) weights at "
-                                    "equal prompt exposure are NOT interchangeable: "
-                                    "their cosine horizons differ."),
+            "trained_from": "base weights (not resumed from any checkpoint)",
+            "not_interchangeable": ("Weights at equal prompt exposure but "
+                                    "different cosine horizons (h6016 / h30016 / "
+                                    "h32000) are NOT interchangeable: each run "
+                                    "decays over its own horizon."),
         },
-        "checkpoints": {"exposure_to_optimizer_step":
-                        P.checkpoint_steps(cell.exposure, cell.effective_batch),
-                        "save_steps": P.save_steps_for(cell.exposure, cell.effective_batch),
-                        "endpoint_always_saved": True},
+        "checkpoints": (
+            {"schedule": "Amendment 4: dense early window then coarse intervals",
+             "early_exposure_to_step": P.h32k_early_and_coarse(cell.effective_batch)[0],
+             "coarse_exposure_to_step": P.h32k_early_and_coarse(cell.effective_batch)[1],
+             "n_save_points": len(P.h32k_checkpoint_steps(cell.effective_batch)),
+             "intermediate_kind": "adapter-only (resume_supported: false)",
+             "endpoint_kind": ("full resumable checkpoint at max_steps, plus an "
+                               "`exposure-32000` adapter for evaluation"),
+             "endpoint_always_saved": True}
+            if cell.exposure == P.HORIZON_32K else
+            {"exposure_to_optimizer_step":
+             P.checkpoint_steps(cell.exposure, cell.effective_batch),
+             "save_steps": P.save_steps_for(cell.exposure, cell.effective_batch),
+             "endpoint_always_saved": True}),
         "data_ordering": order_prov,
         "dataset": stats,
         "sources": {p: {"path": p, "sha256": sha256_of(resolve(p))} for p in
@@ -341,7 +371,14 @@ def main() -> int:
         warmup_ratio=P.FIXED["warmup_ratio"], max_grad_norm=P.FIXED["max_grad_norm"],
         max_steps=cell.optimizer_steps, bf16=True,
         logging_steps=P.FIXED["logging_steps"],
-        save_steps=P.save_steps_for(cell.exposure, cell.effective_batch),
+        # At the 32,000 horizon the adapter-only callback owns the intermediate
+        # schedule, so HF is told to save exactly ONCE, at max_steps. That keeps
+        # the endpoint a full resumable checkpoint (optimizer + scheduler + RNG,
+        # and the trainer_state.json the diagnostics read) while preventing HF's
+        # 2,048-stride saves from interleaving with — and being mistaken for —
+        # the dense-then-coarse grid Amendment 4 defines.
+        save_steps=(cell.optimizer_steps if cell.exposure == P.HORIZON_32K
+                    else P.save_steps_for(cell.exposure, cell.effective_batch)),
         report_to="none", dataloader_num_workers=0, remove_unused_columns=False)
 
     class OrderedTrainer(Trainer):
@@ -358,12 +395,24 @@ def main() -> int:
     update_cb = UpdateNormCallback(model)
     trainer.add_callback(update_cb)
     snap_cb = None
-    if cell.phase == "B":
-        # Dense adapter-only snapshots over the early window. Preserved, not
-        # evaluated. Adapter-only because these exist to be evaluated later, not
-        # resumed from; the resumable state is the endpoint checkpoint.
-        step_to_exposure = {v: k for k, v in
-                            P.early_snapshot_steps(cell.effective_batch).items()}
+    if cell.phase == "B" or cell.exposure == P.HORIZON_32K:
+        # Adapter-only snapshots. Preserved, not evaluated. Adapter-only because
+        # these exist to be evaluated later, not resumed from; the resumable
+        # state is the endpoint checkpoint.
+        #
+        # Phase B uses the 128..2,048 early window. The 32,000 horizon uses the
+        # Amendment-4 schedule instead: a dense early window (128..1,280) then
+        # coarse 4,096 intervals. The 32,000 endpoint is EXCLUDED here — it is
+        # written twice already, as HF's full resumable checkpoint-1000 and as
+        # the `exposure-32000` adapter saved after training — so including it
+        # would produce a third, redundant copy.
+        if cell.exposure == P.HORIZON_32K:
+            sched = {e: s for e, s in
+                     P.h32k_checkpoint_steps(cell.effective_batch).items()
+                     if e != P.HORIZON_32K}
+        else:
+            sched = P.early_snapshot_steps(cell.effective_batch)
+        step_to_exposure = {v: k for k, v in sched.items()}
         snap_cb = EarlyAdapterSnapshotCallback(
             model, cell.output_dir, step_to_exposure,
             {"cell": cell.name, "effective_batch": cell.effective_batch,

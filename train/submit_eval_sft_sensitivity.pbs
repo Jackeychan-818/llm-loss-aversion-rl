@@ -48,11 +48,20 @@ case "$DATA" in
   *ood_new_goods*|*frozen_unused*|*method_comparison*|*semantic*)
      echo "REFUSED: sensitivity eval must use test_goods only."; exit 2 ;;
 esac
-if [[ "$EXPOSURE" != "6016" ]]; then
-  echo "REFUSED: Amendment 1 authorises the 6,016 endpoint only (got $EXPOSURE)."
-  echo "         Evaluating 2,048/4,096 is a separate, separately costed decision."
-  exit 2
-fi
+# Only ENDPOINT exposures may be evaluated. 6,016 is the Phase-A/B endpoint
+# (Amendment 1); 32,000 is the extended-horizon endpoint (Amendment 4). Every
+# intermediate snapshot — 128..2,048 in Phase B, 128..28,672 at the 32,000
+# horizon — stays preserved and unevaluated, which is what keeps the cost of
+# those dense grids at zero until separately authorised.
+case "$EXPOSURE" in
+  6016|32000) ;;
+  *) echo "REFUSED: only endpoint exposures may be evaluated (got $EXPOSURE)."
+     echo "         6,016  = Phase-A/B endpoint (Amendment 1)"
+     echo "         32,000 = extended-horizon endpoint (Amendment 4)"
+     echo "         Evaluating an intermediate snapshot is a separate, separately"
+     echo "         costed decision."
+     exit 2 ;;
+esac
 if [[ ! -f "$ADAPTER/adapter_model.safetensors" ]]; then
   echo "ERROR: endpoint adapter missing: $ADAPTER"; exit 1
 fi

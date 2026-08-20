@@ -59,6 +59,16 @@ PHASE_B_LRS = (3.0e-7, 1.0e-6, 3.0e-6, 1.0e-5)
 # cannot silently enter the frozen Stage-1/Stage-2 decision tree: a probe LR may
 # bracket the optimum but may never promote a setting.
 PROBE_LRS = (1.0e-4,)
+
+# ── extended-horizon exploratory run (Amendment 4) ───────────────────────────
+# 32,000 prompts at effective batch 32 = exactly 1,000 optimizer updates. Its
+# checkpoint schedule is NOT the 2,048-stride grid that checkpoint_exposures()
+# falls back to for a non-pilot exposure; it is a dense early window followed by
+# coarse intervals, defined here so the two cannot be confused.
+HORIZON_32K = 32_000
+H32K_EARLY_STRIDE = 128
+H32K_EARLY_MAX = 1_280          # dense window: 128, 256, ... 1,280
+H32K_INTERVAL = 4_096           # coarse thereafter: 4,096 ... 28,672
 SEEDS = (1, 2, 3)
 
 # Held fixed across every cell (deliberately NOT swept in this experiment).
@@ -123,6 +133,38 @@ def checkpoint_steps(total_exposure: int, effective_batch: int) -> dict[int, int
 def early_snapshot_steps(effective_batch: int) -> dict[int, int]:
     """Adapter-only snapshot exposures -> optimizer step, for Phase-B runs."""
     return {e: optimizer_steps(e, effective_batch) for e in EARLY_SNAPSHOT_PROMPTS}
+
+
+def h32k_checkpoint_exposures() -> tuple[int, ...]:
+    """Prompt exposures at which the 32,000-horizon run saves.
+
+    Deliberately NOT `checkpoint_exposures()`: that function's fallback branch
+    emits a uniform 2,048-stride grid for any non-pilot exposure, which is the
+    wrong schedule here and would silently produce 16 evenly-spaced saves
+    instead of the dense-then-coarse layout this run needs.
+    """
+    early = list(range(H32K_EARLY_STRIDE, H32K_EARLY_MAX + 1, H32K_EARLY_STRIDE))
+    coarse = list(range(H32K_INTERVAL, HORIZON_32K, H32K_INTERVAL))
+    return tuple(sorted(set(early + coarse + [HORIZON_32K])))
+
+
+def h32k_checkpoint_steps(effective_batch: int) -> dict[int, int]:
+    """Exposure -> optimizer step for the 32,000-prompt horizon.
+
+    Every exposure must divide the effective batch exactly, or the save would
+    land mid-accumulation and the checkpoint would not correspond to the
+    exposure its name claims.
+    """
+    return {e: optimizer_steps(e, effective_batch)
+            for e in h32k_checkpoint_exposures()}
+
+
+def h32k_early_and_coarse(effective_batch: int) -> tuple[dict[int, int], dict[int, int]]:
+    """The two blocks separately, for reporting and for the disjointness test."""
+    m = h32k_checkpoint_steps(effective_batch)
+    early = {e: s for e, s in m.items() if e <= H32K_EARLY_MAX}
+    coarse = {e: s for e, s in m.items() if e > H32K_EARLY_MAX}
+    return early, coarse
 
 
 def seed3_required(batch: int, mean_ce_by_lr: dict[float, float]) -> dict:

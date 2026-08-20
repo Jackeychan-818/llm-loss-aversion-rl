@@ -500,3 +500,87 @@ and is itself an informative bracket — it would place the usable ceiling below
 All other standing constraints are unchanged: post-hoc, no frozen or untouched
 suite opened, Phase-A and early snapshots not evaluated, and the result remains
 conditional on the 6,016-prompt schedule and clipping threshold 0.1.
+
+---
+
+## Amendment 4 — extended-horizon exploratory run, eb32 @ 1e-4, 32,000 prompts (2026-08-19)
+
+**Committed before the GPU job. Probe outcomes ARE known (Amendment 3: 1e-4 more
+than halved validation CE at 6,016 prompts), so this is not outcome-blind. It is
+the "separate confirmation" that Amendment 2 requires before transferring a
+setting to a longer schedule.**
+
+### What this is, and what it cannot be
+
+A **single exploratory run**: effective batch 32, peak LR 1e-4, seed 1, 32,000
+prompts. It asks whether the best-tested learning rate still works when the
+schedule is 5.3× longer.
+
+It **cannot select or promote anything**. Two independent constraints apply and
+neither is relaxed here:
+
+- Amendment 3: 1e-4 is an **off-grid probe LR**; it may bracket, never promote.
+- Amendment 2: no setting is promoted on **one seed** alone.
+
+So this run produces evidence about a horizon transfer. It does not make 1e-4,
+batch 32, or the 32,000 horizon a selected configuration.
+
+### Why it is trained from scratch and not resumed
+
+The 6,016-prompt probe's final checkpoint is `global_step = 188` of
+`max_steps = 188`, with the learning rate already decayed to **7.8e-9** — its
+cosine schedule is complete. Continuing it would require fabricating a new
+scheduler mid-flight, producing a discontinuous schedule that is neither the
+probe nor a genuine 32,000-prompt run. §7's principle applies directly: runs with
+different horizons are not interchangeable.
+
+This run therefore starts from **base weights** with a fresh cosine schedule over
+1,000 updates and the unchanged 5% warmup proportion (**50 warmup updates**,
+1,600 prompts).
+
+### Exposure arithmetic
+
+    32,000 prompts / 32 effective batch = 1,000 optimizer updates   (exact)
+
+32,000 < 98,900 pool, so the ordering is a longer **prefix of seed 1's existing
+canonical permutation** with zero repetition. Verified before submission: the
+32,000-prefix contains the frozen 6,016 and 30,016 prefixes, each reproducing its
+committed hash exactly. The new prefix hash is frozen as `order_hash_h32000`
+(`f4262776…`), and the driver now **hard-fails on an unregistered exposure**
+rather than silently skipping verification.
+
+### Checkpoint schedule (18 save points)
+
+| block | prompts | updates | kind |
+|---|---|---|---|
+| dense early | 128, 256, … 1,280 | 4, 8, … 40 | adapter-only |
+| coarse | 4,096, 8,192, … 28,672 | 128, 256, … 896 | adapter-only |
+| endpoint | 32,000 | 1,000 | full resumable + evaluation adapter |
+
+Every exposure divides the batch exactly; the blocks are disjoint. This is
+**not** the 2,048-stride grid that `checkpoint_exposures()` falls back to for a
+non-pilot exposure, so a dedicated `h32k_checkpoint_steps()` defines it and HF's
+periodic saving is set to fire only at `max_steps`.
+
+**Only the endpoint is evaluated.** The 17 intermediate snapshots are preserved
+and unevaluated; `submit_eval_sft_sensitivity.pbs` now permits exposures 6,016
+and 32,000 and refuses every other value.
+
+### Cost
+
+~1.97 GPU-h ≈ **126 SU** (≈91 min training + one endpoint evaluation). Phase-B
+cumulative would reach ≈680 of the 850 ceiling.
+
+### Confound to state in the report, not discover afterwards
+
+1,000 updates at the same peak LR is ≈5.3× the total optimization path length of
+the 6,016-prompt probe. A difference between the two therefore conflates **more
+data** with **more optimization**. This run tests "1e-4 at 32,000 prompts"; it
+does not isolate the effect of exposure, and the report must say so.
+
+### Standing constraints
+
+Unchanged: post-hoc and exploratory; no frozen or untouched suite read or
+evaluated; `test_goods` used only as the already-open validation set; results
+conditional on this schedule and clipping 0.1. Nothing here revises the frozen
+matched-SFT selection or licenses any SFT-versus-GRPO claim.
