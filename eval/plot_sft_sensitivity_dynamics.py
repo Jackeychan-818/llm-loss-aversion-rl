@@ -57,6 +57,7 @@ MD = OUT / "dynamics_interpretation.md"
 PNG_SEED = OUT / "dynamics_by_seed.png"
 PNG_BATCH = OUT / "dynamics_by_batch.png"
 PNG_LOG = OUT / "dynamics_grad_norm_logscale.png"
+PNG_LRGRID = OUT / "dynamics_phaseB_lr_grid.png"
 
 SMOOTH_PROMPTS = 512          # causal window, measured in PROMPT EXPOSURE
 CLIP = P.FIXED["max_grad_norm"]
@@ -118,9 +119,27 @@ def final_trainer_state(cell: P.Cell) -> tuple[Path, int] | None:
     return (lambda t: (t[1], t[0]))(max(cands)) if cands else None
 
 
+def all_cells() -> list:
+    """Phase-A cells plus every Phase-B cell that has actually been run.
+
+    Phase B is enumerated over the full LR grid and filtered by what exists on
+    disk, so a partially-run sweep plots what it has instead of failing.
+    """
+    cells = list(P.phase_a_cells())
+    seen = {c.name for c in cells}
+    for b in P.LARGE_BATCHES:
+        for c in P.phase_b_cells(b):
+            if c.name in seen:
+                continue
+            if (c.output_dir).is_dir() and final_trainer_state(c):
+                cells.append(c)
+                seen.add(c.name)
+    return cells
+
+
 def do_refresh() -> dict:
     rows, srcs = [], {}
-    for cell in P.phase_a_cells():
+    for cell in all_cells():
         got = final_trainer_state(cell)
         if got is None:
             print(f"[refresh] MISSING trainer state: {cell.name}")
@@ -136,7 +155,9 @@ def do_refresh() -> dict:
                 continue
             step = int(e["step"])
             rows.append({
-                "run_id": cell.name, "effective_batch": cell.effective_batch,
+                "run_id": cell.name, "phase": cell.phase,
+                "effective_batch": cell.effective_batch,
+                "lr_config": cell.learning_rate,
                 "seed": cell.seed, "step": step,
                 "prompts_seen": step * cell.effective_batch,
                 "loss": float(e["loss"]),
@@ -150,13 +171,15 @@ def do_refresh() -> dict:
             "final_global_step": last_step, "expected_steps": cell.optimizer_steps,
             "n_logged_updates": n, "effective_batch": cell.effective_batch,
             "seed": cell.seed, "prompt_exposure": cell.exposure,
+            "phase": cell.phase, "lr_config": cell.learning_rate,
         }
         print(f"[refresh] {cell.name:<42} {n:>5} updates -> "
               f"{n * cell.effective_batch:,} prompts")
 
     if not rows:
         raise SystemExit("[refresh] no trainer states found — nothing written.")
-    df = pd.DataFrame(rows).sort_values(["effective_batch", "seed", "step"])
+    df = pd.DataFrame(rows).sort_values(
+        ["phase", "effective_batch", "lr_config", "seed", "step"])
     OUT.mkdir(parents=True, exist_ok=True)
     df.to_csv(CSV, index=False)
     print(f"[refresh] wrote {CSV.relative_to(ROOT)} ({len(df):,} rows)")
@@ -346,6 +369,75 @@ def plot_grad_log(df, cs, path):
     fig.savefig(path, dpi=130); plt.close(fig)
 
 
+LR_COLOR = {1e-6: "#1f77b4", 3e-6: "#ff7f0e", 1e-5: "#d62728",
+            3e-7: "#7f7f7f", 3e-5: "#8c564b"}
+
+
+def _lr_lab(lr: float) -> str:
+    return f"{lr:.0e}".replace("e-0", "e-")
+
+
+def plot_lr_grid(df: pd.DataFrame, path: Path) -> None:
+    """Phase-B: 3 metrics x 3 batches, one curve per learning rate.
+
+    This is a DIFFERENT comparison from the Phase-A figures. Those hold the
+    learning rate at 1e-6 and vary the batch; this holds the batch within each
+    column and varies the learning rate. Mixing them onto one axis would confound
+    the two, so they stay separate figures.
+    """
+    batches = sorted(df["effective_batch"].unique())
+    fig, axes = plt.subplots(3, len(batches), figsize=(6.0 * len(batches), 12.6),
+                             squeeze=False)
+    marks = list(range(2048, 6017, 2048))
+    for r, (col, title) in enumerate(PANELS):
+        for c, b in enumerate(batches):
+            ax = axes[r][c]
+            sub_b = df[df["effective_batch"] == b]
+            for lr in sorted(sub_b["lr_config"].unique()):
+                g_lr = sub_b[sub_b["lr_config"] == lr]
+                seeds = sorted(g_lr["seed"].unique())
+                w, colr = window_obs_for(int(b)), LR_COLOR.get(float(lr), "#333333")
+                sm = []
+                for sd in seeds:
+                    g = g_lr[g_lr["seed"] == sd].sort_values("prompts_seen")
+                    if g.empty or g[col].isna().all():
+                        continue
+                    sm.append(pd.Series(
+                        causal_rolling(g[col], w, stat_for(col)).to_numpy(),
+                        index=g["prompts_seen"].to_numpy()))
+                if not sm:
+                    continue
+                M = pd.concat(sm, axis=1)
+                if M.shape[1] > 1:
+                    ax.fill_between(M.index, M.min(axis=1), M.max(axis=1),
+                                    color=colr, alpha=0.18, lw=0, zorder=2)
+                ax.plot(M.index, M.mean(axis=1), color=colr, lw=1.9, zorder=3,
+                        label=f"lr {_lr_lab(float(lr))}  ({len(sm)} seed"
+                              f"{'s' if len(sm) > 1 else ''})")
+            _finish_panel(ax, col, f"eb{int(b)} — {title}", marks)
+            if col == "grad_norm":
+                ax.set_yscale("log")
+                ax.axhline(CLIP, color="#7a2020", ls=":", lw=1.2, zorder=4)
+                ax.annotate("max_grad_norm = 0.1", xy=(0.99, CLIP),
+                            xycoords=("axes fraction", "data"), ha="right",
+                            va="bottom", fontsize=7.5, color="#7a2020")
+            if col == "loss":
+                ax.set_ylim(0.0, 1.5)
+            ax.legend(fontsize=8, loc="best", framealpha=0.85)
+    fig.suptitle(
+        "Phase B — OPTIMIZATION DIAGNOSTICS by learning rate, within each effective batch\n"
+        "rows = metric, columns = effective batch, colour = learning rate · x-axis = prompts seen · "
+        f"causal {SMOOTH_PROMPTS}-prompt window (MEDIAN for gradient norm)\n"
+        "band = across-seed min–max; lr 1e-6 is the REUSED Phase-A column (3 seeds), "
+        "3e-6 and 1e-5 are Phase B (2 seeds) · "
+        "loss cropped to [0, 1.5]\n"
+        "NOT behavioural results — these describe the optimizer, not λ, η or consistency",
+        fontsize=11.5, y=0.997, va="top")
+    fig.tight_layout(); fig.subplots_adjust(top=0.915)
+    fig.savefig(path, dpi=125)
+    plt.close(fig)
+
+
 def render_md(cs: dict) -> str:
     L = ["# Phase-A training dynamics — optimization diagnostics", "",
          "*Figures for the SFT effective-batch sensitivity experiment "
@@ -435,14 +527,20 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     names = {"seed": PNG_SEED.name, "batch": PNG_BATCH.name, "log": PNG_LOG.name,
-             "md": MD.name, "csv": CSV.name}
+             "lrgrid": PNG_LRGRID.name, "md": MD.name, "csv": CSV.name}
     if out_dir != OUT:
         shutil.copyfile(CSV, out_dir / CSV.name)
 
-    cs = clip_stats(df)
-    plot_by_seed(df, cs, out_dir / names["seed"])
-    plot_by_batch(df, cs, out_dir / names["batch"])
-    plot_grad_log(df, cs, out_dir / names["log"])
+    dfa = df[df["phase"] == "A"] if "phase" in df else df
+    cs = clip_stats(dfa)
+    plot_by_seed(dfa, cs, out_dir / names["seed"])
+    plot_by_batch(dfa, cs, out_dir / names["batch"])
+    plot_grad_log(dfa, cs, out_dir / names["log"])
+    # Phase-B batches only. Batch 1 is abandoned and has a single learning
+    # rate, so a batch-1 column would be an empty comparison in an LR figure.
+    if "phase" in df and (df["phase"] == "B").any():
+        dfb = df[df["effective_batch"].isin(P.LARGE_BATCHES)]
+        plot_lr_grid(dfb, out_dir / names["lrgrid"])
     (out_dir / names["md"]).write_text(render_md(cs))
 
     man = {

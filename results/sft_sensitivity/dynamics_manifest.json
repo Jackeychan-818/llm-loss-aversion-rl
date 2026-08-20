@@ -2,8 +2,8 @@
   "title": "Phase-A SFT batch-sensitivity training dynamics",
   "generated_by": "eval/plot_sft_sensitivity_dynamics.py",
   "version": "1.0.0",
-  "script_sha256": "fe3798fe25cddcf4683c31fba15f42a1da254df38381013b36e4f8619cf45132",
-  "git_commit_at_render": "f23ec6525971a1705d65d42e616150cdc7c3c4bd",
+  "script_sha256": "6665740524789d3d76a19b2c8a1719494a11a6f7e23872ad86ed57f6dd48ad68",
+  "git_commit_at_render": "3fe2051366e3bd3f45c02caa2bd1132a5dde8422",
   "status": "OPTIMIZATION DIAGNOSTICS ONLY \u2014 not behavioural results. CPU-only: no GPU job, no inference, no checkpoint evaluation.",
   "x_axis": "prompts seen (optimizer step x effective batch), never optimizer steps",
   "smoothing": {
@@ -88,7 +88,7 @@
       "n_updates_per_seed": 94
     }
   },
-  "n_rows": 20022,
+  "n_rows": 22654,
   "environment": {
     "python": "3.13.3",
     "numpy": "2.2.4",
@@ -97,8 +97,8 @@
   },
   "refresh": {
     "version": "1.0.0",
-    "extraction_date": "2026-08-19",
-    "git_commit_at_extraction": "f23ec6525971a1705d65d42e616150cdc7c3c4bd",
+    "extraction_date": "2026-08-20",
+    "git_commit_at_extraction": "3fe2051366e3bd3f45c02caa2bd1132a5dde8422",
     "sources": {
       "sft_sens_phA_eb1_lr1e-6_seed1_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed1_h6016/checkpoint-6016/trainer_state.json",
@@ -108,7 +108,9 @@
         "n_logged_updates": 6016,
         "effective_batch": 1,
         "seed": 1,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb1_lr1e-6_seed2_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed2_h6016/checkpoint-6016/trainer_state.json",
@@ -118,7 +120,9 @@
         "n_logged_updates": 6016,
         "effective_batch": 1,
         "seed": 2,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb1_lr1e-6_seed3_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed3_h6016/checkpoint-6016/trainer_state.json",
@@ -128,7 +132,9 @@
         "n_logged_updates": 6016,
         "effective_batch": 1,
         "seed": 3,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb16_lr1e-6_seed1_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed1_h6016/checkpoint-376/trainer_state.json",
@@ -138,7 +144,9 @@
         "n_logged_updates": 376,
         "effective_batch": 16,
         "seed": 1,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb16_lr1e-6_seed2_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed2_h6016/checkpoint-376/trainer_state.json",
@@ -148,7 +156,9 @@
         "n_logged_updates": 376,
         "effective_batch": 16,
         "seed": 2,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb16_lr1e-6_seed3_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb16_lr1e-6_seed3_h6016/checkpoint-376/trainer_state.json",
@@ -158,7 +168,9 @@
         "n_logged_updates": 376,
         "effective_batch": 16,
         "seed": 3,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb32_lr1e-6_seed1_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed1_h6016/checkpoint-188/trainer_state.json",
@@ -168,7 +180,9 @@
         "n_logged_updates": 188,
         "effective_batch": 32,
         "seed": 1,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb32_lr1e-6_seed2_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed2_h6016/checkpoint-188/trainer_state.json",
@@ -178,7 +192,9 @@
         "n_logged_updates": 188,
         "effective_batch": 32,
         "seed": 2,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb32_lr1e-6_seed3_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb32_lr1e-6_seed3_h6016/checkpoint-188/trainer_state.json",
@@ -188,7 +204,9 @@
         "n_logged_updates": 188,
         "effective_batch": 32,
         "seed": 3,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb64_lr1e-6_seed1_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed1_h6016/checkpoint-94/trainer_state.json",
@@ -198,7 +216,9 @@
         "n_logged_updates": 94,
         "effective_batch": 64,
         "seed": 1,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb64_lr1e-6_seed2_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed2_h6016/checkpoint-94/trainer_state.json",
@@ -208,7 +228,9 @@
         "n_logged_updates": 94,
         "effective_batch": 64,
         "seed": 2,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
       },
       "sft_sens_phA_eb64_lr1e-6_seed3_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb64_lr1e-6_seed3_h6016/checkpoint-94/trainer_state.json",
@@ -218,7 +240,153 @@
         "n_logged_updates": 94,
         "effective_batch": 64,
         "seed": 3,
-        "prompt_exposure": 6016
+        "prompt_exposure": 6016,
+        "phase": "A",
+        "lr_config": 1e-06
+      },
+      "sft_sens_phB_eb16_lr3e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb16_lr3e-6_seed1_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "0e599e244b672deb7c9fb19d1d49588d4a6309f68085430bd6be8079bedcaaff",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb16_lr3e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb16_lr3e-6_seed2_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "03eea9a1e867e1c48f124540778af6c618679209b210a4531e0e542f70048049",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb16_lr1e-5_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb16_lr1e-5_seed1_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "3f3afa208c09ac9dca8cf8ccd7b5f8ef1a289a7db9335d5f06a577c800ee4ea4",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
+      },
+      "sft_sens_phB_eb16_lr1e-5_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb16_lr1e-5_seed2_h6016/checkpoint-376/trainer_state.json",
+        "sha256": "f0759d3700c93c9757d31bbb322889e4ccfcb9c1d9968d7accfd9061102ee3d1",
+        "final_global_step": 376,
+        "expected_steps": 376,
+        "n_logged_updates": 376,
+        "effective_batch": 16,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
+      },
+      "sft_sens_phB_eb32_lr3e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb32_lr3e-6_seed1_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "856091946aa522f6ca4e4c7b6da229eb96556deeebb3a6c71200a4d88230db80",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb32_lr3e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb32_lr3e-6_seed2_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "310833611f932e325ed235322113d55ef5bc19b6522dec0dd821e370d9615026",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb32_lr1e-5_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb32_lr1e-5_seed1_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "a8ba11688b74395c74af9cfa53c6ce5b9f2cc1bf3a39a97462e994f91582556e",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
+      },
+      "sft_sens_phB_eb32_lr1e-5_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb32_lr1e-5_seed2_h6016/checkpoint-188/trainer_state.json",
+        "sha256": "be86f3f2aabaab331b16deb02231cd1a070b36be135cd496147c9fa7f87d7ec1",
+        "final_global_step": 188,
+        "expected_steps": 188,
+        "n_logged_updates": 188,
+        "effective_batch": 32,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
+      },
+      "sft_sens_phB_eb64_lr3e-6_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb64_lr3e-6_seed1_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "390b1e6e1819c6698001d3d8d2419164bd4c03bd44fe41d6059f2152b995da7d",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb64_lr3e-6_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb64_lr3e-6_seed2_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "4112fe38ecbd66f2e416f54974c7d2a484993d88a6061f33fba302f16ea8b75d",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 3e-06
+      },
+      "sft_sens_phB_eb64_lr1e-5_seed1_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb64_lr1e-5_seed1_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "0b530f52777cf2be1dd84e787930ec161e51ca19d85bd8d25ecc7054eb52b3ef",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 1,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
+      },
+      "sft_sens_phB_eb64_lr1e-5_seed2_h6016": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phB_eb64_lr1e-5_seed2_h6016/checkpoint-94/trainer_state.json",
+        "sha256": "b8ab04cfcf5e62b64f34b34951049b0a4c820a93efee779473b23752fd9d7f26",
+        "final_global_step": 94,
+        "expected_steps": 94,
+        "n_logged_updates": 94,
+        "effective_batch": 64,
+        "seed": 2,
+        "prompt_exposure": 6016,
+        "phase": "B",
+        "lr_config": 1e-05
       }
     }
   },
@@ -235,13 +403,17 @@
       "sha256": "ac1c882be6723f047e9db5f9ab2a54a6a4912306a2078d66694fc5aa134546da",
       "size_bytes": 409168
     },
+    "dynamics_phaseB_lr_grid.png": {
+      "sha256": "6306fc5de157e862227c8cd1c24b86c99a5f232c61b61a6538a990d152cd80ac",
+      "size_bytes": 491028
+    },
     "dynamics_interpretation.md": {
       "sha256": "326ea053640ab63ade31985309458aeacd3779c9a58a9cbb560a69e360e3d447",
       "size_bytes": 4157
     },
     "dynamics_metrics.csv": {
-      "sha256": "07de715b6f6c20f83aa4d8e8bfe91ad8042f8271fcf8ad25f682f4aea01bd67d",
-      "size_bytes": 2243230
+      "sha256": "a9686c496a84de4cb0b05c108735b762c451473eec19975f9ec73a444953cfb0",
+      "size_bytes": 2715443
     }
   }
 }

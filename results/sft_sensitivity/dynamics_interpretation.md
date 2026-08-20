@@ -41,7 +41,31 @@ Each cell runs its **own** cosine schedule over its own horizon (6,016 / 16 / 32
 | `dynamics_by_seed.png` | 3 panels, 12 cells, seed by linestyle |
 | `dynamics_by_batch.png` | 3 panels, across-seed mean + min–max band |
 | `dynamics_grad_norm_logscale.png` | uncropped log-scale tails |
+| `dynamics_phaseB_lr_grid.png` | Phase B: 3 metrics x 3 batches, one curve per learning rate |
 | `dynamics_manifest.json` | sources, hashes, versions, clip stats |
+
+## Phase B — the learning-rate figure
+
+`dynamics_phaseB_lr_grid.png` is a **different comparison** from the Phase-A
+figures and is kept separate for that reason. The Phase-A figures hold the
+learning rate at 1e-6 and vary the batch; this one fixes the batch within each
+column and varies the learning rate. Overlaying them on one axis would confound
+the two factors.
+
+Columns are the three Phase-B batches. Batch 1 is excluded: it is abandoned as a
+candidate and has only one learning rate, so a batch-1 column would be an empty
+comparison. The `lr 1e-6` curve is the **reused Phase-A column** (3 seeds); the
+3e-6 and 1e-5 curves are Phase B (2 seeds), which is why their bands are
+narrower-looking — fewer seeds, not less variation.
+
+What it shows: raising the learning rate moves the loss drop earlier in
+prompt-exposure and lowers the gradient norm sooner, at every batch. At eb64 the
+1e-6 curve barely descends at all across the whole run, which is the visual form
+of the Phase-A pathology (consistency 0.023) — that cell was near-untrained, not
+unstable. Note also that at eb16 the 3e-6 and 1e-5 curves converge to almost the
+same *training* loss (~0.18) while their *validation* cross-entropy differs
+materially (0.549 vs 0.441): training loss on the training prompts is not a
+substitute for held-out CE, which is why the frozen rule selects on the latter.
 
 ## Reproduce
 
