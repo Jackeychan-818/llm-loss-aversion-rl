@@ -55,6 +55,10 @@ BATCHES = (1, 16, 32, 64)
 LARGE_BATCHES = (16, 32, 64)
 PHASE_A_LR = 1.0e-6
 PHASE_B_LRS = (3.0e-7, 1.0e-6, 3.0e-6, 1.0e-5)
+# Off-grid bracketing probe (Amendment 3). Kept SEPARATE from PHASE_B_LRS so it
+# cannot silently enter the frozen Stage-1/Stage-2 decision tree: a probe LR may
+# bracket the optimum but may never promote a setting.
+PROBE_LRS = (1.0e-4,)
 SEEDS = (1, 2, 3)
 
 # Held fixed across every cell (deliberately NOT swept in this experiment).
@@ -258,11 +262,19 @@ def phase_a_cells() -> list[Cell]:
             for b in BATCHES for s in SEEDS]
 
 
-def phase_b_cells(selected_batch: int) -> list[Cell]:
+def phase_b_cells(selected_batch: int, include_probe: bool = False) -> list[Cell]:
+    """Phase-B cells for one batch. Probe LRs are opt-in and never part of the
+    frozen grid used by the selection rules."""
     if selected_batch not in LARGE_BATCHES:
         raise ExposureError(f"Phase B batch must be one of {LARGE_BATCHES}")
+    lrs = PHASE_B_LRS + (PROBE_LRS if include_probe else ())
     return [Cell("B", selected_batch, lr, s, PILOT_EXPOSURE)
-            for lr in PHASE_B_LRS for s in SEEDS]
+            for lr in lrs for s in SEEDS]
+
+
+def is_probe(cell: Cell) -> bool:
+    """True for an off-grid bracketing cell, which may not promote a setting."""
+    return cell.learning_rate in PROBE_LRS
 
 
 def full_cells(batch: int, lr: float) -> list[Cell]:

@@ -60,7 +60,7 @@ def all_planned_cells() -> dict[str, P.Cell]:
     """
     cells = list(P.phase_a_cells())
     for b in P.LARGE_BATCHES:
-        cells += P.phase_b_cells(b)
+        cells += P.phase_b_cells(b, include_probe=True)
         for lr in P.PHASE_B_LRS:
             cells += P.full_cells(b, lr)
     uniq: dict[str, P.Cell] = {}
@@ -191,6 +191,10 @@ def write_manifest(cell: P.Cell, args, stats: dict, order_prov: dict,
                               else "git rev-parse on this host"),
         "command": " ".join(sys.argv),
         "cell": d,
+        "is_off_grid_probe": P.is_probe(cell),
+        "probe_note": ("Off-grid bracketing probe under Amendment 3. May not "
+                       "promote a setting or enter the frozen selection rule."
+                       if P.is_probe(cell) else None),
         "exposure_accounting": {
             "prompt_exposure": cell.exposure,
             "optimizer_updates": steps,
@@ -278,6 +282,10 @@ def main() -> int:
     verify_config_matches_plan(args.config)
     guard_output_dir(cell, args.allow_existing)
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    if P.is_probe(cell):
+        logger.info("PROBE CELL (Amendment 3): off-grid bracketing LR. May "
+                    "bracket the optimum; may NOT promote a setting or change "
+                    "the frozen selection.")
     logger.info(f"Cell {cell.name}: exposure={cell.exposure:,} prompts, "
                 f"steps={cell.optimizer_steps:,}, effective batch={cell.effective_batch}, "
                 f"lr={cell.learning_rate:g}, seed={cell.seed}")
