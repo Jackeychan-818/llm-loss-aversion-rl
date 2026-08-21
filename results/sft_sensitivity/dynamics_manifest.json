@@ -2,8 +2,8 @@
   "title": "Phase-A SFT batch-sensitivity training dynamics",
   "generated_by": "eval/plot_sft_sensitivity_dynamics.py",
   "version": "1.0.0",
-  "script_sha256": "7eb0c6bbbb7c1bde1359fa7ed3d45d1990faa0825e26c8bf0a6dfc2a4986b319",
-  "git_commit_at_render": "30154e9d8005d5a126a50cb97a059e6067280b4b",
+  "script_sha256": "83c40d4a079655f2358bdce2043077f58d62d52bf14143616b1894eaa68d5a74",
+  "git_commit_at_render": "fb5fc65bb64bee1b6f53a69acc030523cc4db326",
   "status": "OPTIMIZATION DIAGNOSTICS ONLY \u2014 not behavioural results. CPU-only: no GPU job, no inference, no checkpoint evaluation.",
   "x_axis": "prompts seen (optimizer step x effective batch), never optimizer steps",
   "smoothing": {
@@ -448,8 +448,8 @@
       "size_bytes": 254791
     },
     "dynamics_interpretation.md": {
-      "sha256": "326ea053640ab63ade31985309458aeacd3779c9a58a9cbb560a69e360e3d447",
-      "size_bytes": 4157
+      "sha256": "9afe2d7a32deb5ab2e629c9cca0d875ab129ee0941b31cbe052b3d246e5afd85",
+      "size_bytes": 5474
     },
     "dynamics_metrics.csv": {
       "sha256": "cf3cbf83b4fd025c0f108ecbc6219ef40f827c402917e537c054634fe1c7212a",

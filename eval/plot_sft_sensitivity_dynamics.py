@@ -567,6 +567,27 @@ def render_md(cs: dict) -> str:
           "| `dynamics_by_batch.png` | 3 panels, across-seed mean + min–max band |",
           "| `dynamics_grad_norm_logscale.png` | uncropped log-scale tails |",
           "| `dynamics_manifest.json` | sources, hashes, versions, clip stats |", "",
+          "## The extended-horizon figure", "",
+          "`dynamics_h32000_horizon.png` puts the 32,000-prompt run beside the "
+          "6,016-prompt probe it extends. Both are eb32 @ 1e-4, seed 1, on the same "
+          "prompt ordering, so on a prompts-seen axis this is a like-for-like "
+          "comparison of **horizon**.", "",
+          "The learning-rate panel is the one to read first: the probe's cosine "
+          "peaks near 1,600 prompts and is back at zero by 6,016, while the 32,000 "
+          "run is still near its peak at 6,016 and decays for another 26,000 "
+          "prompts. That is the concrete form of the protocol's rule that runs with "
+          "different horizons are not interchangeable — at 6,016 prompts these two "
+          "models have had entirely different learning-rate histories, so neither is "
+          "a checkpoint of the other.", "",
+          "The loss panels overlap closely through the first ~6,000 prompts, as they "
+          "should given identical data and hyper-parameters, then diverge: the longer "
+          "run keeps descending to ~0.02 while the probe has already stopped. The "
+          "32,000 run is also the first in the experiment whose gradient curve "
+          "reaches the 0.1 clipping line at all — 1.7% of its updates fall at or "
+          "below it, against 100% clipped everywhere else.", "",
+          "Phase-A and Phase-B figures are deliberately restricted to the "
+          "6,016-prompt window. Letting the 32,000 run into them would compress every "
+          "other curve into the left fifth of the axis.", "",
           "## Reproduce", "", "```bash",
           "python eval/plot_sft_sensitivity_dynamics.py --refresh   # trainer states -> CSV",
           "python eval/plot_sft_sensitivity_dynamics.py             # CSV -> figures",
