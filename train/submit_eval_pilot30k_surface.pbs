@@ -1,0 +1,101 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY 30k-checkpoint diagnostic: surface-form stress.
+#
+# Evaluates ONLY the two late magnitude-GRPO endpoints:
+#   * magnitude-GRPO seed1 @ step 30000
+#   * magnitude-GRPO seed2 @ step 30000
+#
+# Uses the SAME frozen subset (data/surface_form_stress/), the SAME 48
+# equivalent forms, and the SAME teacher-forced scoring harness
+# (eval/surface_form_infer.py) as the earlier selected-checkpoint run. Only the
+# evaluated model list and the OUTPUT ROOT differ, so the previously written
+# results/surface_form_stress/<model>/ directories are never touched.
+#
+# This is EXPLORATORY / POST-HOC. It does NOT change the frozen checkpoint
+# selections (seed1 -> 2000, seed2 -> 6000) and the 30k adapters are NOT
+# "selected" models.
+#
+#   qsub train/submit_eval_pilot30k_surface.pbs
+#
+# Resumability: surface_form_infer.py skips a model whose form_predictions.jsonl
+# already has the full 9,216 rows and recomputes a partial file, and it writes
+# via a .tmp + atomic rename. A resubmitted/timed-out job therefore never mixes
+# a finished model dir. Safe to qsub again after a walltime kill.
+# ============================================================
+#PBS -N lz-p30k-surf
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=04:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/pilot30k_surf_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/pilot30k_surf_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL="models/Qwen2.5-7B-Instruct"
+S1_ADAPTER="checkpoints/grpo_qwen_delta_seed1/checkpoint-30000"
+S2_ADAPTER="checkpoints/grpo_qwen_delta_seed2/checkpoint-30000"
+OUTPUT_ROOT="results/checkpoint_diagnostics/pilot30k/surface"
+
+# --- Frozen-suite guard: this diagnostic may ONLY touch the exploratory
+# --- surface-form subset. Refuse anything else.
+SUBSET="data/surface_form_stress/surface_form_subset.json"
+EXPECTED_SUBSET_SHA="78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262"
+[[ -f "$SUBSET" ]] || { echo "ERROR: subset missing: $SUBSET"; exit 1; }
+GOT_SHA="$(sha256sum "$SUBSET" | cut -d' ' -f1)"
+[[ "$GOT_SHA" == "$EXPECTED_SUBSET_SHA" ]] || {
+  echo "REFUSED: surface-form subset SHA mismatch"
+  echo "  expected $EXPECTED_SUBSET_SHA"
+  echo "  observed $GOT_SHA"; exit 2; }
+case "$OUTPUT_ROOT" in
+  *method_comparison*|*semantic*|*frozen_unused*|*neutral*)
+    echo "REFUSED: output root points at a frozen/prohibited suite"; exit 2 ;;
+esac
+
+# --- Frozen design must be intact before GPU (same checks as the earlier runs).
+python3 data/surface_form_stress/build_surface_form_subset.py --check
+python3 eval/test_surface_form_transforms.py >/dev/null && echo "transform unit tests: PASS"
+
+# --- Checkpoint verification: never silently substitute another checkpoint.
+for a in "$S1_ADAPTER" "$S2_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+  echo "adapter $a sha256=$(sha256sum "$a/adapter_model.safetensors" | cut -d' ' -f1)"
+done
+
+# --- Never write into the earlier selected-checkpoint result tree.
+[[ "$OUTPUT_ROOT" != "results/surface_form_stress" ]] || {
+  echo "REFUSED: would overwrite the selected-checkpoint surface results"; exit 2; }
+mkdir -p "$OUTPUT_ROOT"
+
+nvidia-smi
+
+EXPECTED_ROWS=9216
+run_one () {
+  local name="$1" adapter="$2" idx="$3"
+  echo "=== [$idx/2] $name (exploratory 30k endpoint) ==="
+  python eval/surface_form_infer.py \
+      --model_path "$MODEL" \
+      --adapter_path "$adapter" \
+      --model_name "$name" \
+      --output_root "$OUTPUT_ROOT" \
+      2>&1 | tee "logs/pilot30k_surf_${name}.log"
+  local rows
+  rows="$(wc -l < "$OUTPUT_ROOT/$name/form_predictions.jsonl")"
+  echo "$name rows=$rows (expected $EXPECTED_ROWS)"
+  [[ "$rows" -eq "$EXPECTED_ROWS" ]] || { echo "ERROR: $name row count $rows != $EXPECTED_ROWS"; exit 1; }
+}
+
+run_one GRPO-qd-seed1-ckpt30000 "$S1_ADAPTER" 1
+run_one GRPO-qd-seed2-ckpt30000 "$S2_ADAPTER" 2
+
+echo "=== pilot30k surface-form inference complete (2 x $EXPECTED_ROWS rows) ==="

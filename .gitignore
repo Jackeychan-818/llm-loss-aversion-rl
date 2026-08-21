@@ -58,3 +58,9 @@ models/
 *.toc
 *.out
 training_overview.pdf
+
+# Exploratory 30k-checkpoint diagnostic: raw predictions are checksummed in
+# results/checkpoint_diagnostics/pilot30k/raw_manifest.json but not committed.
+results/checkpoint_diagnostics/pilot30k/surface/*/form_predictions.jsonl
+results/checkpoint_diagnostics/pilot30k/framing/*/*/predictions.json
+results/checkpoint_diagnostics/pilot30k/framing_smoke/

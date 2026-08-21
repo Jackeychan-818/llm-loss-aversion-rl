@@ -1,0 +1,121 @@
+#!/bin/bash
+# ============================================================
+# PBS — EXPLORATORY 30k-checkpoint diagnostic: adverse framing.
+#
+# Evaluates ONLY the two late magnitude-GRPO endpoints on the ALREADY-OPENED
+# framing benchmark (data/framing_effects_23prob.json):
+#   * magnitude-GRPO seed1 @ step 30000
+#   * magnitude-GRPO seed2 @ step 30000
+#
+# Identical to the earlier framing runs in every respect except the model list
+# and the output root:
+#   * same base weights (models/Qwen2.5-7B-Instruct)
+#   * same single_word prompt style
+#   * same teacher-forced Yes/No scoring
+#   * same FULL dataset (120 scenarios x 23 probabilities x 2 frames = 5,520)
+#   * same matched-base predictions reused as the comparator (base NOT re-run)
+#
+# EXPLORATORY / POST-HOC. The framing suite is already opened; this cannot and
+# does not change the frozen checkpoint selections.
+#
+#   qsub train/submit_eval_pilot30k_framing.pbs
+# Smoke (10 scenarios x 5 probabilities x 2 frames), writes to a throwaway root:
+#   qsub -v LIMIT_SCENARIOS=10,PROBABILITY_SUBSET=0.10:0.30:0.50:0.70:0.90,\
+# OUTPUT_ROOT=results/checkpoint_diagnostics/pilot30k/framing_smoke \
+#     train/submit_eval_pilot30k_framing.pbs
+#
+# Resumability: run_framing_local.py checkpoints predictions every --save_every
+# cases and resumes from the existing predictions file in the same output dir,
+# so a walltime-killed job can simply be resubmitted.
+# ============================================================
+#PBS -N lz-p30k-fram
+#PBS -q normal
+#PBS -l select=1:ncpus=8:ngpus=1:mem=80gb
+#PBS -l walltime=03:00:00
+#PBS -o /home/users/nus/jackeyc0/scratch/lambda-zero/logs/pilot30k_fram_${PBS_JOBID}.out
+#PBS -e /home/users/nus/jackeyc0/scratch/lambda-zero/logs/pilot30k_fram_${PBS_JOBID}.err
+#PBS -j oe
+#PBS -P personal-jackeyc0
+
+set -euo pipefail
+
+PROJECT_DIR="$HOME/scratch/lambda-zero"
+cd "$PROJECT_DIR"
+module purge
+module load pytorch/2.6.0-py3-cu11.8
+source "$PROJECT_DIR/venv/bin/activate"
+CUDA_LIB="$(ls -d "$PROJECT_DIR"/venv/lib/python3.*/site-packages/nvidia/cu13/lib 2>/dev/null | head -1 || true)"
+if [[ -n "$CUDA_LIB" ]]; then export LD_LIBRARY_PATH="$CUDA_LIB:${LD_LIBRARY_PATH:-}"; fi
+
+MODEL_PATH="models/Qwen2.5-7B-Instruct"
+DATA_FILE="data/framing_effects_23prob.json"
+OUTPUT_ROOT="${OUTPUT_ROOT:-results/checkpoint_diagnostics/pilot30k/framing}"
+BASE_PRED="framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json"
+BATCH_SIZE="${BATCH_SIZE:-8}"
+
+S1_ADAPTER="checkpoints/grpo_qwen_delta_seed1/checkpoint-30000"
+S2_ADAPTER="checkpoints/grpo_qwen_delta_seed2/checkpoint-30000"
+
+# --- Defence in depth: never let this job read a frozen/prohibited suite.
+case "$DATA_FILE" in
+  *method_comparison*|*semantic*|*frozen_unused*|*neutral*|*ood*|*gsm8k*|*ifeval*)
+    echo "REFUSED: prohibited suite path in DATA_FILE"; exit 2 ;;
+esac
+[[ "$DATA_FILE" == "data/framing_effects_23prob.json" ]] || { echo "REFUSED: unexpected DATA_FILE"; exit 2; }
+EXPECTED_DATA_SHA="dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c"
+GOT_SHA="$(sha256sum "$DATA_FILE" | cut -d' ' -f1)"
+[[ "$GOT_SHA" == "$EXPECTED_DATA_SHA" ]] || {
+  echo "REFUSED: framing benchmark SHA mismatch"
+  echo "  expected $EXPECTED_DATA_SHA"
+  echo "  observed $GOT_SHA"; exit 2; }
+
+# --- Never write into an existing framing result tree.
+case "$OUTPUT_ROOT" in
+  framing|framing/*) echo "REFUSED: would write into the existing framing/ tree"; exit 2 ;;
+esac
+
+[[ -f "$BASE_PRED" ]] || { echo "ERROR: reused base predictions missing: $BASE_PRED"; exit 1; }
+
+# --- Checkpoint verification: never silently substitute another checkpoint.
+for a in "$S1_ADAPTER" "$S2_ADAPTER"; do
+  [[ -f "$a/adapter_model.safetensors" ]] || { echo "ERROR: adapter missing: $a"; exit 1; }
+  echo "adapter $a sha256=$(sha256sum "$a/adapter_model.safetensors" | cut -d' ' -f1)"
+done
+
+EXTRA_ARGS=()
+EXPECTED_ROWS=5520
+if [[ -n "${LIMIT_SCENARIOS:-}" ]]; then EXTRA_ARGS+=(--limit_scenarios "$LIMIT_SCENARIOS"); EXPECTED_ROWS=0; fi
+if [[ -n "${PROBABILITY_SUBSET:-}" ]]; then EXTRA_ARGS+=(--probability_subset "$PROBABILITY_SUBSET"); EXPECTED_ROWS=0; fi
+
+mkdir -p "$OUTPUT_ROOT"
+nvidia-smi
+
+run_one () {
+  local name="$1" adapter="$2" idx="$3"
+  echo "=== [$idx/2] $name framing (exploratory, post-hoc) ==="
+  python eval/run_framing_local.py \
+      --model_path "$MODEL_PATH" \
+      --adapter_path "$adapter" \
+      --model_name "$name" \
+      --data_file "$DATA_FILE" \
+      --output_root "$OUTPUT_ROOT" \
+      --prompt_style single_word \
+      --dtype bf16 \
+      --compare_to "$BASE_PRED" \
+      --batch_size "$BATCH_SIZE" \
+      --yes \
+      "${EXTRA_ARGS[@]}" \
+      2>&1 | tee "logs/pilot30k_fram_${name}.log"
+  if [[ "$EXPECTED_ROWS" -gt 0 ]]; then
+    local rows
+    rows="$(python3 -c "import json,sys;print(len(json.load(open(sys.argv[1]))))" \
+             "$OUTPUT_ROOT/$name/single_word/predictions.json")"
+    echo "$name rows=$rows (expected $EXPECTED_ROWS)"
+    [[ "$rows" -eq "$EXPECTED_ROWS" ]] || { echo "ERROR: $name row count $rows != $EXPECTED_ROWS"; exit 1; }
+  fi
+}
+
+run_one GRPO-qd-seed1-ckpt30000 "$S1_ADAPTER" 1
+run_one GRPO-qd-seed2-ckpt30000 "$S2_ADAPTER" 2
+
+echo "=== pilot30k framing evaluation complete ==="
