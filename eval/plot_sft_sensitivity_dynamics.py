@@ -58,6 +58,7 @@ PNG_SEED = OUT / "dynamics_by_seed.png"
 PNG_BATCH = OUT / "dynamics_by_batch.png"
 PNG_LOG = OUT / "dynamics_grad_norm_logscale.png"
 PNG_LRGRID = OUT / "dynamics_phaseB_lr_grid.png"
+PNG_H32K = OUT / "dynamics_h32000_horizon.png"
 
 SMOOTH_PROMPTS = 512          # causal window, measured in PROMPT EXPOSURE
 CLIP = P.FIXED["max_grad_norm"]
@@ -134,6 +135,11 @@ def all_cells() -> list:
             if (c.output_dir).is_dir() and final_trainer_state(c):
                 cells.append(c)
                 seen.add(c.name)
+    # Extended-horizon run (Amendment 4). Included only if it exists on disk.
+    for c in [P.Cell("full", 32, 1.0e-4, 1, P.HORIZON_32K)]:
+        if c.name not in seen and c.output_dir.is_dir() and final_trainer_state(c):
+            cells.append(c)
+            seen.add(c.name)
     return cells
 
 
@@ -442,6 +448,57 @@ def plot_lr_grid(df: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
+def plot_h32k(df: pd.DataFrame, path: Path) -> None:
+    """The 32,000-prompt run against the 6,016 probe it extends.
+
+    Both are eb32 @ 1e-4 seed 1 and share the same prompt ordering, so plotting
+    them on one prompts-seen axis is a like-for-like comparison of HORIZON. The
+    probe simply stops at 6,016 — which is the point: its cosine has already
+    finished there, so the two are not interchangeable at equal exposure, and
+    the learning-rate panel shows exactly that.
+    """
+    runs = [("sft_sens_phB_eb32_lr1e-4_seed1_h6016", "#ff7f0e",
+             "h6016 probe (188 updates)"),
+            ("sft_sens_phfull_eb32_lr1e-4_seed1_h32000", "#1f77b4",
+             "h32000 run (1,000 updates)")]
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5.6))
+    marks = list(range(4096, 32001, 4096))
+    for ax, (col, title) in zip(axes, PANELS):
+        for rid, colr, lab in runs:
+            g = df[df["run_id"] == rid].sort_values("prompts_seen")
+            if g.empty or g[col].isna().all():
+                continue
+            w = window_obs_for(32)
+            if col != "learning_rate":
+                ax.plot(g["prompts_seen"], g[col], color=colr, alpha=0.15,
+                        lw=0.6, zorder=1)
+            ax.plot(g["prompts_seen"], causal_rolling(g[col], w, stat_for(col)),
+                    color=colr, lw=1.9, zorder=3, label=lab)
+        _finish_panel(ax, col, title, marks)
+        if col == "loss":
+            ax.set_ylim(0.0, 1.0)
+        if col == "grad_norm":
+            ax.set_yscale("log")
+            ax.axhline(CLIP, color="#7a2020", ls=":", lw=1.2, zorder=4)
+            ax.annotate("max_grad_norm = 0.1", xy=(0.99, CLIP),
+                        xycoords=("axes fraction", "data"), ha="right",
+                        va="bottom", fontsize=7.5, color="#7a2020")
+        ax.legend(fontsize=8.5, loc="best", framealpha=0.85)
+    fig.suptitle(
+        "Extended horizon — eb32 @ lr 1e-4, seed 1: 32,000 prompts vs the 6,016 probe "
+        "(Amendment 4)\n"
+        f"x-axis = prompts seen · causal {SMOOTH_PROMPTS}-prompt window "
+        "(MEDIAN for gradient norm) · faint = raw logged updates · loss cropped to [0, 1]\n"
+        "The probe ENDS at 6,016 because its cosine finishes there — the two are not "
+        "interchangeable at equal exposure, as the learning-rate panel shows\n"
+        "OPTIMIZATION DIAGNOSTICS — not behavioural results; one seed, probe LR, "
+        "promotes nothing",
+        fontsize=11, y=0.997, va="top")
+    fig.tight_layout(); fig.subplots_adjust(top=0.795)
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+
+
 def render_md(cs: dict) -> str:
     L = ["# Phase-A training dynamics — optimization diagnostics", "",
          "*Figures for the SFT effective-batch sensitivity experiment "
@@ -531,7 +588,8 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     names = {"seed": PNG_SEED.name, "batch": PNG_BATCH.name, "log": PNG_LOG.name,
-             "lrgrid": PNG_LRGRID.name, "md": MD.name, "csv": CSV.name}
+             "lrgrid": PNG_LRGRID.name, "h32k": PNG_H32K.name,
+             "md": MD.name, "csv": CSV.name}
     if out_dir != OUT:
         shutil.copyfile(CSV, out_dir / CSV.name)
 
@@ -543,8 +601,11 @@ def do_render(out_dir: Path, refresh_block: dict | None) -> dict:
     # Phase-B batches only. Batch 1 is abandoned and has a single learning
     # rate, so a batch-1 column would be an empty comparison in an LR figure.
     if "phase" in df and (df["phase"] == "B").any():
-        dfb = df[df["effective_batch"].isin(P.LARGE_BATCHES)]
+        dfb = df[df["effective_batch"].isin(P.LARGE_BATCHES) &
+                 (df["prompts_seen"] <= P.PILOT_EXPOSURE)]
         plot_lr_grid(dfb, out_dir / names["lrgrid"])
+    if "phase" in df and (df["prompts_seen"] > P.PILOT_EXPOSURE).any():
+        plot_h32k(df, out_dir / names["h32k"])
     (out_dir / names["md"]).write_text(render_md(cs))
 
     man = {

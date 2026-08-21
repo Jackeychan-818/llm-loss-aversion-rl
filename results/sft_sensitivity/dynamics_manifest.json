@@ -2,8 +2,8 @@
   "title": "Phase-A SFT batch-sensitivity training dynamics",
   "generated_by": "eval/plot_sft_sensitivity_dynamics.py",
   "version": "1.0.0",
-  "script_sha256": "5048252b5c22087f7ad361172a9a598515e050802bcba7dca3cf36dcbf90b946",
-  "git_commit_at_render": "91d21c987539f1a3f81fb4ca08af2f0c60214d4e",
+  "script_sha256": "7eb0c6bbbb7c1bde1359fa7ed3d45d1990faa0825e26c8bf0a6dfc2a4986b319",
+  "git_commit_at_render": "30154e9d8005d5a126a50cb97a059e6067280b4b",
   "status": "OPTIMIZATION DIAGNOSTICS ONLY \u2014 not behavioural results. CPU-only: no GPU job, no inference, no checkpoint evaluation.",
   "x_axis": "prompts seen (optimizer step x effective batch), never optimizer steps",
   "smoothing": {
@@ -88,7 +88,7 @@
       "n_updates_per_seed": 94
     }
   },
-  "n_rows": 23218,
+  "n_rows": 24218,
   "environment": {
     "python": "3.13.3",
     "numpy": "2.2.4",
@@ -97,8 +97,8 @@
   },
   "refresh": {
     "version": "1.0.0",
-    "extraction_date": "2026-08-20",
-    "git_commit_at_extraction": "91d21c987539f1a3f81fb4ca08af2f0c60214d4e",
+    "extraction_date": "2026-08-21",
+    "git_commit_at_extraction": "30154e9d8005d5a126a50cb97a059e6067280b4b",
     "sources": {
       "sft_sens_phA_eb1_lr1e-6_seed1_h6016": {
         "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phA_eb1_lr1e-6_seed1_h6016/checkpoint-6016/trainer_state.json",
@@ -411,6 +411,18 @@
         "prompt_exposure": 6016,
         "phase": "B",
         "lr_config": 1e-05
+      },
+      "sft_sens_phfull_eb32_lr1e-4_seed1_h32000": {
+        "trainer_state": "checkpoints/sft_sensitivity/sft_sens_phfull_eb32_lr1e-4_seed1_h32000/checkpoint-1000/trainer_state.json",
+        "sha256": "2f9389f0d42c691b9052a4c48cf70485d038d123af0d31da57c0b051541a697f",
+        "final_global_step": 1000,
+        "expected_steps": 1000,
+        "n_logged_updates": 1000,
+        "effective_batch": 32,
+        "seed": 1,
+        "prompt_exposure": 32000,
+        "phase": "full",
+        "lr_config": 0.0001
       }
     }
   },
@@ -428,16 +440,20 @@
       "size_bytes": 409168
     },
     "dynamics_phaseB_lr_grid.png": {
-      "sha256": "80018dc71fa0a284e6c25f045cf232b114f69aef46aae0be85dd3285bff6a4e6",
-      "size_bytes": 547439
+      "sha256": "fa35b75bb8248aa7247e69c3212ff762ae73a597dd7871e15023212deefa91fc",
+      "size_bytes": 559520
+    },
+    "dynamics_h32000_horizon.png": {
+      "sha256": "75b2972634ef30818d113985d3c8620570827050ab00245e8ce4b968d629920b",
+      "size_bytes": 254791
     },
     "dynamics_interpretation.md": {
       "sha256": "326ea053640ab63ade31985309458aeacd3779c9a58a9cbb560a69e360e3d447",
       "size_bytes": 4157
     },
     "dynamics_metrics.csv": {
-      "sha256": "ccfb7a53d6b9cf676aa78a1f662c054f7881e2b7ea99584c28dec057f4f67e6c",
-      "size_bytes": 2783053
+      "sha256": "cf3cbf83b4fd025c0f108ecbc6219ef40f827c402917e537c054634fe1c7212a",
+      "size_bytes": 2911617
     }
   }
 }
