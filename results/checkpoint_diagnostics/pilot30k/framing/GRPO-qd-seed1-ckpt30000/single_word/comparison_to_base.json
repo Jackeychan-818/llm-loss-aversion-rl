@@ -1,0 +1,59 @@
+{
+  "interpretation": "Positive reduction values favor the current model over the baseline.",
+  "baseline": {
+    "paired_framing": {
+      "complete_pairs": 2760,
+      "mean_probability_gap_negative_minus_positive": -0.488971589877334,
+      "mean_absolute_probability_gap": 0.490336982287846,
+      "mean_absolute_log_odds_gap": 10.698743115661728,
+      "hard_flip_rate": 0.505072463768116,
+      "classical_flip_rate": 0.5043478260869565,
+      "reverse_flip_rate": 0.0007246376811594203,
+      "same_yes_rate": 0.005797101449275362,
+      "same_no_rate": 0.4891304347826087
+    },
+    "monotonicity": {
+      "curve_count": 240,
+      "adjacent_transitions": 5280,
+      "probability_violation_count": 1291,
+      "probability_violation_rate": 0.24450757575757576,
+      "hard_choice_violation_count": 29,
+      "hard_choice_violation_rate": 0.005492424242424242,
+      "nonmonotonic_probability_curve_rate": 0.9791666666666666,
+      "nonmonotonic_hard_choice_curve_rate": 0.0875
+    }
+  },
+  "current": {
+    "paired_framing": {
+      "complete_pairs": 2760,
+      "mean_probability_gap_negative_minus_positive": -0.6513340216005634,
+      "mean_absolute_probability_gap": 0.6551583534400552,
+      "mean_absolute_log_odds_gap": 12.795006872749985,
+      "hard_flip_rate": 0.6822463768115942,
+      "classical_flip_rate": 0.6804347826086956,
+      "reverse_flip_rate": 0.0018115942028985507,
+      "same_yes_rate": 0.05181159420289855,
+      "same_no_rate": 0.26594202898550723
+    },
+    "monotonicity": {
+      "curve_count": 240,
+      "adjacent_transitions": 5280,
+      "probability_violation_count": 1357,
+      "probability_violation_rate": 0.25700757575757577,
+      "hard_choice_violation_count": 41,
+      "hard_choice_violation_rate": 0.007765151515151515,
+      "nonmonotonic_probability_curve_rate": 0.9625,
+      "nonmonotonic_hard_choice_curve_rate": 0.11666666666666667
+    }
+  },
+  "reductions": {
+    "absolute_directional_probability_gap": -0.1623624317232294,
+    "mean_absolute_probability_gap": -0.16482137115220924,
+    "mean_absolute_log_odds_gap": -2.0962637570882574,
+    "hard_flip_rate": -0.17717391304347818,
+    "probability_monotonicity_violation_rate": -0.012500000000000011,
+    "hard_choice_monotonicity_violation_rate": -0.0022727272727272726
+  },
+  "baseline_predictions": "/scratch/users/nus/jackeyc0/lambda-zero/framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json",
+  "current_predictions": "/scratch/users/nus/jackeyc0/lambda-zero/results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/predictions.json"
+}

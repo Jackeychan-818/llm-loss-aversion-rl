@@ -1,0 +1,15 @@
+{
+  "model_path": "/scratch/users/nus/jackeyc0/lambda-zero/models/Qwen2.5-7B-Instruct",
+  "adapter_path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/grpo_qwen_delta_seed1/checkpoint-30000",
+  "model_name": "GRPO-qd-seed1-ckpt30000",
+  "prompt_style": "single_word",
+  "benchmark_path": "/scratch/users/nus/jackeyc0/lambda-zero/data/framing_effects_23prob.json",
+  "benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+  "dtype": "bf16",
+  "created_or_resumed_at_utc": "2026-08-21T07:33:38.285920+00:00",
+  "case_count_requested": 5520,
+  "limit_scenarios": null,
+  "probability_subset": null,
+  "predictions_path": "/scratch/users/nus/jackeyc0/lambda-zero/results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/predictions.json",
+  "completed_at_utc": "2026-08-21T07:35:37.431509+00:00"
+}

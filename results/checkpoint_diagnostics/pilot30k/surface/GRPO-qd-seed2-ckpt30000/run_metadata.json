@@ -1,0 +1,11 @@
+{
+  "model_name": "GRPO-qd-seed2-ckpt30000",
+  "model_path": "models/Qwen2.5-7B-Instruct",
+  "adapter_path": "checkpoints/grpo_qwen_delta_seed2/checkpoint-30000",
+  "adapter_sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e",
+  "subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+  "n_cases": 96,
+  "n_forms": 9216,
+  "scoring": "teacher-forced candidate log-prob (as run_qwen_local), greedy argmax",
+  "dtype": "bf16"
+}

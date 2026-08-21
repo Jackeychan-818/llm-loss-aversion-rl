@@ -1,0 +1,231 @@
+{
+  "generated_at_utc": "2026-08-21T07:35:37.477354+00:00",
+  "row_count": 5520,
+  "scenario_count": 120,
+  "frame_counts": {
+    "positive": 2760,
+    "negative": 2760
+  },
+  "mean_yes_probability_by_frame": {
+    "positive": 0.7116608721292492,
+    "negative": 0.06032685052868585
+  },
+  "hard_yes_rate_by_frame": {
+    "positive": 0.7322463768115942,
+    "negative": 0.0536231884057971
+  },
+  "paired_framing": {
+    "complete_pairs": 2760,
+    "mean_probability_gap_negative_minus_positive": -0.6513340216005634,
+    "mean_absolute_probability_gap": 0.6551583534400552,
+    "mean_absolute_log_odds_gap": 12.795006872749985,
+    "hard_flip_rate": 0.6822463768115942,
+    "classical_flip_rate": 0.6804347826086956,
+    "reverse_flip_rate": 0.0018115942028985507,
+    "same_yes_rate": 0.05181159420289855,
+    "same_no_rate": 0.26594202898550723
+  },
+  "monotonicity": {
+    "curve_count": 240,
+    "adjacent_transitions": 5280,
+    "probability_violation_count": 1357,
+    "probability_violation_rate": 0.25700757575757577,
+    "hard_choice_violation_count": 41,
+    "hard_choice_violation_rate": 0.007765151515151515,
+    "nonmonotonic_probability_curve_rate": 0.9625,
+    "nonmonotonic_hard_choice_curve_rate": 0.11666666666666667
+  },
+  "cluster_bootstrap_95_ci": {
+    "mean_probability_gap_negative_minus_positive": [
+      -0.7026135862055862,
+      -0.6003695063557785
+    ],
+    "mean_absolute_probability_gap": [
+      0.6049856208292593,
+      0.7058781251519194
+    ],
+    "mean_absolute_log_odds_gap": [
+      12.01363434647695,
+      13.580350296442202
+    ],
+    "hard_flip_rate": [
+      0.6282608695652174,
+      0.7366032608695653
+    ],
+    "classical_flip_rate": [
+      0.6264492753623189,
+      0.733695652173913
+    ],
+    "reverse_flip_rate": [
+      0.0,
+      0.004356884057970966
+    ]
+  },
+  "domain_metrics": {
+    "Agriculture & Farming": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.6690122623337128,
+      "mean_absolute_probability_gap": 0.6690122623384535,
+      "mean_absolute_log_odds_gap": 13.362172653008688,
+      "hard_flip_rate": 0.6739130434782609,
+      "classical_flip_rate": 0.6739130434782609,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.03804347826086957,
+      "same_no_rate": 0.28804347826086957
+    },
+    "Career Development": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.5338790168227863,
+      "mean_absolute_probability_gap": 0.5400100766875781,
+      "mean_absolute_log_odds_gap": 10.111698109280123,
+      "hard_flip_rate": 0.5706521739130435,
+      "classical_flip_rate": 0.5652173913043478,
+      "reverse_flip_rate": 0.005434782608695652,
+      "same_yes_rate": 0.08152173913043478,
+      "same_no_rate": 0.34782608695652173
+    },
+    "Consumer Choices": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.5163031139454496,
+      "mean_absolute_probability_gap": 0.5248425661132747,
+      "mean_absolute_log_odds_gap": 10.98052655628666,
+      "hard_flip_rate": 0.532608695652174,
+      "classical_flip_rate": 0.5271739130434783,
+      "reverse_flip_rate": 0.005434782608695652,
+      "same_yes_rate": 0.03260869565217391,
+      "same_no_rate": 0.43478260869565216
+    },
+    "Education Domain": {
+      "complete_pairs": 207,
+      "mean_probability_gap_negative_minus_positive": -0.8293389129105782,
+      "mean_absolute_probability_gap": 0.8293389129105782,
+      "mean_absolute_log_odds_gap": 14.405117001064317,
+      "hard_flip_rate": 0.855072463768116,
+      "classical_flip_rate": 0.855072463768116,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.024154589371980676,
+      "same_no_rate": 0.12077294685990338
+    },
+    "Entertainment & Media": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.4145133497919464,
+      "mean_absolute_probability_gap": 0.4213196538810521,
+      "mean_absolute_log_odds_gap": 8.681714131248395,
+      "hard_flip_rate": 0.4782608695652174,
+      "classical_flip_rate": 0.4782608695652174,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.09239130434782608,
+      "same_no_rate": 0.42934782608695654
+    },
+    "Environment": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.7249892997931299,
+      "mean_absolute_probability_gap": 0.7249892997931299,
+      "mean_absolute_log_odds_gap": 16.89101940737866,
+      "hard_flip_rate": 0.7282608695652174,
+      "classical_flip_rate": 0.7282608695652174,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.08152173913043478,
+      "same_no_rate": 0.19021739130434784
+    },
+    "Finance & Investment": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.5755806586872493,
+      "mean_absolute_probability_gap": 0.587679748779857,
+      "mean_absolute_log_odds_gap": 11.33674312880963,
+      "hard_flip_rate": 0.6195652173913043,
+      "classical_flip_rate": 0.6195652173913043,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.043478260869565216,
+      "same_no_rate": 0.33695652173913043
+    },
+    "Health & fitness": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.49771268639791794,
+      "mean_absolute_probability_gap": 0.518724334677435,
+      "mean_absolute_log_odds_gap": 11.244901111742276,
+      "hard_flip_rate": 0.5217391304347826,
+      "classical_flip_rate": 0.5054347826086957,
+      "reverse_flip_rate": 0.016304347826086956,
+      "same_yes_rate": 0.021739130434782608,
+      "same_no_rate": 0.45652173913043476
+    },
+    "Interpersonal communication": {
+      "complete_pairs": 138,
+      "mean_probability_gap_negative_minus_positive": -0.8346011349125326,
+      "mean_absolute_probability_gap": 0.8376722096247955,
+      "mean_absolute_log_odds_gap": 15.502267122423321,
+      "hard_flip_rate": 0.855072463768116,
+      "classical_flip_rate": 0.855072463768116,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.09420289855072464,
+      "same_no_rate": 0.050724637681159424
+    },
+    "Medical treatment": {
+      "complete_pairs": 207,
+      "mean_probability_gap_negative_minus_positive": -0.812856662581538,
+      "mean_absolute_probability_gap": 0.812856662581538,
+      "mean_absolute_log_odds_gap": 14.24752853182503,
+      "hard_flip_rate": 0.8405797101449275,
+      "classical_flip_rate": 0.8405797101449275,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.06280193236714976,
+      "same_no_rate": 0.0966183574879227
+    },
+    "Personal life": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.6884798345934979,
+      "mean_absolute_probability_gap": 0.6884798345934982,
+      "mean_absolute_log_odds_gap": 13.044649637413615,
+      "hard_flip_rate": 0.7119565217391305,
+      "classical_flip_rate": 0.7119565217391305,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.059782608695652176,
+      "same_no_rate": 0.22826086956521738
+    },
+    "Safety": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.6893430386584206,
+      "mean_absolute_probability_gap": 0.6893430386584206,
+      "mean_absolute_log_odds_gap": 13.573936504018908,
+      "hard_flip_rate": 0.7336956521739131,
+      "classical_flip_rate": 0.7336956521739131,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.016304347826086956,
+      "same_no_rate": 0.25
+    },
+    "Social Policy": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.7444402852692741,
+      "mean_absolute_probability_gap": 0.7444402852692741,
+      "mean_absolute_log_odds_gap": 15.265519849839293,
+      "hard_flip_rate": 0.8152173913043478,
+      "classical_flip_rate": 0.8152173913043478,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.016304347826086956,
+      "same_no_rate": 0.16847826086956522
+    },
+    "Technology Domain": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.6406088147916456,
+      "mean_absolute_probability_gap": 0.6407091213159252,
+      "mean_absolute_log_odds_gap": 11.689893683769741,
+      "hard_flip_rate": 0.6467391304347826,
+      "classical_flip_rate": 0.6467391304347826,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.059782608695652176,
+      "same_no_rate": 0.29347826086956524
+    },
+    "Transportation": {
+      "complete_pairs": 184,
+      "mean_probability_gap_negative_minus_positive": -0.6017270893103908,
+      "mean_absolute_probability_gap": 0.602100899845704,
+      "mean_absolute_log_odds_gap": 11.881401752135767,
+      "hard_flip_rate": 0.6521739130434783,
+      "classical_flip_rate": 0.6521739130434783,
+      "reverse_flip_rate": 0.0,
+      "same_yes_rate": 0.06521739130434782,
+      "same_no_rate": 0.2826086956521739
+    }
+  }
+}

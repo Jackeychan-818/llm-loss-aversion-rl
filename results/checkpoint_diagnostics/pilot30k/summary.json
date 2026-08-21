@@ -1,0 +1,1644 @@
+{
+  "status": "EXPLORATORY_POST_HOC",
+  "generated_at_utc": "2026-08-21T07:40:42.628683+00:00",
+  "git_commit": "abbd128eb48cda7979bc5769cd3fb53d2cac721b",
+  "purpose": "Do the late 30,000-step magnitude-GRPO endpoints behave differently from the frozen-selected checkpoints on surface-form equivalence and adverse framing?",
+  "constraints": [
+    "Exploratory: cannot and does not change the frozen checkpoint selections (seed1 -> 2000, seed2 -> 6000).",
+    "The 30k adapters are NOT selected models.",
+    "No frozen/untouched, neutral-preference, OOD-50, GSM8K, or IFEval suite was evaluated.",
+    "Fitted-utility correlation is a property of an estimated structural model, not direct evidence about hidden neural representations.",
+    "Late-checkpoint structural utilities are near-singular (log10 cond(J) ~ 17), so individual alpha/utility values there are weakly identified."
+  ],
+  "decision_rule": {
+    "description": "Predeclared exploratory rule for whether to run the complete checkpoint trajectory.",
+    "flag_if": "paired 95% CI excludes zero OR |paired delta| >= 0.05",
+    "abs_threshold": 0.05,
+    "not_a_confirmatory_test": true
+  },
+  "inputs": {
+    "surface_form_subset": {
+      "path": "data/surface_form_stress/surface_form_subset.json",
+      "sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262"
+    },
+    "framing_benchmark": {
+      "path": "data/framing_effects_23prob.json",
+      "sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c"
+    },
+    "structural_trajectory": {
+      "path": "results/training_dynamics/structural_trajectory.csv",
+      "sha256": "9b185b18a90d27daaad12743393b0e8f13af18976a036b7a1ce76308e893994d"
+    }
+  },
+  "surface_form": {
+    "provenance": [
+      {
+        "model": "Base",
+        "role": "matched local base (context)",
+        "result_dir": "results/surface_form_stress/Base",
+        "adapter_path": null,
+        "expected_adapter_sha256": null,
+        "reused_existing": true,
+        "observed_rows": 9216,
+        "expected_rows": 9216,
+        "observed_adapter_sha256": null,
+        "observed_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "expected_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "predictions_sha256": "5fb716fce2dacf9a4c9702e37e4db128474d53951123d1b7999814e56d7d0d4d",
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed1-ckpt2000",
+        "role": "seed1 frozen-selected checkpoint",
+        "result_dir": "results/surface_form_stress/GRPO-qd-seed1-ckpt2000",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed1/checkpoint-2000",
+        "expected_adapter_sha256": "223b80bd16e7383b09c73287b60e3dde4c26608c64ce9365557d5a88199bc190",
+        "reused_existing": true,
+        "observed_rows": 9216,
+        "expected_rows": 9216,
+        "observed_adapter_sha256": "223b80bd16e7383b09c73287b60e3dde4c26608c64ce9365557d5a88199bc190",
+        "observed_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "expected_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "predictions_sha256": "456d4bd5d5657bfc58ffc97f0b4492dc016813a28e001983f56d93ff6e06dd34",
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed2-ckpt6000",
+        "role": "seed2 frozen-selected checkpoint",
+        "result_dir": "results/surface_form_stress/GRPO-qd-seed2-ckpt6000",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed2/checkpoint-6000",
+        "expected_adapter_sha256": "e6bd31a865d71aeb33d5db08ec86c4c9211aba55f1b181ca28026621686df52c",
+        "reused_existing": true,
+        "observed_rows": 9216,
+        "expected_rows": 9216,
+        "observed_adapter_sha256": "e6bd31a865d71aeb33d5db08ec86c4c9211aba55f1b181ca28026621686df52c",
+        "observed_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "expected_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "predictions_sha256": "6495cdae7eb060c7f3572a6eab8de64c420c39b17945c42336c01f6ef8c196ba",
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed1-ckpt30000",
+        "role": "seed1 late endpoint (exploratory, NOT selected)",
+        "result_dir": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed1-ckpt30000",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed1/checkpoint-30000",
+        "expected_adapter_sha256": "6b9580a4ed24fabf910cfd654f555a867149e2beeb9f277650aa3d52324ffd0d",
+        "reused_existing": false,
+        "observed_rows": 9216,
+        "expected_rows": 9216,
+        "observed_adapter_sha256": "6b9580a4ed24fabf910cfd654f555a867149e2beeb9f277650aa3d52324ffd0d",
+        "observed_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "expected_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "predictions_sha256": "959eb3462e6801f51be0810c787bd2474274094752fd731ea9e340d337a4c20c",
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed2-ckpt30000",
+        "role": "seed2 late endpoint (exploratory, NOT selected)",
+        "result_dir": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed2-ckpt30000",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed2/checkpoint-30000",
+        "expected_adapter_sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e",
+        "reused_existing": false,
+        "observed_rows": 9216,
+        "expected_rows": 9216,
+        "observed_adapter_sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e",
+        "observed_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "expected_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+        "predictions_sha256": "3555fedb83c8f4b2af8eaf938dac6ddd51b147ec418c63389e3b53968ab129e2",
+        "integrity_problems": [],
+        "status": "OK"
+      }
+    ],
+    "per_model": [
+      {
+        "n_units": 192,
+        "n_form_rows": 9216,
+        "parse_failures": 0,
+        "parse_failure_note": "teacher-forced scoring: the choice is always defined",
+        "semantic_invariance_rate": 0.09375,
+        "fidelity_mean": 0.6625434027777778,
+        "worst_form_fidelity": 0.5,
+        "worst_form": "yes_no/endowed_first/normal/p2",
+        "mean_pairwise_flip_rate": 0.29043846040189125,
+        "mean_prob_spread_across_forms": 0.8793534761605848,
+        "fidelity_by_axis": {
+          "answer_style": {
+            "ab_kt": 0.7829861111111112,
+            "ab_tk": 0.6111111111111112,
+            "keep_trade": 0.7356770833333334,
+            "yes_no": 0.5203993055555556
+          },
+          "display_order": {
+            "endowed_first": 0.669921875,
+            "offered_first": 0.6551649305555556
+          },
+          "attr_order": {
+            "normal": 0.6625434027777778,
+            "reversed": 0.6625434027777778
+          },
+          "paraphrase": {
+            "p0": 0.65625,
+            "p1": 0.689453125,
+            "p2": 0.6419270833333334
+          }
+        },
+        "by_stratum": {
+          "neg|0.5-1": {
+            "invariance": 0.041666666666666664,
+            "fidelity": 0.5798611111111112
+          },
+          "neg|1-2": {
+            "invariance": 0.08333333333333333,
+            "fidelity": 0.6866319444444444
+          },
+          "neg|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.5477430555555556
+          },
+          "neg|>2": {
+            "invariance": 0.25,
+            "fidelity": 0.7630208333333334
+          },
+          "pos|0.5-1": {
+            "invariance": 0.08333333333333333,
+            "fidelity": 0.6701388888888888
+          },
+          "pos|1-2": {
+            "invariance": 0.125,
+            "fidelity": 0.703125
+          },
+          "pos|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.59375
+          },
+          "pos|>2": {
+            "invariance": 0.16666666666666666,
+            "fidelity": 0.7560763888888888
+          }
+        },
+        "ownership_keep_both_rate": 0.59375,
+        "model": "Base",
+        "role": "matched local base (context)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-Base-Local",
+          "seed": "base",
+          "step": 0,
+          "lambda": 7.63679813,
+          "eta": 1.00702456,
+          "d": 7.70290751228487,
+          "spearman_utility": 1.0,
+          "spearman_alpha": 1.0,
+          "spearman_beta": 1.0,
+          "log10_cond_jacobian": 2.109344778499684,
+          "on_selection_grid": false,
+          "frozen_selected": false
+        }
+      },
+      {
+        "n_units": 192,
+        "n_form_rows": 9216,
+        "parse_failures": 0,
+        "parse_failure_note": "teacher-forced scoring: the choice is always defined",
+        "semantic_invariance_rate": 0.08854166666666667,
+        "fidelity_mean": 0.732421875,
+        "worst_form_fidelity": 0.6145833333333334,
+        "worst_form": "ab_tk/offered_first/normal/p0",
+        "mean_pairwise_flip_rate": 0.2662437204491726,
+        "mean_prob_spread_across_forms": 0.8873710368760154,
+        "fidelity_by_axis": {
+          "answer_style": {
+            "ab_kt": 0.8046875,
+            "ab_tk": 0.6675347222222222,
+            "keep_trade": 0.7439236111111112,
+            "yes_no": 0.7135416666666666
+          },
+          "display_order": {
+            "endowed_first": 0.7482638888888888,
+            "offered_first": 0.7165798611111112
+          },
+          "attr_order": {
+            "normal": 0.7356770833333334,
+            "reversed": 0.7291666666666666
+          },
+          "paraphrase": {
+            "p0": 0.75,
+            "p1": 0.7473958333333334,
+            "p2": 0.6998697916666666
+          }
+        },
+        "by_stratum": {
+          "neg|0.5-1": {
+            "invariance": 0.041666666666666664,
+            "fidelity": 0.6163194444444444
+          },
+          "neg|1-2": {
+            "invariance": 0.041666666666666664,
+            "fidelity": 0.7465277777777778
+          },
+          "neg|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.5729166666666666
+          },
+          "neg|>2": {
+            "invariance": 0.3333333333333333,
+            "fidelity": 0.8463541666666666
+          },
+          "pos|0.5-1": {
+            "invariance": 0.08333333333333333,
+            "fidelity": 0.7526041666666666
+          },
+          "pos|1-2": {
+            "invariance": 0.125,
+            "fidelity": 0.8072916666666666
+          },
+          "pos|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.6571180555555556
+          },
+          "pos|>2": {
+            "invariance": 0.08333333333333333,
+            "fidelity": 0.8602430555555556
+          }
+        },
+        "ownership_keep_both_rate": 0.25,
+        "model": "GRPO-qd-seed1-ckpt2000",
+        "role": "seed1 frozen-selected checkpoint",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed1-ckpt2000",
+          "seed": "seed1",
+          "step": 2000,
+          "lambda": 0.03175071,
+          "eta": 0.09098552,
+          "d": 0.0963663449300351,
+          "spearman_utility": 0.791973125892748,
+          "spearman_alpha": 0.7824118738404453,
+          "spearman_beta": 0.9761904761904763,
+          "log10_cond_jacobian": 1.9879701590967687,
+          "on_selection_grid": true,
+          "frozen_selected": true
+        }
+      },
+      {
+        "n_units": 192,
+        "n_form_rows": 9216,
+        "parse_failures": 0,
+        "parse_failure_note": "teacher-forced scoring: the choice is always defined",
+        "semantic_invariance_rate": 0.125,
+        "fidelity_mean": 0.7483723958333334,
+        "worst_form_fidelity": 0.6145833333333334,
+        "worst_form": "ab_tk/offered_first/normal/p2",
+        "mean_pairwise_flip_rate": 0.24715111554373523,
+        "mean_prob_spread_across_forms": 0.8432681194566746,
+        "fidelity_by_axis": {
+          "answer_style": {
+            "ab_kt": 0.8259548611111112,
+            "ab_tk": 0.6740451388888888,
+            "keep_trade": 0.7556423611111112,
+            "yes_no": 0.7378472222222222
+          },
+          "display_order": {
+            "endowed_first": 0.76953125,
+            "offered_first": 0.7272135416666666
+          },
+          "attr_order": {
+            "normal": 0.7493489583333334,
+            "reversed": 0.7473958333333334
+          },
+          "paraphrase": {
+            "p0": 0.7740885416666666,
+            "p1": 0.7649739583333334,
+            "p2": 0.7060546875
+          }
+        },
+        "by_stratum": {
+          "neg|0.5-1": {
+            "invariance": 0.041666666666666664,
+            "fidelity": 0.6510416666666666
+          },
+          "neg|1-2": {
+            "invariance": 0.125,
+            "fidelity": 0.7647569444444444
+          },
+          "neg|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.5668402777777778
+          },
+          "neg|>2": {
+            "invariance": 0.375,
+            "fidelity": 0.8689236111111112
+          },
+          "pos|0.5-1": {
+            "invariance": 0.125,
+            "fidelity": 0.7690972222222222
+          },
+          "pos|1-2": {
+            "invariance": 0.20833333333333334,
+            "fidelity": 0.8333333333333334
+          },
+          "pos|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.6579861111111112
+          },
+          "pos|>2": {
+            "invariance": 0.125,
+            "fidelity": 0.875
+          }
+        },
+        "ownership_keep_both_rate": 0.25,
+        "model": "GRPO-qd-seed2-ckpt6000",
+        "role": "seed2 frozen-selected checkpoint",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed2-ckpt6000",
+          "seed": "seed2",
+          "step": 6000,
+          "lambda": -0.04242123,
+          "eta": 0.65850618,
+          "d": 0.6598711615557278,
+          "spearman_utility": 0.8303440564123943,
+          "spearman_alpha": 0.8269016697588125,
+          "spearman_beta": 0.9761904761904763,
+          "log10_cond_jacobian": 16.533846482691764,
+          "on_selection_grid": true,
+          "frozen_selected": true
+        }
+      },
+      {
+        "n_units": 192,
+        "n_form_rows": 9216,
+        "parse_failures": 0,
+        "parse_failure_note": "teacher-forced scoring: the choice is always defined",
+        "semantic_invariance_rate": 0.20833333333333334,
+        "fidelity_mean": 0.7883029513888888,
+        "worst_form_fidelity": 0.625,
+        "worst_form": "ab_tk/offered_first/normal/p2",
+        "mean_pairwise_flip_rate": 0.224821771572104,
+        "mean_prob_spread_across_forms": 0.7966372111885729,
+        "fidelity_by_axis": {
+          "answer_style": {
+            "ab_kt": 0.8606770833333334,
+            "ab_tk": 0.7222222222222222,
+            "keep_trade": 0.7760416666666666,
+            "yes_no": 0.7942708333333334
+          },
+          "display_order": {
+            "endowed_first": 0.8088107638888888,
+            "offered_first": 0.7677951388888888
+          },
+          "attr_order": {
+            "normal": 0.791015625,
+            "reversed": 0.7855902777777778
+          },
+          "paraphrase": {
+            "p0": 0.8186848958333334,
+            "p1": 0.80859375,
+            "p2": 0.7376302083333334
+          }
+        },
+        "by_stratum": {
+          "neg|0.5-1": {
+            "invariance": 0.08333333333333333,
+            "fidelity": 0.7378472222222222
+          },
+          "neg|1-2": {
+            "invariance": 0.20833333333333334,
+            "fidelity": 0.8194444444444444
+          },
+          "neg|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.5477430555555556
+          },
+          "neg|>2": {
+            "invariance": 0.5416666666666666,
+            "fidelity": 0.9010416666666666
+          },
+          "pos|0.5-1": {
+            "invariance": 0.16666666666666666,
+            "fidelity": 0.8220486111111112
+          },
+          "pos|1-2": {
+            "invariance": 0.375,
+            "fidelity": 0.8732638888888888
+          },
+          "pos|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.6692708333333334
+          },
+          "pos|>2": {
+            "invariance": 0.2916666666666667,
+            "fidelity": 0.9357638888888888
+          }
+        },
+        "ownership_keep_both_rate": 0.20833333333333334,
+        "model": "GRPO-qd-seed1-ckpt30000",
+        "role": "seed1 late endpoint (exploratory, NOT selected)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed1-ckpt30000",
+          "seed": "seed1",
+          "step": 30000,
+          "lambda": 0.08956642,
+          "eta": 0.6627938,
+          "d": 0.6688181852417414,
+          "spearman_utility": 0.9132524920414558,
+          "spearman_alpha": 0.9413358070500928,
+          "spearman_beta": 0.9285714285714287,
+          "log10_cond_jacobian": 17.1304649442212,
+          "on_selection_grid": true,
+          "frozen_selected": false
+        }
+      },
+      {
+        "n_units": 192,
+        "n_form_rows": 9216,
+        "parse_failures": 0,
+        "parse_failure_note": "teacher-forced scoring: the choice is always defined",
+        "semantic_invariance_rate": 0.19791666666666666,
+        "fidelity_mean": 0.7757161458333334,
+        "worst_form_fidelity": 0.59375,
+        "worst_form": "yes_no/offered_first/reversed/p2",
+        "mean_pairwise_flip_rate": 0.2285617981678487,
+        "mean_prob_spread_across_forms": 0.79276732930679,
+        "fidelity_by_axis": {
+          "answer_style": {
+            "ab_kt": 0.8550347222222222,
+            "ab_tk": 0.7048611111111112,
+            "keep_trade": 0.7664930555555556,
+            "yes_no": 0.7764756944444444
+          },
+          "display_order": {
+            "endowed_first": 0.8023003472222222,
+            "offered_first": 0.7491319444444444
+          },
+          "attr_order": {
+            "normal": 0.779296875,
+            "reversed": 0.7721354166666666
+          },
+          "paraphrase": {
+            "p0": 0.8128255208333334,
+            "p1": 0.7998046875,
+            "p2": 0.7145182291666666
+          }
+        },
+        "by_stratum": {
+          "neg|0.5-1": {
+            "invariance": 0.125,
+            "fidelity": 0.7291666666666666
+          },
+          "neg|1-2": {
+            "invariance": 0.20833333333333334,
+            "fidelity": 0.7977430555555556
+          },
+          "neg|<=0.5": {
+            "invariance": 0.041666666666666664,
+            "fidelity": 0.5477430555555556
+          },
+          "neg|>2": {
+            "invariance": 0.4166666666666667,
+            "fidelity": 0.8897569444444444
+          },
+          "pos|0.5-1": {
+            "invariance": 0.16666666666666666,
+            "fidelity": 0.8072916666666666
+          },
+          "pos|1-2": {
+            "invariance": 0.2916666666666667,
+            "fidelity": 0.8567708333333334
+          },
+          "pos|<=0.5": {
+            "invariance": 0.0,
+            "fidelity": 0.6553819444444444
+          },
+          "pos|>2": {
+            "invariance": 0.3333333333333333,
+            "fidelity": 0.921875
+          }
+        },
+        "ownership_keep_both_rate": 0.25,
+        "model": "GRPO-qd-seed2-ckpt30000",
+        "role": "seed2 late endpoint (exploratory, NOT selected)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed2-ckpt30000",
+          "seed": "seed2",
+          "step": 30000,
+          "lambda": 4.175e-05,
+          "eta": 0.78326865,
+          "d": 0.783268651112685,
+          "spearman_utility": 0.9169451568600537,
+          "spearman_alpha": 0.949016697588126,
+          "spearman_beta": 0.9285714285714287,
+          "log10_cond_jacobian": 17.438597477094532,
+          "on_selection_grid": true,
+          "frozen_selected": false
+        }
+      }
+    ],
+    "paired_comparisons": [
+      {
+        "late": "GRPO-qd-seed1-ckpt30000",
+        "reference": "GRPO-qd-seed1-ckpt2000",
+        "cluster_unit": "(case_id, perspective); ownership_keep_both_rate clustered by case_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "semantic_invariance_rate": {
+            "late": 0.20833333333333334,
+            "reference": 0.08854166666666667,
+            "paired_delta": 0.11979166666666667,
+            "ci95_lower": 0.07291666666666666,
+            "ci95_upper": 0.17708333333333331,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "fidelity_mean": {
+            "late": 0.7883029513888888,
+            "reference": 0.732421875,
+            "paired_delta": 0.05588107638888884,
+            "ci95_lower": 0.040256076388888944,
+            "ci95_upper": 0.07074652777777779,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "worst_form_fidelity": {
+            "late": 0.625,
+            "reference": 0.6145833333333334,
+            "paired_delta": 0.01041666666666663,
+            "ci95_lower": -0.01041666666666674,
+            "ci95_upper": 0.05729166666666663,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "mean_pairwise_flip_rate": {
+            "late": 0.224821771572104,
+            "reference": 0.2662437204491726,
+            "paired_delta": -0.0414219488770686,
+            "ci95_lower": -0.05551446143617023,
+            "ci95_upper": -0.02663683880023639,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "mean_prob_spread_across_forms": {
+            "late": 0.7966372111885729,
+            "reference": 0.8873710368760154,
+            "paired_delta": -0.09073382568744248,
+            "ci95_lower": -0.12377968658559349,
+            "ci95_upper": -0.060724529987870965,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "ownership_keep_both_rate": {
+            "late": 0.20833333333333334,
+            "reference": 0.25,
+            "paired_delta": -0.04166666666666666,
+            "ci95_lower": -0.12500000000000003,
+            "ci95_upper": 0.04166666666666666,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          }
+        }
+      },
+      {
+        "late": "GRPO-qd-seed2-ckpt30000",
+        "reference": "GRPO-qd-seed2-ckpt6000",
+        "cluster_unit": "(case_id, perspective); ownership_keep_both_rate clustered by case_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "semantic_invariance_rate": {
+            "late": 0.19791666666666666,
+            "reference": 0.125,
+            "paired_delta": 0.07291666666666666,
+            "ci95_lower": 0.03125,
+            "ci95_upper": 0.11979166666666666,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "fidelity_mean": {
+            "late": 0.7757161458333334,
+            "reference": 0.7483723958333334,
+            "paired_delta": 0.02734375,
+            "ci95_lower": 0.01584201388888884,
+            "ci95_upper": 0.03819444444444442,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "worst_form_fidelity": {
+            "late": 0.59375,
+            "reference": 0.6145833333333334,
+            "paired_delta": -0.02083333333333337,
+            "ci95_lower": -0.046875,
+            "ci95_upper": 0.015625,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "mean_pairwise_flip_rate": {
+            "late": 0.2285617981678487,
+            "reference": 0.24715111554373523,
+            "paired_delta": -0.018589317375886538,
+            "ci95_lower": -0.029956343269799006,
+            "ci95_upper": -0.007004354129728125,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "mean_prob_spread_across_forms": {
+            "late": 0.79276732930679,
+            "reference": 0.8432681194566746,
+            "paired_delta": -0.05050079014988462,
+            "ci95_lower": -0.07513773403769511,
+            "ci95_upper": -0.027608286098167567,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "ownership_keep_both_rate": {
+            "late": 0.25,
+            "reference": 0.25,
+            "paired_delta": 0.0,
+            "ci95_lower": -0.07291666666666669,
+            "ci95_upper": 0.07291666666666666,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          }
+        }
+      }
+    ]
+  },
+  "framing": {
+    "provenance": [
+      {
+        "model": "Qwen-7B-Base",
+        "role": "matched local base (comparator)",
+        "result_dir": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word",
+        "adapter_path": null,
+        "expected_adapter_sha256": null,
+        "reused_existing": true,
+        "observed_rows": 5520,
+        "expected_rows": 5520,
+        "observed_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "expected_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "manifest_adapter_path": null,
+        "prompt_style": "single_word",
+        "predictions_sha256": "9c92ec1e0f079001704bfb69913b1f6a519d3ac38bda9d7298d2be753f4372b9",
+        "predictions_bytes": 3503947,
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "Qwen-7B-GRPO-step8000",
+        "role": "seed42 step-8000 (EXPLORATORY; not a selected checkpoint)",
+        "result_dir": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word",
+        "adapter_path": "checkpoints/grpo_qwen_delta/checkpoint-8000",
+        "expected_adapter_sha256": null,
+        "reused_existing": true,
+        "observed_rows": 5520,
+        "expected_rows": 5520,
+        "observed_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "expected_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "manifest_adapter_path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/grpo_qwen_delta/checkpoint-8000",
+        "prompt_style": "single_word",
+        "predictions_sha256": "aee036f39c41b055a88dd4b454fa0ee5a7ec038e69077dbabaf144c54179d5ed",
+        "predictions_bytes": 3507240,
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed1-ckpt30000",
+        "role": "seed1 late endpoint (exploratory, NOT selected)",
+        "result_dir": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed1/checkpoint-30000",
+        "expected_adapter_sha256": "6b9580a4ed24fabf910cfd654f555a867149e2beeb9f277650aa3d52324ffd0d",
+        "reused_existing": false,
+        "observed_rows": 5520,
+        "expected_rows": 5520,
+        "observed_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "expected_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "manifest_adapter_path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/grpo_qwen_delta_seed1/checkpoint-30000",
+        "prompt_style": "single_word",
+        "predictions_sha256": "dec149702dc1ba52ebf1c6effb2d582abfcf21404070cded8cfdca37ae139497",
+        "predictions_bytes": 3505446,
+        "observed_adapter_sha256": "6b9580a4ed24fabf910cfd654f555a867149e2beeb9f277650aa3d52324ffd0d",
+        "integrity_problems": [],
+        "status": "OK"
+      },
+      {
+        "model": "GRPO-qd-seed2-ckpt30000",
+        "role": "seed2 late endpoint (exploratory, NOT selected)",
+        "result_dir": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed2-ckpt30000/single_word",
+        "adapter_path": "checkpoints/grpo_qwen_delta_seed2/checkpoint-30000",
+        "expected_adapter_sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e",
+        "reused_existing": false,
+        "observed_rows": 5520,
+        "expected_rows": 5520,
+        "observed_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "expected_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+        "manifest_adapter_path": "/scratch/users/nus/jackeyc0/lambda-zero/checkpoints/grpo_qwen_delta_seed2/checkpoint-30000",
+        "prompt_style": "single_word",
+        "predictions_sha256": "a0d4833df3597df7d292a3c7fc7f2cb5a586622f82bba8d000092a1c7854105f",
+        "predictions_bytes": 3505391,
+        "observed_adapter_sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e",
+        "integrity_problems": [],
+        "status": "OK"
+      }
+    ],
+    "per_model": [
+      {
+        "pair_metrics": {
+          "complete_pairs": 2760,
+          "mean_probability_gap_negative_minus_positive": -0.488971589877334,
+          "mean_absolute_probability_gap": 0.490336982287846,
+          "mean_absolute_log_odds_gap": 10.698743115661728,
+          "hard_flip_rate": 0.505072463768116,
+          "classical_flip_rate": 0.5043478260869565,
+          "reverse_flip_rate": 0.0007246376811594203,
+          "same_yes_rate": 0.005797101449275362,
+          "same_no_rate": 0.4891304347826087
+        },
+        "monotonicity": {
+          "curve_count": 240,
+          "adjacent_transitions": 5280,
+          "probability_violation_count": 1291,
+          "probability_violation_rate": 0.24450757575757576,
+          "hard_choice_violation_count": 29,
+          "hard_choice_violation_rate": 0.005492424242424242,
+          "nonmonotonic_probability_curve_rate": 0.9791666666666666,
+          "nonmonotonic_hard_choice_curve_rate": 0.0875
+        },
+        "headline": {
+          "hard_flip_rate": 0.505072463768116,
+          "mean_absolute_probability_gap": 0.490336982287846,
+          "mean_probability_gap_negative_minus_positive": -0.488971589877334,
+          "classical_flip_rate": 0.5043478260869565,
+          "probability_monotonicity_violation_rate": 0.24450757575757576,
+          "hard_choice_monotonicity_violation_rate": 0.005492424242424242
+        },
+        "model": "Qwen-7B-Base",
+        "role": "matched local base (comparator)",
+        "structural": null
+      },
+      {
+        "pair_metrics": {
+          "complete_pairs": 2760,
+          "mean_probability_gap_negative_minus_positive": -0.6756750875495547,
+          "mean_absolute_probability_gap": 0.6785185913587239,
+          "mean_absolute_log_odds_gap": 14.755278317487242,
+          "hard_flip_rate": 0.6894927536231884,
+          "classical_flip_rate": 0.688768115942029,
+          "reverse_flip_rate": 0.0007246376811594203,
+          "same_yes_rate": 0.04891304347826087,
+          "same_no_rate": 0.26159420289855073
+        },
+        "monotonicity": {
+          "curve_count": 240,
+          "adjacent_transitions": 5280,
+          "probability_violation_count": 1364,
+          "probability_violation_rate": 0.25833333333333336,
+          "hard_choice_violation_count": 32,
+          "hard_choice_violation_rate": 0.006060606060606061,
+          "nonmonotonic_probability_curve_rate": 0.9833333333333333,
+          "nonmonotonic_hard_choice_curve_rate": 0.10833333333333334
+        },
+        "headline": {
+          "hard_flip_rate": 0.6894927536231884,
+          "mean_absolute_probability_gap": 0.6785185913587239,
+          "mean_probability_gap_negative_minus_positive": -0.6756750875495547,
+          "classical_flip_rate": 0.688768115942029,
+          "probability_monotonicity_violation_rate": 0.25833333333333336,
+          "hard_choice_monotonicity_violation_rate": 0.006060606060606061
+        },
+        "model": "Qwen-7B-GRPO-step8000",
+        "role": "seed42 step-8000 (EXPLORATORY; not a selected checkpoint)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-ckpt8000",
+          "seed": "seed42",
+          "step": 8000,
+          "lambda": 0.11099538,
+          "eta": 0.50408026,
+          "d": 0.5161558707435303,
+          "spearman_utility": 0.839244759188575,
+          "spearman_alpha": 0.84295609152752,
+          "spearman_beta": 0.9761904761904763,
+          "log10_cond_jacobian": 16.708375101031564,
+          "on_selection_grid": true,
+          "frozen_selected": false
+        }
+      },
+      {
+        "pair_metrics": {
+          "complete_pairs": 2760,
+          "mean_probability_gap_negative_minus_positive": -0.6513340216005634,
+          "mean_absolute_probability_gap": 0.6551583534400552,
+          "mean_absolute_log_odds_gap": 12.795006872749985,
+          "hard_flip_rate": 0.6822463768115942,
+          "classical_flip_rate": 0.6804347826086956,
+          "reverse_flip_rate": 0.0018115942028985507,
+          "same_yes_rate": 0.05181159420289855,
+          "same_no_rate": 0.26594202898550723
+        },
+        "monotonicity": {
+          "curve_count": 240,
+          "adjacent_transitions": 5280,
+          "probability_violation_count": 1357,
+          "probability_violation_rate": 0.25700757575757577,
+          "hard_choice_violation_count": 41,
+          "hard_choice_violation_rate": 0.007765151515151515,
+          "nonmonotonic_probability_curve_rate": 0.9625,
+          "nonmonotonic_hard_choice_curve_rate": 0.11666666666666667
+        },
+        "headline": {
+          "hard_flip_rate": 0.6822463768115942,
+          "mean_absolute_probability_gap": 0.6551583534400552,
+          "mean_probability_gap_negative_minus_positive": -0.6513340216005634,
+          "classical_flip_rate": 0.6804347826086956,
+          "probability_monotonicity_violation_rate": 0.25700757575757577,
+          "hard_choice_monotonicity_violation_rate": 0.007765151515151515
+        },
+        "model": "GRPO-qd-seed1-ckpt30000",
+        "role": "seed1 late endpoint (exploratory, NOT selected)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed1-ckpt30000",
+          "seed": "seed1",
+          "step": 30000,
+          "lambda": 0.08956642,
+          "eta": 0.6627938,
+          "d": 0.6688181852417414,
+          "spearman_utility": 0.9132524920414558,
+          "spearman_alpha": 0.9413358070500928,
+          "spearman_beta": 0.9285714285714287,
+          "log10_cond_jacobian": 17.1304649442212,
+          "on_selection_grid": true,
+          "frozen_selected": false
+        }
+      },
+      {
+        "pair_metrics": {
+          "complete_pairs": 2760,
+          "mean_probability_gap_negative_minus_positive": -0.6647772889189328,
+          "mean_absolute_probability_gap": 0.6691730468317404,
+          "mean_absolute_log_odds_gap": 13.030262058511537,
+          "hard_flip_rate": 0.6869565217391305,
+          "classical_flip_rate": 0.6847826086956522,
+          "reverse_flip_rate": 0.002173913043478261,
+          "same_yes_rate": 0.06702898550724638,
+          "same_no_rate": 0.2460144927536232
+        },
+        "monotonicity": {
+          "curve_count": 240,
+          "adjacent_transitions": 5280,
+          "probability_violation_count": 1340,
+          "probability_violation_rate": 0.2537878787878788,
+          "hard_choice_violation_count": 53,
+          "hard_choice_violation_rate": 0.010037878787878788,
+          "nonmonotonic_probability_curve_rate": 0.9666666666666667,
+          "nonmonotonic_hard_choice_curve_rate": 0.15833333333333333
+        },
+        "headline": {
+          "hard_flip_rate": 0.6869565217391305,
+          "mean_absolute_probability_gap": 0.6691730468317404,
+          "mean_probability_gap_negative_minus_positive": -0.6647772889189328,
+          "classical_flip_rate": 0.6847826086956522,
+          "probability_monotonicity_violation_rate": 0.2537878787878788,
+          "hard_choice_monotonicity_violation_rate": 0.010037878787878788
+        },
+        "model": "GRPO-qd-seed2-ckpt30000",
+        "role": "seed2 late endpoint (exploratory, NOT selected)",
+        "structural": {
+          "structural_model_name": "Qwen-7B-GRPO-qd-seed2-ckpt30000",
+          "seed": "seed2",
+          "step": 30000,
+          "lambda": 4.175e-05,
+          "eta": 0.78326865,
+          "d": 0.783268651112685,
+          "spearman_utility": 0.9169451568600537,
+          "spearman_alpha": 0.949016697588126,
+          "spearman_beta": 0.9285714285714287,
+          "log10_cond_jacobian": 17.438597477094532,
+          "on_selection_grid": true,
+          "frozen_selected": false
+        }
+      }
+    ],
+    "by_domain": {
+      "Qwen-7B-Base": {
+        "Agriculture & Farming": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5217391304347826,
+          "mean_absolute_probability_gap": 0.5048891385247214,
+          "probability_monotonicity_violation_rate": 0.1590909090909091,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Career Development": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.45108695652173914,
+          "mean_absolute_probability_gap": 0.4280484218099943,
+          "probability_monotonicity_violation_rate": 0.20738636363636365,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Consumer Choices": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.3804347826086957,
+          "mean_absolute_probability_gap": 0.37002350176483273,
+          "probability_monotonicity_violation_rate": 0.25,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Education Domain": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.5748792270531401,
+          "mean_absolute_probability_gap": 0.5739389825083074,
+          "probability_monotonicity_violation_rate": 0.2474747474747475,
+          "hard_choice_monotonicity_violation_rate": 0.010101010101010102
+        },
+        "Entertainment & Media": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.18478260869565216,
+          "mean_absolute_probability_gap": 0.18431498043240443,
+          "probability_monotonicity_violation_rate": 0.21875,
+          "hard_choice_monotonicity_violation_rate": 0.017045454545454544
+        },
+        "Environment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7119565217391305,
+          "mean_absolute_probability_gap": 0.6986946111103746,
+          "probability_monotonicity_violation_rate": 0.3835227272727273,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Finance & Investment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.34782608695652173,
+          "mean_absolute_probability_gap": 0.3511249304074256,
+          "probability_monotonicity_violation_rate": 0.2471590909090909,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Health & fitness": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.358695652173913,
+          "mean_absolute_probability_gap": 0.3403035001662879,
+          "probability_monotonicity_violation_rate": 0.26704545454545453,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Interpersonal communication": {
+          "complete_pairs": 138,
+          "hard_flip_rate": 0.8188405797101449,
+          "mean_absolute_probability_gap": 0.7628931247614021,
+          "probability_monotonicity_violation_rate": 0.2803030303030303,
+          "hard_choice_monotonicity_violation_rate": 0.022727272727272728
+        },
+        "Medical treatment": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.6811594202898551,
+          "mean_absolute_probability_gap": 0.6572266358342429,
+          "probability_monotonicity_violation_rate": 0.24494949494949494,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Personal life": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5597826086956522,
+          "mean_absolute_probability_gap": 0.5469011936303324,
+          "probability_monotonicity_violation_rate": 0.18181818181818182,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Safety": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5543478260869565,
+          "mean_absolute_probability_gap": 0.52785326876749,
+          "probability_monotonicity_violation_rate": 0.26136363636363635,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Social Policy": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.47282608695652173,
+          "mean_absolute_probability_gap": 0.45458229183433413,
+          "probability_monotonicity_violation_rate": 0.23579545454545456,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Technology Domain": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5652173913043478,
+          "mean_absolute_probability_gap": 0.5458926297811337,
+          "probability_monotonicity_violation_rate": 0.21022727272727273,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Transportation": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.44021739130434784,
+          "mean_absolute_probability_gap": 0.44519510188193834,
+          "probability_monotonicity_violation_rate": 0.28125,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        }
+      },
+      "Qwen-7B-GRPO-step8000": {
+        "Agriculture & Farming": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6304347826086957,
+          "mean_absolute_probability_gap": 0.6338116351845432,
+          "probability_monotonicity_violation_rate": 0.1846590909090909,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Career Development": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5597826086956522,
+          "mean_absolute_probability_gap": 0.5606005163028434,
+          "probability_monotonicity_violation_rate": 0.23295454545454544,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Consumer Choices": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5543478260869565,
+          "mean_absolute_probability_gap": 0.5518674726284615,
+          "probability_monotonicity_violation_rate": 0.2585227272727273,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Education Domain": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.8405797101449275,
+          "mean_absolute_probability_gap": 0.8242680655189999,
+          "probability_monotonicity_violation_rate": 0.2828282828282828,
+          "hard_choice_monotonicity_violation_rate": 0.0025252525252525255
+        },
+        "Entertainment & Media": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5163043478260869,
+          "mean_absolute_probability_gap": 0.4865326706713414,
+          "probability_monotonicity_violation_rate": 0.24147727272727273,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        },
+        "Environment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7608695652173914,
+          "mean_absolute_probability_gap": 0.7649525336177397,
+          "probability_monotonicity_violation_rate": 0.3835227272727273,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        },
+        "Finance & Investment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6413043478260869,
+          "mean_absolute_probability_gap": 0.6295065105086819,
+          "probability_monotonicity_violation_rate": 0.26988636363636365,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Health & fitness": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6195652173913043,
+          "mean_absolute_probability_gap": 0.5997602467063825,
+          "probability_monotonicity_violation_rate": 0.26704545454545453,
+          "hard_choice_monotonicity_violation_rate": 0.022727272727272728
+        },
+        "Interpersonal communication": {
+          "complete_pairs": 138,
+          "hard_flip_rate": 0.8695652173913043,
+          "mean_absolute_probability_gap": 0.8498250333504697,
+          "probability_monotonicity_violation_rate": 0.2878787878787879,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Medical treatment": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.8260869565217391,
+          "mean_absolute_probability_gap": 0.8144360239303776,
+          "probability_monotonicity_violation_rate": 0.2474747474747475,
+          "hard_choice_monotonicity_violation_rate": 0.005050505050505051
+        },
+        "Personal life": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6847826086956522,
+          "mean_absolute_probability_gap": 0.6772931431642599,
+          "probability_monotonicity_violation_rate": 0.21022727272727273,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Safety": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7336956521739131,
+          "mean_absolute_probability_gap": 0.7326004795785985,
+          "probability_monotonicity_violation_rate": 0.2784090909090909,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Social Policy": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.8097826086956522,
+          "mean_absolute_probability_gap": 0.7777169917116792,
+          "probability_monotonicity_violation_rate": 0.22443181818181818,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Technology Domain": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6793478260869565,
+          "mean_absolute_probability_gap": 0.6700346876973916,
+          "probability_monotonicity_violation_rate": 0.22727272727272727,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Transportation": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.625,
+          "mean_absolute_probability_gap": 0.6121911069655339,
+          "probability_monotonicity_violation_rate": 0.2840909090909091,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        }
+      },
+      "GRPO-qd-seed1-ckpt30000": {
+        "Agriculture & Farming": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6739130434782609,
+          "mean_absolute_probability_gap": 0.6690122623384535,
+          "probability_monotonicity_violation_rate": 0.1875,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Career Development": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5706521739130435,
+          "mean_absolute_probability_gap": 0.5400100766875781,
+          "probability_monotonicity_violation_rate": 0.2215909090909091,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Consumer Choices": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.532608695652174,
+          "mean_absolute_probability_gap": 0.5248425661132747,
+          "probability_monotonicity_violation_rate": 0.26136363636363635,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Education Domain": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.855072463768116,
+          "mean_absolute_probability_gap": 0.8293389129105782,
+          "probability_monotonicity_violation_rate": 0.2777777777777778,
+          "hard_choice_monotonicity_violation_rate": 0.0025252525252525255
+        },
+        "Entertainment & Media": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.4782608695652174,
+          "mean_absolute_probability_gap": 0.4213196538810521,
+          "probability_monotonicity_violation_rate": 0.26704545454545453,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        },
+        "Environment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7282608695652174,
+          "mean_absolute_probability_gap": 0.7249892997931299,
+          "probability_monotonicity_violation_rate": 0.3125,
+          "hard_choice_monotonicity_violation_rate": 0.02556818181818182
+        },
+        "Finance & Investment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6195652173913043,
+          "mean_absolute_probability_gap": 0.587679748779857,
+          "probability_monotonicity_violation_rate": 0.26420454545454547,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        },
+        "Health & fitness": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5217391304347826,
+          "mean_absolute_probability_gap": 0.518724334677435,
+          "probability_monotonicity_violation_rate": 0.29829545454545453,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Interpersonal communication": {
+          "complete_pairs": 138,
+          "hard_flip_rate": 0.855072463768116,
+          "mean_absolute_probability_gap": 0.8376722096247955,
+          "probability_monotonicity_violation_rate": 0.2689393939393939,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Medical treatment": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.8405797101449275,
+          "mean_absolute_probability_gap": 0.812856662581538,
+          "probability_monotonicity_violation_rate": 0.26262626262626265,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Personal life": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7119565217391305,
+          "mean_absolute_probability_gap": 0.6884798345934982,
+          "probability_monotonicity_violation_rate": 0.21022727272727273,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Safety": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7336956521739131,
+          "mean_absolute_probability_gap": 0.6893430386584206,
+          "probability_monotonicity_violation_rate": 0.29261363636363635,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Social Policy": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.8152173913043478,
+          "mean_absolute_probability_gap": 0.7444402852692741,
+          "probability_monotonicity_violation_rate": 0.2159090909090909,
+          "hard_choice_monotonicity_violation_rate": 0.014204545454545454
+        },
+        "Technology Domain": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6467391304347826,
+          "mean_absolute_probability_gap": 0.6407091213159252,
+          "probability_monotonicity_violation_rate": 0.23579545454545456,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Transportation": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6521739130434783,
+          "mean_absolute_probability_gap": 0.602100899845704,
+          "probability_monotonicity_violation_rate": 0.2784090909090909,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        }
+      },
+      "GRPO-qd-seed2-ckpt30000": {
+        "Agriculture & Farming": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6847826086956522,
+          "mean_absolute_probability_gap": 0.67251196116003,
+          "probability_monotonicity_violation_rate": 0.17045454545454544,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Career Development": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5869565217391305,
+          "mean_absolute_probability_gap": 0.5477966566256293,
+          "probability_monotonicity_violation_rate": 0.22727272727272727,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Consumer Choices": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5380434782608695,
+          "mean_absolute_probability_gap": 0.5375538705044698,
+          "probability_monotonicity_violation_rate": 0.2471590909090909,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Education Domain": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.8599033816425121,
+          "mean_absolute_probability_gap": 0.8358774512151577,
+          "probability_monotonicity_violation_rate": 0.2828282828282828,
+          "hard_choice_monotonicity_violation_rate": 0.0025252525252525255
+        },
+        "Entertainment & Media": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5054347826086957,
+          "mean_absolute_probability_gap": 0.4628602702777424,
+          "probability_monotonicity_violation_rate": 0.2755681818181818,
+          "hard_choice_monotonicity_violation_rate": 0.019886363636363636
+        },
+        "Environment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7282608695652174,
+          "mean_absolute_probability_gap": 0.731437077038793,
+          "probability_monotonicity_violation_rate": 0.3380681818181818,
+          "hard_choice_monotonicity_violation_rate": 0.019886363636363636
+        },
+        "Finance & Investment": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.657608695652174,
+          "mean_absolute_probability_gap": 0.6245318841940103,
+          "probability_monotonicity_violation_rate": 0.26988636363636365,
+          "hard_choice_monotonicity_violation_rate": 0.017045454545454544
+        },
+        "Health & fitness": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5380434782608695,
+          "mean_absolute_probability_gap": 0.5530985862544718,
+          "probability_monotonicity_violation_rate": 0.2897727272727273,
+          "hard_choice_monotonicity_violation_rate": 0.022727272727272728
+        },
+        "Interpersonal communication": {
+          "complete_pairs": 138,
+          "hard_flip_rate": 0.8333333333333334,
+          "mean_absolute_probability_gap": 0.8311878876656116,
+          "probability_monotonicity_violation_rate": 0.2689393939393939,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Medical treatment": {
+          "complete_pairs": 207,
+          "hard_flip_rate": 0.8357487922705314,
+          "mean_absolute_probability_gap": 0.8069234096855369,
+          "probability_monotonicity_violation_rate": 0.255050505050505,
+          "hard_choice_monotonicity_violation_rate": 0.0
+        },
+        "Personal life": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.7010869565217391,
+          "mean_absolute_probability_gap": 0.6899795290838765,
+          "probability_monotonicity_violation_rate": 0.21306818181818182,
+          "hard_choice_monotonicity_violation_rate": 0.005681818181818182
+        },
+        "Safety": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.75,
+          "mean_absolute_probability_gap": 0.7144052928293337,
+          "probability_monotonicity_violation_rate": 0.2784090909090909,
+          "hard_choice_monotonicity_violation_rate": 0.002840909090909091
+        },
+        "Social Policy": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.8369565217391305,
+          "mean_absolute_probability_gap": 0.7918906471554681,
+          "probability_monotonicity_violation_rate": 0.20170454545454544,
+          "hard_choice_monotonicity_violation_rate": 0.008522727272727272
+        },
+        "Technology Domain": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.6467391304347826,
+          "mean_absolute_probability_gap": 0.6491091151807598,
+          "probability_monotonicity_violation_rate": 0.2215909090909091,
+          "hard_choice_monotonicity_violation_rate": 0.011363636363636364
+        },
+        "Transportation": {
+          "complete_pairs": 184,
+          "hard_flip_rate": 0.5978260869565217,
+          "mean_absolute_probability_gap": 0.5908789279090318,
+          "probability_monotonicity_violation_rate": 0.26704545454545453,
+          "hard_choice_monotonicity_violation_rate": 0.019886363636363636
+        }
+      }
+    },
+    "paired_comparisons": [
+      {
+        "late": "GRPO-qd-seed1-ckpt30000",
+        "reference": "Qwen-7B-Base",
+        "cluster_unit": "scenario_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "hard_flip_rate": {
+            "late": 0.6822463768115942,
+            "reference": 0.505072463768116,
+            "paired_delta": 0.17717391304347818,
+            "ci95_lower": 0.13949275362318847,
+            "ci95_upper": 0.21307065217391294,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "mean_absolute_probability_gap": {
+            "late": 0.6551583534400552,
+            "reference": 0.490336982287846,
+            "paired_delta": 0.16482137115220924,
+            "ci95_lower": 0.1353880662677578,
+            "ci95_upper": 0.19267325120670964,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "mean_probability_gap_negative_minus_positive": {
+            "late": -0.6513340216005634,
+            "reference": -0.488971589877334,
+            "paired_delta": -0.1623624317232294,
+            "ci95_lower": -0.1906861361344534,
+            "ci95_upper": -0.13311437919048622,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "classical_flip_rate": {
+            "late": 0.6804347826086956,
+            "reference": 0.5043478260869565,
+            "paired_delta": 0.1760869565217391,
+            "ci95_lower": 0.13876811594202898,
+            "ci95_upper": 0.21196557971014487,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "probability_monotonicity_violation_rate": {
+            "late": 0.25700757575757577,
+            "reference": 0.24450757575757576,
+            "paired_delta": 0.012500000000000011,
+            "ci95_lower": 0.000752840909090888,
+            "ci95_upper": 0.025189393939393956,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "hard_choice_monotonicity_violation_rate": {
+            "late": 0.007765151515151515,
+            "reference": 0.005492424242424242,
+            "paired_delta": 0.0022727272727272726,
+            "ci95_lower": -0.0017045454545454551,
+            "ci95_upper": 0.006439393939393939,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          }
+        }
+      },
+      {
+        "late": "GRPO-qd-seed2-ckpt30000",
+        "reference": "Qwen-7B-Base",
+        "cluster_unit": "scenario_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "hard_flip_rate": {
+            "late": 0.6869565217391305,
+            "reference": 0.505072463768116,
+            "paired_delta": 0.18188405797101448,
+            "ci95_lower": 0.1416666666666666,
+            "ci95_upper": 0.22102355072463767,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "mean_absolute_probability_gap": {
+            "late": 0.6691730468317404,
+            "reference": 0.490336982287846,
+            "paired_delta": 0.1788360645438944,
+            "ci95_lower": 0.14576047856892574,
+            "ci95_upper": 0.2101028266336638,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "mean_probability_gap_negative_minus_positive": {
+            "late": -0.6647772889189328,
+            "reference": -0.488971589877334,
+            "paired_delta": -0.17580569904159882,
+            "ci95_lower": -0.20653656265387454,
+            "ci95_upper": -0.14335372192949133,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "classical_flip_rate": {
+            "late": 0.6847826086956522,
+            "reference": 0.5043478260869565,
+            "paired_delta": 0.18043478260869572,
+            "ci95_lower": 0.14057065217391307,
+            "ci95_upper": 0.21956521739130436,
+            "flagged": true,
+            "flag_reason": "CI excludes 0 and |delta| >= 0.05"
+          },
+          "probability_monotonicity_violation_rate": {
+            "late": 0.2537878787878788,
+            "reference": 0.24450757575757576,
+            "paired_delta": 0.009280303030303028,
+            "ci95_lower": -0.0018939393939393923,
+            "ci95_upper": 0.020459280303030295,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "hard_choice_monotonicity_violation_rate": {
+            "late": 0.010037878787878788,
+            "reference": 0.005492424242424242,
+            "paired_delta": 0.004545454545454546,
+            "ci95_lower": 0.0005681818181818184,
+            "ci95_upper": 0.008333333333333333,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          }
+        }
+      },
+      {
+        "late": "GRPO-qd-seed1-ckpt30000",
+        "reference": "Qwen-7B-GRPO-step8000",
+        "cluster_unit": "scenario_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "hard_flip_rate": {
+            "late": 0.6822463768115942,
+            "reference": 0.6894927536231884,
+            "paired_delta": -0.007246376811594235,
+            "ci95_lower": -0.023913043478260843,
+            "ci95_upper": 0.008704710144927548,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "mean_absolute_probability_gap": {
+            "late": 0.6551583534400552,
+            "reference": 0.6785185913587239,
+            "paired_delta": -0.023360237918668703,
+            "ci95_lower": -0.03517704309292065,
+            "ci95_upper": -0.010852120877858036,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "mean_probability_gap_negative_minus_positive": {
+            "late": -0.6513340216005634,
+            "reference": -0.6756750875495547,
+            "paired_delta": 0.024341065948991325,
+            "ci95_lower": 0.011799104378327313,
+            "ci95_upper": 0.036487208814631356,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          },
+          "classical_flip_rate": {
+            "late": 0.6804347826086956,
+            "reference": 0.688768115942029,
+            "paired_delta": -0.008333333333333415,
+            "ci95_lower": -0.0257246376811594,
+            "ci95_upper": 0.008333333333333304,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "probability_monotonicity_violation_rate": {
+            "late": 0.25700757575757577,
+            "reference": 0.25833333333333336,
+            "paired_delta": -0.0013257575757575912,
+            "ci95_lower": -0.011557765151515189,
+            "ci95_upper": 0.008716856060606048,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "hard_choice_monotonicity_violation_rate": {
+            "late": 0.007765151515151515,
+            "reference": 0.006060606060606061,
+            "paired_delta": 0.0017045454545454542,
+            "ci95_lower": -0.0013257575757575752,
+            "ci95_upper": 0.004734848484848485,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          }
+        }
+      },
+      {
+        "late": "GRPO-qd-seed2-ckpt30000",
+        "reference": "Qwen-7B-GRPO-step8000",
+        "cluster_unit": "scenario_id",
+        "bootstrap_reps": 2000,
+        "bootstrap_seed": 20260821,
+        "status": "OK",
+        "metrics": {
+          "hard_flip_rate": {
+            "late": 0.6869565217391305,
+            "reference": 0.6894927536231884,
+            "paired_delta": -0.002536231884057938,
+            "ci95_lower": -0.019565217391304346,
+            "ci95_upper": 0.01340579710144929,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "mean_absolute_probability_gap": {
+            "late": 0.6691730468317404,
+            "reference": 0.6785185913587239,
+            "paired_delta": -0.009345544526983551,
+            "ci95_lower": -0.020437788168444635,
+            "ci95_upper": 0.001478700830213021,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "mean_probability_gap_negative_minus_positive": {
+            "late": -0.6647772889189328,
+            "reference": -0.6756750875495547,
+            "paired_delta": 0.010897798630621902,
+            "ci95_lower": -0.00027116808274598174,
+            "ci95_upper": 0.022198121291419605,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "classical_flip_rate": {
+            "late": 0.6847826086956522,
+            "reference": 0.688768115942029,
+            "paired_delta": -0.003985507246376807,
+            "ci95_lower": -0.021385869565217396,
+            "ci95_upper": 0.012681159420289911,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "probability_monotonicity_violation_rate": {
+            "late": 0.2537878787878788,
+            "reference": 0.25833333333333336,
+            "paired_delta": -0.004545454545454575,
+            "ci95_lower": -0.013636363636363613,
+            "ci95_upper": 0.0043560606060605855,
+            "flagged": false,
+            "flag_reason": "neither criterion met"
+          },
+          "hard_choice_monotonicity_violation_rate": {
+            "late": 0.010037878787878788,
+            "reference": 0.006060606060606061,
+            "paired_delta": 0.003977272727272728,
+            "ci95_lower": 0.0017045454545454542,
+            "ci95_upper": 0.006439393939393939,
+            "flagged": true,
+            "flag_reason": "CI excludes 0"
+          }
+        }
+      }
+    ],
+    "comparator_note": "No framing predictions exist for the frozen-selected seed1@2000 / seed2@6000 checkpoints. The only earlier GRPO framing comparator is the EXPLORATORY seed42 step-8000 run, so the 30k-vs-earlier framing contrast is NOT a clean within-seed checkpoint comparison."
+  },
+  "interpretation": {
+    "per_seed": {
+      "GRPO-qd-seed1-ckpt30000": {
+        "reference_checkpoint": "GRPO-qd-seed1-ckpt2000",
+        "utility_spearman_selected": 0.791973125892748,
+        "utility_spearman_30k": 0.9132524920414558,
+        "utility_spearman_rises": true,
+        "invariance_improves": true,
+        "worst_form_improves": false,
+        "framing_worse_than_base": true,
+        "framing_better_than_base": false
+      },
+      "GRPO-qd-seed2-ckpt30000": {
+        "reference_checkpoint": "GRPO-qd-seed2-ckpt6000",
+        "utility_spearman_selected": 0.8303440564123943,
+        "utility_spearman_30k": 0.9169451568600537,
+        "utility_spearman_rises": true,
+        "invariance_improves": true,
+        "worst_form_improves": false,
+        "framing_worse_than_base": true,
+        "framing_better_than_base": false
+      }
+    },
+    "seeds_agree": true,
+    "supported_possibilities": [
+      "1",
+      "3"
+    ]
+  },
+  "any_metric_flagged": true,
+  "recommendation": "Run the complete checkpoint trajectory: at least one paired comparison met the predeclared exploratory rule."
+}

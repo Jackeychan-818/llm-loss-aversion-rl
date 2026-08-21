@@ -1,0 +1,181 @@
+{
+  "note": "SHA-256 of the pilot30k raw predictions. Raw prediction files are NOT committed; derived summaries and metadata ARE. A checksum verifies a file someone already has \u2014 it does not make the file downloadable.",
+  "generated_at_utc": "2026-08-21T07:40:44.988124+00:00",
+  "git_commit": "abbd128eb48cda7979bc5769cd3fb53d2cac721b",
+  "inputs": {
+    "surface_form_subset_sha256": "78525395ea208e4e4f2ef3e4266a5386259175cdcabeb29d8fb887cb4b272262",
+    "framing_benchmark_sha256": "dd58443d5d4a014f540e0406fc4d29166f5d5193c525c42851a595742c2cc15c",
+    "base_model_path": "models/Qwen2.5-7B-Instruct"
+  },
+  "adapters": {
+    "checkpoints/grpo_qwen_delta/checkpoint-8000": {
+      "sha256": "8411c1f6dbd68d95f97248d360db3802cf2a096161b6667442496f38933b36e0"
+    },
+    "checkpoints/grpo_qwen_delta_seed1/checkpoint-2000": {
+      "sha256": "223b80bd16e7383b09c73287b60e3dde4c26608c64ce9365557d5a88199bc190"
+    },
+    "checkpoints/grpo_qwen_delta_seed1/checkpoint-30000": {
+      "sha256": "6b9580a4ed24fabf910cfd654f555a867149e2beeb9f277650aa3d52324ffd0d"
+    },
+    "checkpoints/grpo_qwen_delta_seed2/checkpoint-30000": {
+      "sha256": "3d02042db2349e5c732210f243922a983e9506872711c1fbd68ceed00a4e107e"
+    },
+    "checkpoints/grpo_qwen_delta_seed2/checkpoint-6000": {
+      "sha256": "e6bd31a865d71aeb33d5db08ec86c4c9211aba55f1b181ca28026621686df52c"
+    }
+  },
+  "n_files": 25,
+  "total_MB": 34.23,
+  "files": [
+    {
+      "path": "results/surface_form_stress/Base/form_predictions.jsonl",
+      "bytes": 4030370,
+      "sha256": "5fb716fce2dacf9a4c9702e37e4db128474d53951123d1b7999814e56d7d0d4d",
+      "committed": false
+    },
+    {
+      "path": "results/surface_form_stress/Base/run_metadata.json",
+      "bytes": 350,
+      "sha256": "75b672acef3cc850edcbbae49b270ff827701d2dbfb92575eb547cbbbbc3d6f3",
+      "committed": true
+    },
+    {
+      "path": "results/surface_form_stress/GRPO-qd-seed1-ckpt2000/form_predictions.jsonl",
+      "bytes": 4028553,
+      "sha256": "456d4bd5d5657bfc58ffc97f0b4492dc016813a28e001983f56d93ff6e06dd34",
+      "committed": false
+    },
+    {
+      "path": "results/surface_form_stress/GRPO-qd-seed1-ckpt2000/run_metadata.json",
+      "bytes": 477,
+      "sha256": "4a0fe6200a1cff5c37624cc1e4336a289c1ed2ee16ce5edffb23a8b3d8124ac2",
+      "committed": true
+    },
+    {
+      "path": "results/surface_form_stress/GRPO-qd-seed2-ckpt6000/form_predictions.jsonl",
+      "bytes": 4031309,
+      "sha256": "6495cdae7eb060c7f3572a6eab8de64c420c39b17945c42336c01f6ef8c196ba",
+      "committed": false
+    },
+    {
+      "path": "results/surface_form_stress/GRPO-qd-seed2-ckpt6000/run_metadata.json",
+      "bytes": 477,
+      "sha256": "01e9b2bb5c4812ceeadcca84677375db055dc4db1cc986fc7566e46f86c927d3",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed1-ckpt30000/form_predictions.jsonl",
+      "bytes": 4032653,
+      "sha256": "959eb3462e6801f51be0810c787bd2474274094752fd731ea9e340d337a4c20c",
+      "committed": false
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed1-ckpt30000/run_metadata.json",
+      "bytes": 479,
+      "sha256": "f42c15c08475802baeaf380f2bb3a62b32b69afdd101810c2f41f9add8131f02",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed2-ckpt30000/form_predictions.jsonl",
+      "bytes": 4032833,
+      "sha256": "3555fedb83c8f4b2af8eaf938dac6ddd51b147ec418c63389e3b53968ab129e2",
+      "committed": false
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/surface/GRPO-qd-seed2-ckpt30000/run_metadata.json",
+      "bytes": 479,
+      "sha256": "452cc071c5c1f283ed96d6b7791d907a9a64ceaa86c37b7daf84c706001a9e43",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word/manifest.json",
+      "bytes": 729,
+      "sha256": "115bc986cbbf81994cc22d3a1ca8cf4c3b55a8b1e0f7024e5ca06680fa7a679a",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word/metrics.json",
+      "bytes": 8713,
+      "sha256": "f42eb1e1e35c4fe863719d02399bd41615691f1cec1221ff5063432620222b33",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-Base/single_word/predictions.json",
+      "bytes": 3503947,
+      "sha256": "9c92ec1e0f079001704bfb69913b1f6a519d3ac38bda9d7298d2be753f4372b9",
+      "committed": false
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/comparison_to_base.json",
+      "bytes": 2583,
+      "sha256": "7d6fffcd8b96ea841f562d0d9e3a114f315035e2c061db8c5e888757e384158d",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/manifest.json",
+      "bytes": 828,
+      "sha256": "7170cbf0563b258813744727d820aaa9078be3b6abab7ac6b8e1d1384a3c546a",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/metrics.json",
+      "bytes": 8802,
+      "sha256": "62ae4eb74f59130dae2a070a415be1762a3252c1cdafa2caeefd3c7fe2ab2dec",
+      "committed": true
+    },
+    {
+      "path": "framing/full_qd8k_120x23/Qwen-7B-GRPO-step8000/single_word/predictions.json",
+      "bytes": 3507240,
+      "sha256": "aee036f39c41b055a88dd4b454fa0ee5a7ec038e69077dbabaf144c54179d5ed",
+      "committed": false
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/comparison_to_base.json",
+      "bytes": 2597,
+      "sha256": "7d2f39c2b32f76e0fa3761645e691590c8b85ce3f92e8709c3715727af361fd4",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/manifest.json",
+      "bytes": 862,
+      "sha256": "c16279629dde27c0a8d99ef4236a0502352c8198c16f97ba4d2c712bcd355b4e",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/metrics.json",
+      "bytes": 8825,
+      "sha256": "24542153318609841663dd03cec11b0c0b98772504c39bc0ae44d3de5a44c1b1",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed1-ckpt30000/single_word/predictions.json",
+      "bytes": 3505446,
+      "sha256": "dec149702dc1ba52ebf1c6effb2d582abfcf21404070cded8cfdca37ae139497",
+      "committed": false
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed2-ckpt30000/single_word/comparison_to_base.json",
+      "bytes": 2605,
+      "sha256": "beb542ed47b2f91c8beef77397ca5c312ab7a84baeea8b9bf8c578e86b94ef6c",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed2-ckpt30000/single_word/manifest.json",
+      "bytes": 862,
+      "sha256": "72d9ea81f4c0e32c264ae4ab222f2f315350af7936b0ab80b65bba9f1540fe8e",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed2-ckpt30000/single_word/metrics.json",
+      "bytes": 8829,
+      "sha256": "c8737eed76f2485c4b3f738ddc14ee14c539e9ef446332a0c2c8f97e2d30fc56",
+      "committed": true
+    },
+    {
+      "path": "results/checkpoint_diagnostics/pilot30k/framing/GRPO-qd-seed2-ckpt30000/single_word/predictions.json",
+      "bytes": 3505391,
+      "sha256": "a0d4833df3597df7d292a3c7fc7f2cb5a586622f82bba8d000092a1c7854105f",
+      "committed": false
+    }
+  ]
+}

@@ -651,7 +651,10 @@ def main():
     for key in SURFACE_MODELS:
         rows, prov = load_surface(key, surface_root, baseline_root, strict)
         surf_prov.append(prov)
-        if rows is None:
+        if rows is None or prov["status"] != "OK":
+            # A model that fails integrity is reported, never analyzed. Under
+            # --allow_missing this is the difference between "skipped" and
+            # silently summarising a half-written prediction file.
             continue
         surf_rows[key] = rows
         u = surface_units(rows)
@@ -676,7 +679,7 @@ def main():
                  "bootstrap_reps": args.bootstrap_reps,
                  "bootstrap_seed": args.bootstrap_seed}
         if a not in surf_units_by_model or b not in surf_units_by_model:
-            entry["status"] = "SKIPPED_MISSING_MODEL"
+            entry["status"] = "SKIPPED_MISSING_OR_FAILED_MODEL"
             surf_pair_out.append(entry)
             continue
         draws = surface_paired_bootstrap(surf_units_by_model[a], surf_units_by_model[b],
@@ -699,7 +702,7 @@ def main():
     for key in FRAMING_MODELS:
         rows, prov = load_framing(key, framing_root, strict)
         fram_prov.append(prov)
-        if rows is None:
+        if rows is None or prov["status"] != "OK":
             continue
         by_scen = framing_by_scenario(rows)
         fram_scen[key] = framing_sufficient_stats(by_scen)
@@ -721,7 +724,7 @@ def main():
                  "bootstrap_reps": args.bootstrap_reps,
                  "bootstrap_seed": args.bootstrap_seed}
         if a not in fram_scen or b not in fram_scen:
-            entry["status"] = "SKIPPED_MISSING_MODEL"
+            entry["status"] = "SKIPPED_MISSING_OR_FAILED_MODEL"
             fram_pair_out.append(entry)
             continue
         draws = framing_paired_bootstrap(fram_scen[a], fram_scen[b],
@@ -792,6 +795,8 @@ def main():
                         "framing comparator is the EXPLORATORY seed42 step-8000 run, "
                         "so the 30k-vs-earlier framing contrast is NOT a clean "
                         "within-seed checkpoint comparison.")},
+        "interpretation": interpretation(surf_results, surf_pair_out,
+                                         fram_results, fram_pair_out)[1],
         "any_metric_flagged": any_flag,
         "recommendation": (
             "Run the complete checkpoint trajectory: at least one paired "
@@ -969,6 +974,7 @@ def render_md(summary, surf, surf_pairs, fram, fram_pairs):
                      f"{_f(d['ci95_upper'])}] | {'**YES**' if d['flagged'] else 'no'} |")
         L.append("")
 
+    L += interpretation(surf, surf_pairs, fram, fram_pairs)[0]
     L += ["## Predeclared exploratory decision rule", "",
           "Flag a potentially meaningful change when the paired 95% interval "
           "excludes zero **or** |Δ| ≥ 0.05. This decides whether to run the "
@@ -981,6 +987,113 @@ def render_md(summary, surf, surf_pairs, fram, fram_pairs):
         L.append(f"- {c}")
     L.append("")
     return "\n".join(L)
+
+
+def interpretation(surf, surf_pairs, fram, fram_pairs):
+    """Pick, from the numbers alone, which of the five predeclared readings the
+    evidence supports. Returns (list of markdown lines, machine-readable dict)."""
+    def pair(pairs, late, ref):
+        for e in pairs:
+            if e["late"] == late and e["reference"] == ref and e.get("status") == "OK":
+                return e["metrics"]
+        return None
+
+    seeds = {}
+    for late, ref in SURFACE_PAIRS:
+        m = pair(surf_pairs, late, ref)
+        if not m:
+            continue
+        st_l = (surf.get(late) or {}).get("structural") or {}
+        st_r = (surf.get(ref) or {}).get("structural") or {}
+        fm = pair(fram_pairs, late, "Qwen-7B-Base")
+        seeds[late] = {
+            "reference_checkpoint": ref,
+            "utility_spearman_selected": st_r.get("spearman_utility"),
+            "utility_spearman_30k": st_l.get("spearman_utility"),
+            "utility_spearman_rises": (
+                st_l.get("spearman_utility") is not None
+                and st_r.get("spearman_utility") is not None
+                and st_l["spearman_utility"] > st_r["spearman_utility"]),
+            "invariance_improves": bool(
+                m["semantic_invariance_rate"]["flagged"]
+                and m["semantic_invariance_rate"]["paired_delta"] > 0),
+            "worst_form_improves": bool(
+                m["worst_form_fidelity"]["flagged"]
+                and m["worst_form_fidelity"]["paired_delta"] > 0),
+            "framing_worse_than_base": bool(
+                fm and fm["hard_flip_rate"]["flagged"]
+                and fm["hard_flip_rate"]["paired_delta"] > 0),
+            "framing_better_than_base": bool(
+                fm and fm["hard_flip_rate"]["flagged"]
+                and fm["hard_flip_rate"]["paired_delta"] < 0),
+        }
+    if not seeds:
+        return ["## Interpretation", "", "*No completed paired comparison.*", ""], {}
+
+    vals = list(seeds.values())
+    agree = all(
+        (v["utility_spearman_rises"], v["invariance_improves"],
+         v["framing_worse_than_base"], v["framing_better_than_base"])
+        == (vals[0]["utility_spearman_rises"], vals[0]["invariance_improves"],
+            vals[0]["framing_worse_than_base"], vals[0]["framing_better_than_base"])
+        for v in vals)
+    v = vals[0]
+    supported = []
+    if not agree:
+        supported.append(("5", "Results disagree across seeds: evidence for "
+                               "training-path dependence."))
+    else:
+        if v["utility_spearman_rises"] and v["invariance_improves"] \
+           and v["framing_better_than_base"]:
+            supported.append(("4", "Both invariance and framing improve: the "
+                                   "strongest motivation for evaluating the "
+                                   "complete checkpoint trajectory."))
+        if v["utility_spearman_rises"] and v["invariance_improves"] \
+           and not v["framing_better_than_base"]:
+            supported.append(("1", "Utility correlation rises and semantic "
+                                   "invariance improves: consistent with later "
+                                   "learning of a more transferable decision policy."))
+        if v["utility_spearman_rises"] and not v["invariance_improves"]:
+            supported.append(("2", "Utility correlation rises but invariance is "
+                                   "unchanged: consistent with improved "
+                                   "reward/preference alignment without semantic "
+                                   "abstraction."))
+        if v["utility_spearman_rises"] and v["framing_worse_than_base"]:
+            supported.append(("3", "Utility correlation rises while adverse-framing "
+                                   "susceptibility is worse than the matched base: "
+                                   "later preference recovery does not imply general "
+                                   "robustness."))
+
+    L = ["## Interpretation", "",
+         "Which of the five predeclared readings the numbers support "
+         "(selected mechanically from the paired results above, not by hand):", ""]
+    for num, text in supported:
+        L.append(f"- **Possibility {num} — SUPPORTED.** {text}")
+    for num, text in [
+            ("1", "Utility correlation rises and semantic invariance improves."),
+            ("2", "Utility correlation rises but invariance is unchanged."),
+            ("3", "Utility correlation rises while adverse-framing susceptibility "
+                  "worsens."),
+            ("4", "Both invariance and framing improve."),
+            ("5", "Results disagree across seeds.")]:
+        if num not in {n for n, _ in supported}:
+            L.append(f"- Possibility {num} — not supported. {text}")
+    L += ["", "Seed agreement: **" + ("both seeds move the same way on every axis"
+                                      if agree else
+                                      "the seeds DISAGREE") + "**.", "",
+          "### What the fitted-utility correlation does and does not show", "",
+          "The rise in Spearman correlation between a checkpoint's fitted "
+          "structural utilities and the base's is a property of an **estimated "
+          "econometric model fitted to choices**. It is **not** direct evidence "
+          "about hidden neural representations, and nothing here measures what the "
+          "network internally encodes.", "",
+          "It is also weakly identified at these checkpoints. Both 30,000-step "
+          "endpoints have `log10 cond(J)` ≈ 17 — a **near-singular** Jacobian — so "
+          "individual late-checkpoint alpha and utility values are poorly pinned "
+          "down even though the rank correlation is high. Treat the late structural "
+          "utility estimates as suggestive, not precise.", ""]
+    return L, {"per_seed": seeds, "seeds_agree": agree,
+               "supported_possibilities": [n for n, _ in supported]}
 
 
 def write_raw_manifest(out_dir, surf_prov, fram_prov, subset_sha, framing_sha):

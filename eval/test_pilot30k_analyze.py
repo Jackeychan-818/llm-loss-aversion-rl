@@ -147,6 +147,67 @@ def test_integrity_rejects_wrong_hash(tmp: Path):
           "a short prediction file fails the row-count check")
 
 
+def test_partial_file_is_skipped_not_summarised(tmp: Path):
+    """A half-written prediction file (e.g. a job still running) must be
+    reported as failing integrity and EXCLUDED, never summarised."""
+    print("test_partial_file_is_skipped_not_summarised")
+    s_src = ROOT / "results" / "surface_form_stress"
+    f_src = ROOT / "framing" / "full_qd8k_120x23"
+    if not (s_src / "GRPO-qd-seed1-ckpt2000").exists() or not f_src.exists():
+        print("  SKIP  prerequisite predictions unavailable")
+        return
+    surface_root = tmp / "partial_surface"
+    framing_root = tmp / "partial_framing"
+    out_dir = tmp / "partial_out"
+    for late, ref in (("GRPO-qd-seed1-ckpt30000", "GRPO-qd-seed1-ckpt2000"),
+                      ("GRPO-qd-seed2-ckpt30000", "GRPO-qd-seed2-ckpt6000")):
+        d = surface_root / late
+        d.mkdir(parents=True)
+        lines = (s_src / ref / "form_predictions.jsonl").read_text().splitlines()[:4000]
+        (d / "form_predictions.jsonl").write_text("\n".join(lines) + "\n")
+        shutil.copy(s_src / ref / "run_metadata.json", d / "run_metadata.json")
+    for late in ("GRPO-qd-seed1-ckpt30000", "GRPO-qd-seed2-ckpt30000"):
+        d = framing_root / late / "single_word"
+        d.mkdir(parents=True)
+        rows = json.loads((f_src / "Qwen-7B-Base" / "single_word"
+                           / "predictions.json").read_text())[:1200]
+        (d / "predictions.json").write_text(json.dumps(rows))
+        shutil.copy(f_src / "Qwen-7B-Base" / "single_word" / "manifest.json",
+                    d / "manifest.json")
+
+    saved_s, saved_f = dict(P.SURFACE_MODELS), dict(P.FRAMING_MODELS)
+    try:
+        for k in ("GRPO-qd-seed1-ckpt30000", "GRPO-qd-seed2-ckpt30000"):
+            kind, adapter, _sha, role = P.SURFACE_MODELS[k]
+            P.SURFACE_MODELS[k] = (kind, adapter, None, role)
+            kind, sub, adapter, _sha, role = P.FRAMING_MODELS[k]
+            P.FRAMING_MODELS[k] = (kind, sub, adapter, None, role)
+        sys.argv = ["pilot30k_analyze",
+                    "--surface_root", str(surface_root),
+                    "--baseline_surface_root", str(s_src),
+                    "--framing_root", str(framing_root),
+                    "--out_dir", str(out_dir),
+                    "--bootstrap_reps", "20", "--allow_missing", "--no_figure"]
+        P.main()   # must not raise
+    finally:
+        P.SURFACE_MODELS.clear(); P.SURFACE_MODELS.update(saved_s)
+        P.FRAMING_MODELS.clear(); P.FRAMING_MODELS.update(saved_f)
+
+    summary = json.loads((out_dir / "summary.json").read_text())
+    analysed = {m["model"] for m in summary["surface_form"]["per_model"]}
+    check("GRPO-qd-seed1-ckpt30000" not in analysed,
+          "a partial surface file is excluded from the per-model summary")
+    statuses = {p["model"]: p["status"] for p in summary["surface_form"]["provenance"]}
+    check(statuses["GRPO-qd-seed1-ckpt30000"] == "FAILED_INTEGRITY",
+          "the partial surface file is reported as failing integrity")
+    check(all(e["status"] == "SKIPPED_MISSING_OR_FAILED_MODEL"
+              for e in summary["surface_form"]["paired_comparisons"]),
+          "no surface paired comparison is computed from a partial file")
+    check(all(e["status"] == "SKIPPED_MISSING_OR_FAILED_MODEL"
+              for e in summary["framing"]["paired_comparisons"]),
+          "no framing paired comparison is computed from a partial file")
+
+
 def test_end_to_end_self_comparison(tmp: Path):
     """Copy an evaluated model in as the '30k' input: every paired delta must be
     exactly zero, which exercises the whole pipeline without a GPU."""
@@ -276,6 +337,7 @@ def main():
         test_framing_sufficient_stats_match_upstream()
         test_integrity_rejects_wrong_hash(tmp)
         test_pbs_scripts_are_valid()
+        test_partial_file_is_skipped_not_summarised(tmp)
         test_end_to_end_self_comparison(tmp)
     print("=" * 72)
     if FAILURES:
